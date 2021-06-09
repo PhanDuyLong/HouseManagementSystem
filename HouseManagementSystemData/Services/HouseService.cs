@@ -13,6 +13,7 @@ namespace HouseManagementSystem.Data.Services
     public partial interface IHouseService : IBaseService<House>
     {
         List<HouseViewModel> GetAllByOwnerUsername(string ownerUsername);
+        HouseViewModel GetByID(string id);
     }
     public partial class HouseService : BaseService<House>, IHouseService
     {
@@ -25,8 +26,15 @@ namespace HouseManagementSystem.Data.Services
 
         public List<HouseViewModel> GetAllByOwnerUsername(string ownerUsername)
         {
-            var houses = Get().Where(h => h.OwnerUsername == ownerUsername).ProjectTo<HouseViewModel>(_mapper.ConfigurationProvider).ToList();
+            var houses = Get().Where(h => h.OwnerUsername == ownerUsername).Include(h => h.HouseInfos).ProjectTo<HouseViewModel>(_mapper.ConfigurationProvider).ToList();
             return houses;
+        }
+
+        public HouseViewModel GetByID(string id)
+        {
+            var house = Get().Where(h => h.Id == id).Include(h => h.HouseInfos).FirstOrDefault();
+            var houseViewModel = _mapper.Map<HouseViewModel>(house);
+            return houseViewModel;
         }
     }
 }

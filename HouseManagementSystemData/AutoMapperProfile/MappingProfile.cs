@@ -11,6 +11,8 @@ namespace HouseManagementSystem.Data.AutoMapperProfile
             CreateMap<House, HouseViewModel>();
 
             CreateMap<HouseInfo, HouseInfoViewModel>();
+
+            CreateMap<Account, AccountViewModel>();
         }
     }
 }

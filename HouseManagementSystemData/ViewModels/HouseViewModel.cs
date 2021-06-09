@@ -12,7 +12,7 @@ namespace HouseManagementSystem.Data.ViewModels
         public bool? IsDeleted { get; set; }
         public bool? Status { get; set; }
 
-        public virtual ICollection<HouseInfoViewModel> HouseInfoViewModels { get; set; }
+        public virtual ICollection<HouseInfoViewModel> HouseInfos { get; set; }
 
     }
 }

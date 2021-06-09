@@ -11,18 +11,20 @@ using HouseManagementSystem.Data.ViewModels;
 
 namespace HouseManagementSystemAPI.Controllers
 {
-    [Route("api/houses")]
+    [Route("api")]
     [ApiController]
     public class HousesController : ControllerBase
     {
         private readonly House_ManagementContext _context;
         private IHouseService _houseService;
-        public HousesController(IHouseService houseService)
+        public HousesController(House_ManagementContext context, IHouseService houseService)
         {
+            _context = context;
             _houseService = houseService;
         }
 
-        // GET: api/houses
+        // GET: api/houses/abc
+        [Route("houses/{ownerUsername}")]
         [HttpGet]
         public List<HouseViewModel> GetHouses(String ownerUsername)
         {
@@ -30,23 +32,18 @@ namespace HouseManagementSystemAPI.Controllers
         }
 
         // GET: api/houses/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<House>> GetHouse(string id)
+        [Route("house/{id}")]
+        [HttpGet]
+        public HouseViewModel GetHouse(string id)
         {
-            var house = await _context.Houses.FindAsync(id);
-
-            if (house == null)
-            {
-                return NotFound();
-            }
-
-            return house;
+            return _houseService.GetByID(id);
         }
 
         // PUT: api/houses/5
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
-        [HttpPut("{id}")]
+        [Route("house/{id}")]
+        [HttpPut]
         public async Task<IActionResult> PutHouse(string id, House house)
         {
             if (id != house.Id)
@@ -78,6 +75,7 @@ namespace HouseManagementSystemAPI.Controllers
         // POST: api/Houses
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
+        [Route("house")]
         [HttpPost]
         public async Task<ActionResult<House>> PostHouse(House house)
         {
@@ -102,7 +100,8 @@ namespace HouseManagementSystemAPI.Controllers
         }
 
         // DELETE: api/Houses/5
-        [HttpDelete("{id}")]
+        [Route("house/{id}")]
+        [HttpDelete]
         public async Task<ActionResult<House>> DeleteHouse(string id)
         {
             var house = await _context.Houses.FindAsync(id);

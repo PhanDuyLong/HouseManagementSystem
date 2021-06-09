@@ -2,48 +2,43 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using HouseManagementSystem.Data.ViewModels;
+using HouseManagementSystem.Data.Attributes;
+using HouseManagementSystem.Data.Requests;
+using HouseManagementSystem.Data.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace HouseManagementSystemAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api")]
     [ApiController]
     public class AccountsController : ControllerBase
     {
-        // GET: api/<AccountsController>
-        [HttpGet]
-        public IEnumerable<string> Get()
-        {
-            return new string[] { "value1", "value2" };
-        }
+        private IAccountService _accountService;
 
-        // GET api/<AccountsController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
+        public AccountsController(IAccountService accountService)
         {
-            return "value";
+            _accountService = accountService;
         }
-
-        /*// POST api/<AccountsController>
+        [Route("account/authenticate")]
         [HttpPost]
-        public void Post([FromBody] LoginViewModel loginViewModel)
+        public IActionResult Authenticate(AuthenticateRequest model)
         {
+            var response = _accountService.Authenticate(model);
 
-        }*/
+            if (response == null)
+                return BadRequest(new { message = "Username or password is incorrect" });
 
-        // PUT api/<AccountsController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
+            return Ok(response);
         }
 
-        // DELETE api/<AccountsController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        [Authorize]
+        [Route("accounts")]
+        [HttpGet]
+        public IActionResult GetAll()
         {
+            var users = _accountService.GetAll();
+            return Ok(users);
         }
     }
 }

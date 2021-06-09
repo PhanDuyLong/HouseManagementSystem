@@ -2,6 +2,7 @@ using AutoMapper;
 using HouseManagementSystem.Data.AutoMapperProfile;
 using HouseManagementSystem.Data.DependencyInjection;
 using HouseManagementSystem.Data.Models;
+using HouseManagementSystem.Data.Utilities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -42,9 +43,11 @@ namespace HouseManagementSystemAPI
 
             services.AddMvc();
 
-            // Call IntializerDI
+            //configure DI
             services.IntializerDI();
 
+            // configure strongly typed settings object
+            services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -79,6 +82,15 @@ namespace HouseManagementSystemAPI
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
                 c.RoutePrefix = string.Empty;
             });
+
+            // global cors policy
+            app.UseCors(x => x
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader());
+
+            // custom jwt auth middleware
+            app.UseMiddleware<JwtMiddleware>();
         }
     }
 }
