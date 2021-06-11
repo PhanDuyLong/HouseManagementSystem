@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>HMSAPI</name>
+    </assembly>
+    <members>
+        <member name="M:HMSAPI.Controllers.AccountsController.Authenticate(HMS.Data.Requests.AuthenticateRequest)">
+            <summary>
+            authenticate login
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
+        <member name="M:HMSAPI.Controllers.AccountsController.GetAll">
+            <summary>
+            Get all accounts
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:HouseManagementSystemAPI.Controllers.HousesController.GetHouses(System.String)">
+            <summary>
+            Get Houses
+            </summary>
+            <param name="ownerUsername"></param>
+            <returns></returns>
+        </member>
+        <member name="M:HouseManagementSystemAPI.Controllers.HousesController.GetHouse(System.String)">
+            <summary>
+            Get House by Id 
+            </summary>
+            <param name="id"></param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace HouseManagementSystem.Data.Requests
+namespace HMS.Data.Requests
 {
     public class AuthenticateRequest
     {

@@ -1,10 +1,10 @@
-﻿using HouseManagementSystem.Data.ViewModels;
+﻿using HMS.Data.ViewModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System;
 using System.Web.Mvc;
 
-namespace HouseManagementSystem.Data.Attributes
+namespace HMS.Data.Attributes
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public class AuthorizeAttribute : Attribute, Microsoft.AspNetCore.Mvc.Filters.IAuthorizationFilter

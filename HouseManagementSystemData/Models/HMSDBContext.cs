@@ -1,19 +1,18 @@
 ﻿using System;
-using HouseManagementSystem.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
 #nullable disable
 
-namespace HouseManagementSystem.Data.Models
+namespace HMS.Data.Models
 {
-    public partial class House_ManagementContext : DbContext
+    public partial class HMSDBContext : DbContext
     {
-        public House_ManagementContext()
+        public HMSDBContext()
         {
         }
 
-        public House_ManagementContext(DbContextOptions<House_ManagementContext> options)
+        public HMSDBContext(DbContextOptions<HMSDBContext> options)
             : base(options)
         {
         }
@@ -34,14 +33,6 @@ namespace HouseManagementSystem.Data.Models
         public virtual DbSet<ServiceContract> ServiceContracts { get; set; }
         public virtual DbSet<ServiceType> ServiceTypes { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-            //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Server=localhost,1433;Initial Catalog=House_Management;User ID=sa;Password=123456;Trusted_Connection=True;");
-            }
-        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -305,7 +296,16 @@ namespace HouseManagementSystem.Data.Models
                     .HasMaxLength(20)
                     .IsUnicode(false);
 
+                entity.Property(e => e.HouseId)
+                    .HasMaxLength(30)
+                    .IsUnicode(false);
+
                 entity.Property(e => e.Name).HasMaxLength(50);
+
+                entity.HasOne(d => d.House)
+                    .WithMany(p => p.Services)
+                    .HasForeignKey(d => d.HouseId)
+                    .HasConstraintName("FK_Service_House");
 
                 entity.HasOne(d => d.ServiceType)
                     .WithMany(p => p.Services)

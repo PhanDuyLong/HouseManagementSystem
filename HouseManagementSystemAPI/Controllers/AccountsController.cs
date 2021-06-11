@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using HouseManagementSystem.Data.Attributes;
-using HouseManagementSystem.Data.Requests;
-using HouseManagementSystem.Data.Services;
+using HMS.Data.Attributes;
+using HMS.Data.Requests;
+using HMS.Data.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HouseManagementSystemAPI.Controllers
+namespace HMSAPI.Controllers
 {
-    [Route("api")]
+    [Route("api/accounts")]
     [ApiController]
     public class AccountsController : ControllerBase
     {
@@ -20,7 +20,12 @@ namespace HouseManagementSystemAPI.Controllers
         {
             _accountService = accountService;
         }
-        [Route("account/authenticate")]
+        /// <summary>
+        /// Authenticate login
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [Route("authenticate")]
         [HttpPost]
         public IActionResult Authenticate(AuthenticateRequest model)
         {
@@ -32,8 +37,11 @@ namespace HouseManagementSystemAPI.Controllers
             return Ok(response);
         }
 
-        [Authorize]
-        [Route("accounts")]
+        /*[Authorize]*/
+        /// <summary>
+        /// Get all accounts
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public IActionResult GetAll()
         {

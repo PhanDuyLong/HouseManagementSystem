@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
-using HouseManagementSystem.Data.Models;
-using HouseManagementSystem.Data.Repositories;
-using HouseManagementSystem.Data.Services.Base;
+using HMS.Data.Models;
+using HMS.Data.Repositories;
+using HMS.Data.Services.Base;
 using Microsoft.EntityFrameworkCore;
 
-namespace HouseManagementSystem.Data.Services
+namespace HMS.Data.Services
 {
     public partial interface IServiceService : IBaseService<Service>
     {

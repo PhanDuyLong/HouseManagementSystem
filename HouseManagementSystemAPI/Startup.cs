@@ -1,18 +1,18 @@
 using AutoMapper;
-using HouseManagementSystem.Data.AutoMapperProfile;
-using HouseManagementSystem.Data.DependencyInjection;
-using HouseManagementSystem.Data.Models;
-using HouseManagementSystem.Data.Utilities;
+using HMS.Data.AutoMapperProfile;
+using HMS.Data.DependencyInjection;
+using HMS.Data.Utilities;
+using HMS.Data.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
+using System.IO;
 
-namespace HouseManagementSystemAPI
+namespace HMSAPI
 {
     public class Startup
     {
@@ -28,10 +28,19 @@ namespace HouseManagementSystemAPI
         {
             services.AddControllers();
             // Register the Swagger generator, defining 1 or more Swagger documents  
-            services.AddSwaggerGen();
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "HMS.API", Version = "v1" });
+
+                //Config show comment of API
+                var filePath = Path.Combine(System.AppContext.BaseDirectory, "HMSAPI.xml");
+                c.IncludeXmlComments(filePath);
+            });
             // Define DB Context
-            services.AddDbContext<House_ManagementContext>(options =>
-                options.UseSqlServer("Server=localhost,1433;Initial Catalog=House_Management;User ID=sa;Password=123456;Trusted_Connection=True;"));
+            services.AddDbContext<HMSDBContext>(options =>{
+                    options.UseSqlServer(Configuration.GetConnectionString("Connection"));
+                    options.EnableSensitiveDataLogging(true);
+                });
             // Auto Mapper Configurations
             var mapperConfig = new MapperConfiguration(mc =>
             {
@@ -79,7 +88,7 @@ namespace HouseManagementSystemAPI
             // specifying the Swagger JSON endpoint.  
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "HMS API V1");
                 c.RoutePrefix = string.Empty;
             });
 

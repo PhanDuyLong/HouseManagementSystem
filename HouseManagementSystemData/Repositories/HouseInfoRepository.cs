@@ -1,8 +1,8 @@
-﻿using HouseManagementSystem.Data.Models;
-using HouseManagementSystem.Data.Repositories.Base;
+﻿using HMS.Data.Models;
+using HMS.Data.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
 
-namespace HouseManagementSystem.Data.Repositories
+namespace HMS.Data.Repositories
 {
     public partial interface IHouseInfoRepository : IBaseRepository<HouseInfo>
     {

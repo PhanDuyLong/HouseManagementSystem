@@ -1,4 +1,4 @@
-﻿using HouseManagementSystem.Data.Services;
+﻿using HMS.Data.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HouseManagementSystem.Data.Utilities
+namespace HMS.Data.Utilities
 {
     public class JwtMiddleware
     {

@@ -1,9 +1,9 @@
-﻿using HouseManagementSystem.Data.ViewModels;
+﻿using HMS.Data.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace HouseManagementSystem.Data.Responses
+namespace HMS.Data.Responses
 {
     public class AuthenticateResponse
     {

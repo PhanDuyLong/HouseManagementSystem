@@ -1,18 +1,16 @@
-﻿using HouseManagementSystem.Data.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace HouseManagementSystem.Data.ViewModels
+namespace HMS.Data.ViewModels.HouseViewModels
 {
-    public class HouseViewModel
+    public class HouseHomeViewModel
     {
         public string Id { get; set; }
         public string OwnerUsername { get; set; }
         public bool? IsDeleted { get; set; }
         public bool? Status { get; set; }
 
-        public virtual ICollection<HouseInfoViewModel> HouseInfos { get; set; }
-
+        public virtual HouseInfoViewModel HouseInfo { get; set; }
     }
 }

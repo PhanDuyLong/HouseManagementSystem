@@ -1,11 +1,11 @@
-﻿using HouseManagementSystem.Data.Repositories.Base;
+﻿using HMS.Data.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
-namespace HouseManagementSystem.Data.Services.Base
+namespace HMS.Data.Services.Base
 {
     public interface IBaseService<T> where T : class
     {

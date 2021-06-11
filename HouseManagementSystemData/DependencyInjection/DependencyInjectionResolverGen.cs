@@ -1,16 +1,16 @@
-﻿using HouseManagementSystem.Data.Models;
-using HouseManagementSystem.Data.Repositories;
-using HouseManagementSystem.Data.Services;
+﻿using HMS.Data.Models;
+using HMS.Data.Repositories;
+using HMS.Data.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace HouseManagementSystem.Data.DependencyInjection
+namespace HMS.Data.DependencyInjection
 {
     public static class DependencyInjectionResolverGen
     {
         public static void IntializerDI(this IServiceCollection services)
         {
-            services.AddScoped<DbContext, House_ManagementContext>();
+            services.AddScoped<DbContext, HMSDBContext>();
 
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IAccountRepository, AccountRepository>();

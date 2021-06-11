@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace HouseManagementSystem.Data.Utilities
+namespace HMS.Data.Utilities
 {
     public class AppSettings
     {

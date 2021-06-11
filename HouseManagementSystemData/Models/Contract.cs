@@ -1,10 +1,9 @@
-﻿using HouseManagementSystem.Data.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 #nullable disable
 
-namespace HouseManagementSystem.Data.Models
+namespace HMS.Data.Models
 {
     public partial class Contract
     {
@@ -23,7 +22,6 @@ namespace HouseManagementSystem.Data.Models
         public DateTime? EndDate { get; set; }
         public bool? Status { get; set; }
         public string Image { get; set; }
-        public double? HouseFee { get; set; }
 
         public virtual Account OwnerUsernameNavigation { get; set; }
         public virtual Room Room { get; set; }

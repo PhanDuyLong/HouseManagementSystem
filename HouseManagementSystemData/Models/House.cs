@@ -1,10 +1,9 @@
-﻿using HouseManagementSystem.Data.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 #nullable disable
 
-namespace HouseManagementSystem.Data.Models
+namespace HMS.Data.Models
 {
     public partial class House
     {
@@ -12,6 +11,7 @@ namespace HouseManagementSystem.Data.Models
         {
             HouseInfos = new HashSet<HouseInfo>();
             Rooms = new HashSet<Room>();
+            Services = new HashSet<Service>();
         }
 
         public string Id { get; set; }
@@ -22,5 +22,6 @@ namespace HouseManagementSystem.Data.Models
         public virtual Account OwnerUsernameNavigation { get; set; }
         public virtual ICollection<HouseInfo> HouseInfos { get; set; }
         public virtual ICollection<Room> Rooms { get; set; }
+        public virtual ICollection<Service> Services { get; set; }
     }
 }

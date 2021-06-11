@@ -1,19 +1,21 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
-using HouseManagementSystem.Data.Models;
-using HouseManagementSystem.Data.Repositories;
-using HouseManagementSystem.Data.Services.Base;
-using HouseManagementSystem.Data.ViewModels;
+using HMS.Data.Repositories;
+using HMS.Data.Services.Base;
+using HMS.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
+using HMS.Data.ViewModels.HouseViewModels;
+using HMS.Data.ViewModels;
+using HMS.Data.Constants;
 
-namespace HouseManagementSystem.Data.Services
+namespace HMS.Data.Services
 {
     public partial interface IHouseService : IBaseService<House>
     {
-        List<HouseViewModel> GetAllByOwnerUsername(string ownerUsername);
-        HouseViewModel GetByID(string id);
+        List<HouseHomeViewModel> GetByOwnerUsername(string ownerUsername);
+        HouseDetailViewModel GetByID(string id);
     }
     public partial class HouseService : BaseService<House>, IHouseService
     {
@@ -24,16 +26,15 @@ namespace HouseManagementSystem.Data.Services
             this._mapper = mapper;
         }
 
-        public List<HouseViewModel> GetAllByOwnerUsername(string ownerUsername)
+        public List<HouseHomeViewModel> GetByOwnerUsername(string ownerUsername)
         {
-            var houses = Get().Where(h => h.OwnerUsername == ownerUsername).Include(h => h.HouseInfos).ProjectTo<HouseViewModel>(_mapper.ConfigurationProvider).ToList();
+            var houses = Get().Where(h => h.OwnerUsername == ownerUsername && h.IsDeleted == HouseConstants.HOUSE_IS_NOT_DELETED).ProjectTo<HouseHomeViewModel>(_mapper.ConfigurationProvider).ToList();
             return houses;
         }
 
-        public HouseViewModel GetByID(string id)
+        public HouseDetailViewModel GetByID(string id)
         {
-            var house = Get().Where(h => h.Id == id).Include(h => h.HouseInfos).FirstOrDefault();
-            var houseViewModel = _mapper.Map<HouseViewModel>(house);
+            var houseViewModel = Get().Where(h => h.Id == id && h.IsDeleted == HouseConstants.HOUSE_IS_NOT_DELETED).ProjectTo<HouseDetailViewModel>(_mapper.ConfigurationProvider).FirstOrDefault();
             return houseViewModel;
         }
     }

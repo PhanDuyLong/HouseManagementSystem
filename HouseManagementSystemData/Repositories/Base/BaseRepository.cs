@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using t = System.Threading.Tasks;
 
-namespace HouseManagementSystem.Data.Repositories.Base
+namespace HMS.Data.Repositories.Base
 {
     public interface IBaseRepository<T> where T : class
     {

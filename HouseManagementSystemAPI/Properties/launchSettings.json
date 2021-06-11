@@ -16,7 +16,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "HouseManagementSystemAPI": {
+    "HMSAPI": {
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {

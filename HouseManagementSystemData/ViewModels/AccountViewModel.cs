@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace HouseManagementSystem.Data.ViewModels
+namespace HMS.Data.ViewModels
 {
     public class AccountViewModel
     {

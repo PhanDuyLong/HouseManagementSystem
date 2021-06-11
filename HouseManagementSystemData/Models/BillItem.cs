@@ -1,10 +1,9 @@
-﻿using HouseManagementSystem.Data.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 #nullable disable
 
-namespace HouseManagementSystem.Data.Models
+namespace HMS.Data.Models
 {
     public partial class BillItem
     {

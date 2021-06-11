@@ -1,11 +1,12 @@
 ﻿using AutoMapper;
-using HouseManagementSystem.Data.Models;
-using HouseManagementSystem.Data.Repositories;
-using HouseManagementSystem.Data.Requests;
-using HouseManagementSystem.Data.Responses;
-using HouseManagementSystem.Data.Services.Base;
-using HouseManagementSystem.Data.Utilities;
-using HouseManagementSystem.Data.ViewModels;
+using AutoMapper.QueryableExtensions;
+using HMS.Data.Models;
+using HMS.Data.Repositories;
+using HMS.Data.Requests;
+using HMS.Data.Responses;
+using HMS.Data.Services.Base;
+using HMS.Data.Utilities;
+using HMS.Data.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -16,7 +17,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 
-namespace HouseManagementSystem.Data.Services
+namespace HMS.Data.Services
 {
     public partial interface IAccountService : IBaseService<Account>
     {
@@ -37,7 +38,7 @@ namespace HouseManagementSystem.Data.Services
 
         public AuthenticateResponse Authenticate(AuthenticateRequest model)
         {
-            var account = Get().Where(a => a.Username == model.Username && a.Password == model.Password).FirstOrDefault();
+            var account = Get().Where(a => a.Username == model.Username && a.Password == model.Password && ).FirstOrDefault();
 
             // return null if user not found
             if (account == null) return null;
@@ -52,7 +53,7 @@ namespace HouseManagementSystem.Data.Services
 
         public IEnumerable<AccountViewModel> GetAll()
         {
-            return GetAll();
+            return Get().ProjectTo<AccountViewModel>(_mapper.ConfigurationProvider);
         }
 
         public AccountViewModel GetByUsername(string username)

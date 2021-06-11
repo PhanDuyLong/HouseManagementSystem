@@ -1,10 +1,9 @@
-﻿using HouseManagementSystem.Data.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 #nullable disable
 
-namespace HouseManagementSystem.Data.Models
+namespace HMS.Data.Models
 {
     public partial class Service
     {
@@ -19,7 +18,10 @@ namespace HouseManagementSystem.Data.Models
         public string CalculationUnit { get; set; }
         public bool? Status { get; set; }
         public int? ServiceTypeId { get; set; }
+        public string HouseId { get; set; }
+        public double? Price { get; set; }
 
+        public virtual House House { get; set; }
         public virtual ServiceType ServiceType { get; set; }
         public virtual ICollection<BillItem> BillItems { get; set; }
         public virtual ICollection<ServiceContract> ServiceContracts { get; set; }

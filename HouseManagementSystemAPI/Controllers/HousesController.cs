@@ -5,40 +5,47 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using HouseManagementSystem.Data.Models;
-using HouseManagementSystem.Data.Services;
-using HouseManagementSystem.Data.ViewModels;
+using HMS.Data.Models;
+using HMS.Data.Services;
+using HMS.Data.ViewModels;
+using HMS.Data.ViewModels.HouseViewModels;
 
 namespace HouseManagementSystemAPI.Controllers
 {
-    [Route("api")]
+    [Route("api/houses/")]
     [ApiController]
     public class HousesController : ControllerBase
     {
-        private readonly House_ManagementContext _context;
+        private readonly HMSDBContext _context;
         private IHouseService _houseService;
-        public HousesController(House_ManagementContext context, IHouseService houseService)
+        public HousesController(HMSDBContext context, IHouseService houseService)
         {
             _context = context;
             _houseService = houseService;
         }
-
+        /// <summary>
+        /// Get Houses
+        /// </summary>
+        /// <param name="ownerUsername"></param>
+        /// <returns></returns>
         // GET: api/houses/abc
-        [Route("houses/{ownerUsername}")]
         [HttpGet]
-        public List<HouseViewModel> GetHouses(String ownerUsername)
+        public List<HouseHomeViewModel> GetHouses(String username)
         {
-            return _houseService.GetAllByOwnerUsername(ownerUsername); 
+            return _houseService.GetByOwnerUsername(username);
         }
 
-        // GET: api/houses/5
-        [Route("house/{id}")]
-        [HttpGet]
-        public HouseViewModel GetHouse(string id)
+        /// <summary>
+        /// Get House by Id 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet("{id}")]
+        public HouseDetailViewModel GetHouse(string id)
         {
             return _houseService.GetByID(id);
         }
-
+/*
         // PUT: api/houses/5
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
@@ -119,6 +126,6 @@ namespace HouseManagementSystemAPI.Controllers
         private bool HouseExists(string id)
         {
             return _context.Houses.Any(e => e.Id == id);
-        }
+        }*/
     }
 }
