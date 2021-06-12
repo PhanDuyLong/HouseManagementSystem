@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace HMS.Data.ViewModels
 {
-    public class RoomViewModel
+    public class RoomBaseViewModel
     {
         public int Id { get; set; }
         public string Name { get; set; }

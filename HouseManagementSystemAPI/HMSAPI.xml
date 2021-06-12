@@ -6,7 +6,7 @@
     <members>
         <member name="M:HMSAPI.Controllers.AccountsController.Authenticate(HMS.Data.Requests.AuthenticateRequest)">
             <summary>
-            authenticate login
+            Authenticate login
             </summary>
             <param name="model"></param>
             <returns></returns>

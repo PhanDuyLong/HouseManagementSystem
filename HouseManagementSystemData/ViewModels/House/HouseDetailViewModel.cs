@@ -13,7 +13,7 @@ namespace HMS.Data.ViewModels
         public bool? Status { get; set; }
 
         public virtual HouseInfoViewModel HouseInfo { get; set; }
-        public virtual ICollection<RoomViewModel> Rooms { get; set; }
+        public virtual ICollection<RoomBaseViewModel> Rooms { get; set; }
         public virtual ICollection<ServiceViewModel> Services { get; set; }
     }
 }

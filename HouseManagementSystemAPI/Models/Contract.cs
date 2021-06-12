@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 #nullable disable
 
-namespace HMS.Data.Models
+namespace HMSAPI.Models
 {
     public partial class Contract
     {
@@ -23,9 +23,8 @@ namespace HMS.Data.Models
         public bool? Status { get; set; }
         public string Image { get; set; }
 
-        public virtual Account OwnertUsernameNavigation { get; set; }
-
         public virtual Room Room { get; set; }
+        public virtual Account TenantUsernameNavigation { get; set; }
         public virtual ICollection<Bill> Bills { get; set; }
         public virtual ICollection<ClockInContract> ClockInContracts { get; set; }
         public virtual ICollection<ServiceContract> ServiceContracts { get; set; }
