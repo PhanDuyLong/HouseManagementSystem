@@ -23,6 +23,9 @@ namespace HMS.Data.DependencyInjection
 
             services.AddScoped<IServiceService, ServiceService>();
             services.AddScoped<IServiceRepository, ServiceRepository>();
+
+            services.AddScoped<IPaymentService, PaymentService>();
+            services.AddScoped<IPaymentRepository, PaymentRepository>();
         }
     }
 }
