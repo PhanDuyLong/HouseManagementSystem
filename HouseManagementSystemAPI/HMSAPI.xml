@@ -17,11 +17,25 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:HMSAPI.Controllers.RoomsController.GetRooms(System.String)">
+            <summary>
+            Get Rooms by HouseId
+            </summary>
+            <param name="houseId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:HMSAPI.Controllers.RoomsController.GetRoom(System.Int32)">
+            <summary>
+            Get Room by Id 
+            </summary>
+            <param name="id"></param>
+            <returns></returns>
+        </member>
         <member name="M:HouseManagementSystemAPI.Controllers.HousesController.GetHouses(System.String)">
             <summary>
             Get Houses
             </summary>
-            <param name="ownerUsername"></param>
+            <param name="username"></param>
             <returns></returns>
         </member>
         <member name="M:HouseManagementSystemAPI.Controllers.HousesController.GetHouse(System.String)">

@@ -11,7 +11,7 @@ namespace HMS.Data.Attributes
     {
         public void OnAuthorization(AuthorizationFilterContext context)
         {
-            var accountViewModel = (AccountViewModel)context.HttpContext.Items["Account"];
+            var accountViewModel = (AccountBaseViewModel)context.HttpContext.Items["Account"];
             if (accountViewModel == null)
             {
                 // not logged in

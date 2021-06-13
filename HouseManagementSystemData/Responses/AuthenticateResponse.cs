@@ -14,7 +14,7 @@ namespace HMS.Data.Responses
         public string Role { get; set; }
         public string Token { get; set; }
 
-        public AuthenticateResponse(AccountViewModel accountViewModel, string token)
+        public AuthenticateResponse(AccountBaseViewModel accountViewModel, string token)
         {
 
             Name = accountViewModel.Name;

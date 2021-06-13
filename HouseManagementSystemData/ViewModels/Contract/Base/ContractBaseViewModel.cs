@@ -1,6 +1,6 @@
-﻿using System;
+﻿using HMS.Data.Models;
+using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace HMS.Data.ViewModels.Contract.Base
 {
@@ -14,6 +14,9 @@ namespace HMS.Data.ViewModels.Contract.Base
         public DateTime? EndDate { get; set; }
         public bool? Status { get; set; }
         public string Image { get; set; }
+
+        public virtual RoomBaseViewModel Room { get; set; }
+        public virtual AccountBaseViewModel TenantUsernameNavigation { get; set; }
 
 
     }

@@ -14,7 +14,7 @@ namespace HMS.Data.Services
 {
     public partial interface IHouseService : IBaseService<House>
     {
-        List<HouseHomeViewModel> GetByOwnerUsername(string ownerUsername);
+        List<HouseBaseViewModel> GetByOwnerUsername(string ownerUsername);
         HouseDetailViewModel GetByID(string id);
     }
     public partial class HouseService : BaseService<House>, IHouseService
@@ -26,16 +26,16 @@ namespace HMS.Data.Services
             this._mapper = mapper;
         }
 
-        public List<HouseHomeViewModel> GetByOwnerUsername(string ownerUsername)
+        public List<HouseBaseViewModel> GetByOwnerUsername(string ownerUsername)
         {
-            var houses = Get().Where(h => h.OwnerUsername == ownerUsername && h.IsDeleted == HouseConstants.HOUSE_IS_NOT_DELETED).ProjectTo<HouseHomeViewModel>(_mapper.ConfigurationProvider).ToList();
+            var houses = Get().Where(h => h.OwnerUsername == ownerUsername && h.IsDeleted == HouseConstants.HOUSE_IS_NOT_DELETED).ProjectTo<HouseBaseViewModel>(_mapper.ConfigurationProvider).ToList();
             return houses;
         }
 
         public HouseDetailViewModel GetByID(string id)
         {
-            var houseViewModel = Get().Where(h => h.Id == id && h.IsDeleted == HouseConstants.HOUSE_IS_NOT_DELETED).ProjectTo<HouseDetailViewModel>(_mapper.ConfigurationProvider).FirstOrDefault();
-            return houseViewModel;
+            var house = Get().Where(h => h.Id == id && h.IsDeleted == HouseConstants.HOUSE_IS_NOT_DELETED).ProjectTo<HouseDetailViewModel>(_mapper.ConfigurationProvider).FirstOrDefault();
+            return house;
         }
     }
 }

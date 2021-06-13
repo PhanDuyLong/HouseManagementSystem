@@ -22,8 +22,8 @@ namespace HMS.Data.Services
     public partial interface IAccountService : IBaseService<Account>
     {
         AuthenticateResponse Authenticate(AuthenticateRequest model);
-        IEnumerable<AccountViewModel> GetAll();
-        AccountViewModel GetByUsername(string username);
+        IEnumerable<AccountBaseViewModel> GetAll();
+        AccountBaseViewModel GetByUsername(string username);
     }
     public partial class AccountService : BaseService<Account>, IAccountService
     {
@@ -38,12 +38,12 @@ namespace HMS.Data.Services
 
         public AuthenticateResponse Authenticate(AuthenticateRequest model)
         {
-            var account = Get().Where(a => a.Username == model.Username && a.Password == model.Password && ).FirstOrDefault();
+            var account = Get().Where(a => a.Username == model.Username && a.Password == model.Password).FirstOrDefault();
 
             // return null if user not found
             if (account == null) return null;
 
-            var accountViewModel = _mapper.Map<AccountViewModel>(account);
+            var accountViewModel = _mapper.Map<AccountBaseViewModel>(account);
 
             // authentication successful so generate jwt token
             var token = generateJwtToken(accountViewModel);
@@ -51,21 +51,21 @@ namespace HMS.Data.Services
             return new AuthenticateResponse(accountViewModel, token);
         }
 
-        public IEnumerable<AccountViewModel> GetAll()
+        public IEnumerable<AccountBaseViewModel> GetAll()
         {
-            return Get().ProjectTo<AccountViewModel>(_mapper.ConfigurationProvider);
+            return Get().ProjectTo<AccountBaseViewModel>(_mapper.ConfigurationProvider);
         }
 
-        public AccountViewModel GetByUsername(string username)
+        public AccountBaseViewModel GetByUsername(string username)
         {
             var account = Get().Where(a => a.Username == username).FirstOrDefault();
 
-            var accountViewModel = _mapper.Map<AccountViewModel>(account);
+            var accountViewModel = _mapper.Map<AccountBaseViewModel>(account);
 
             return accountViewModel;
         }
 
-        private string generateJwtToken(AccountViewModel accountViewModel)
+        private string generateJwtToken(AccountBaseViewModel accountViewModel)
         {
             // generate token that is valid for 7 days
             var tokenHandler = new JwtSecurityTokenHandler();

@@ -33,7 +33,6 @@ namespace HMS.Data.Models
         public virtual DbSet<ServiceContract> ServiceContracts { get; set; }
         public virtual DbSet<ServiceType> ServiceTypes { get; set; }
 
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasAnnotation("Relational:Collation", "SQL_Latin1_General_CP1_CI_AS");
@@ -199,15 +198,15 @@ namespace HMS.Data.Models
                     .HasMaxLength(30)
                     .IsUnicode(false);
 
-                entity.HasOne(d => d.OwnertUsernameNavigation)
-                    .WithMany(p => p.Contracts)
-                    .HasForeignKey(d => d.OwnerUsername)
-                    .HasConstraintName("FK_Contract_Account");
-
                 entity.HasOne(d => d.Room)
                     .WithMany(p => p.Contracts)
                     .HasForeignKey(d => d.RoomId)
                     .HasConstraintName("FK_Contract_Room");
+
+                entity.HasOne(d => d.TenantUsernameNavigation)
+                    .WithMany(p => p.Contracts)
+                    .HasForeignKey(d => d.TenantUsername)
+                    .HasConstraintName("FK_Contract_Account1");
             });
 
             modelBuilder.Entity<House>(entity =>

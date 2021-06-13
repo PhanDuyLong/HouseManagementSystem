@@ -26,11 +26,11 @@ namespace HouseManagementSystemAPI.Controllers
         /// <summary>
         /// Get Houses
         /// </summary>
-        /// <param name="ownerUsername"></param>
+        /// <param name="username"></param>
         /// <returns></returns>
         // GET: api/houses/abc
         [HttpGet]
-        public List<HouseHomeViewModel> GetHouses(String username)
+        public List<HouseBaseViewModel> GetHouses(String username)
         {
             return _houseService.GetByOwnerUsername(username);
         }

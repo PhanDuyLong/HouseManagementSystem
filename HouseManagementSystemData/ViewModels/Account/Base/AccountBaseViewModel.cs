@@ -4,7 +4,7 @@ using System.Text;
 
 namespace HMS.Data.ViewModels
 {
-    public class AccountViewModel
+    public class AccountBaseViewModel
     {
         public string Name { get; set; }
         public string Username { get; set; }
