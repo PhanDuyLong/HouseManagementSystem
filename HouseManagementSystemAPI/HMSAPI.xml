@@ -17,6 +17,20 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:HMSAPI.Controllers.BillsController.GetBills(System.Int32)">
+            <summary>
+            Get Bills by contractId
+            </summary>
+            <param name="contractId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:HMSAPI.Controllers.BillsController.GetBill(System.String)">
+            <summary>
+            Get Bill by id
+            </summary>
+            <param name="id"></param>
+            <returns></returns>
+        </member>
         <member name="M:HMSAPI.Controllers.RoomsController.GetRooms(System.String)">
             <summary>
             Get Rooms by HouseId
