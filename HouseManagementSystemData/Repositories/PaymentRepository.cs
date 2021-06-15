@@ -1,9 +1,7 @@
 ﻿using HMS.Data.Models;
 using HMS.Data.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
+
 
 namespace HMS.Data.Repositories
 {
