@@ -11,6 +11,7 @@ namespace HMS.Data.Repositories
     {
         public HouseInfoRepository(DbContext dbContext) : base(dbContext)
         {
+
         }
     }
 }

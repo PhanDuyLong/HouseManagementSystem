@@ -45,7 +45,7 @@ namespace HouseManagementSystemAPI.Controllers
         {
             return _houseService.GetByID(id);
         }
-/*
+
         // PUT: api/houses/5
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
@@ -126,6 +126,6 @@ namespace HouseManagementSystemAPI.Controllers
         private bool HouseExists(string id)
         {
             return _context.Houses.Any(e => e.Id == id);
-        }*/
+        }
     }
 }

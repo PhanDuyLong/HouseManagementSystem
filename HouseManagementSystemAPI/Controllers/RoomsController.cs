@@ -26,7 +26,7 @@ namespace HMSAPI.Controllers
         /// </summary>
         /// <param name="houseId"></param>
         /// <returns></returns>
-        [HttpGet("{houseId}")]
+        [HttpGet]
         public List<RoomShowViewModel> GetRooms(String houseId)
         {
             return _roomService.GetByHouseID(houseId);

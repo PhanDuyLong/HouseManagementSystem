@@ -26,6 +26,9 @@ namespace HMS.Data.DependencyInjection
 
             services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IPaymentRepository, PaymentRepository>();
+
+            services.AddScoped<IRoomRepository, RoomRepository>();
+            services.AddScoped<IRoomService, RoomService>();
         }
     }
 }

@@ -21,6 +21,8 @@ namespace HMS.Data.AutoMapperProfile
             CreateMap<House, HouseDetailViewModel>()
                 .ForMember(dest => dest.HouseInfo, opt => opt.MapFrom(src => src.HouseInfos.OfType<HouseInfo>().FirstOrDefault()));
 
+            CreateMap<Room, RoomBaseViewModel>();
+
             CreateMap<Room, RoomShowViewModel>()
                 .ForMember(dest => dest.Contract, opt => opt.MapFrom(src => src.Contracts.OfType<Contract>().FirstOrDefault()));
 

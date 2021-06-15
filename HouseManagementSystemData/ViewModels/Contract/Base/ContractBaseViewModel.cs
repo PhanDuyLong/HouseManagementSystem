@@ -15,7 +15,6 @@ namespace HMS.Data.ViewModels.Contract.Base
         public bool? Status { get; set; }
         public string Image { get; set; }
 
-        public virtual RoomBaseViewModel Room { get; set; }
         public virtual AccountBaseViewModel TenantUsernameNavigation { get; set; }
 
 
