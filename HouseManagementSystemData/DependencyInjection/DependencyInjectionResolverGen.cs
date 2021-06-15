@@ -29,6 +29,33 @@ namespace HMS.Data.DependencyInjection
 
             services.AddScoped<IRoomRepository, RoomRepository>();
             services.AddScoped<IRoomService, RoomService>();
+         
+            services.AddScoped<IBillRepository, BillRepository>();
+            services.AddScoped<IBillService, BillService>();
+
+            services.AddScoped<IBillItemRepository, BillItemRepository>();
+            services.AddScoped<IBillItemService, BillItemService>();
+
+            services.AddScoped<IClockRepository, ClockRepository>();
+            services.AddScoped<IClockService, ClockService>();
+
+            services.AddScoped<IClockCategoryRepository, ClockCategoryRepository>();
+            services.AddScoped<IClockCategoryService, ClockCategoryService>();
+
+            services.AddScoped<IClockInContractRepository, ClockInContractRepository>();
+            services.AddScoped<IClockInContractService, ClockInContractService>();
+
+            services.AddScoped<IClockValueRepository, ClockValueRepository>();
+            services.AddScoped<IClockValueService, ClockValueService>();
+
+            services.AddScoped<IContractRepository, ContractRepository>();
+            services.AddScoped<IContractService, ContractService>();
+
+            services.AddScoped<IServiceContractRepository, ServiceContractRepository>();
+            services.AddScoped<IServiceContractService, ServiceContractService>();
+
+            services.AddScoped<IServiceContractRepository, ServiceContractRepository>();
+            services.AddScoped<IServiceContractService, ServiceContractService>();
         }
     }
 }
