@@ -22,7 +22,6 @@ namespace HMS.Data.Models
         public virtual DbSet<BillItem> BillItems { get; set; }
         public virtual DbSet<Clock> Clocks { get; set; }
         public virtual DbSet<ClockCategory> ClockCategories { get; set; }
-        public virtual DbSet<ClockInContract> ClockInContracts { get; set; }
         public virtual DbSet<ClockValue> ClockValues { get; set; }
         public virtual DbSet<Contract> Contracts { get; set; }
         public virtual DbSet<House> Houses { get; set; }
@@ -32,6 +31,15 @@ namespace HMS.Data.Models
         public virtual DbSet<Service> Services { get; set; }
         public virtual DbSet<ServiceContract> ServiceContracts { get; set; }
         public virtual DbSet<ServiceType> ServiceTypes { get; set; }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+                optionsBuilder.UseSqlServer("Server=localhost,1433;Initial Catalog=HMSDB;User ID=sa;Password=123456;Trusted_Connection=True;");
+            }
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -97,19 +105,15 @@ namespace HMS.Data.Models
                     .HasMaxLength(30)
                     .IsUnicode(false);
 
-                entity.Property(e => e.ServiceId)
-                    .HasMaxLength(30)
-                    .IsUnicode(false);
-
                 entity.HasOne(d => d.Bill)
                     .WithMany(p => p.BillItems)
                     .HasForeignKey(d => d.BillId)
                     .HasConstraintName("FK_Bill_Item_Bill");
 
-                entity.HasOne(d => d.Service)
+                entity.HasOne(d => d.ServiceContract)
                     .WithMany(p => p.BillItems)
-                    .HasForeignKey(d => d.ServiceId)
-                    .HasConstraintName("FK_Bill_Item_Service");
+                    .HasForeignKey(d => d.ServiceContractId)
+                    .HasConstraintName("FK_BillItem_ServiceContract");
             });
 
             modelBuilder.Entity<Clock>(entity =>
@@ -139,25 +143,6 @@ namespace HMS.Data.Models
                     .IsUnicode(false);
 
                 entity.Property(e => e.Name).HasMaxLength(50);
-            });
-
-            modelBuilder.Entity<ClockInContract>(entity =>
-            {
-                entity.ToTable("ClockInContract");
-
-                entity.Property(e => e.ClockId)
-                    .HasMaxLength(30)
-                    .IsUnicode(false);
-
-                entity.HasOne(d => d.Clock)
-                    .WithMany(p => p.ClockInContracts)
-                    .HasForeignKey(d => d.ClockId)
-                    .HasConstraintName("FK_Contract_Of_Clock_Clock");
-
-                entity.HasOne(d => d.Contract)
-                    .WithMany(p => p.ClockInContracts)
-                    .HasForeignKey(d => d.ContractId)
-                    .HasConstraintName("FK_Contract_Of_Clock_Contract");
             });
 
             modelBuilder.Entity<ClockValue>(entity =>
@@ -316,9 +301,18 @@ namespace HMS.Data.Models
             {
                 entity.ToTable("ServiceContract");
 
+                entity.Property(e => e.ClockId)
+                    .HasMaxLength(30)
+                    .IsUnicode(false);
+
                 entity.Property(e => e.ServiceId)
                     .HasMaxLength(30)
                     .IsUnicode(false);
+
+                entity.HasOne(d => d.Clock)
+                    .WithMany(p => p.ServiceContracts)
+                    .HasForeignKey(d => d.ClockId)
+                    .HasConstraintName("FK_ServiceContract_Clock");
 
                 entity.HasOne(d => d.Contract)
                     .WithMany(p => p.ServiceContracts)

@@ -10,7 +10,6 @@ namespace HMS.Data.Models
         public Contract()
         {
             Bills = new HashSet<Bill>();
-            ClockInContracts = new HashSet<ClockInContract>();
             ServiceContracts = new HashSet<ServiceContract>();
         }
 
@@ -26,7 +25,6 @@ namespace HMS.Data.Models
         public virtual Room Room { get; set; }
         public virtual Account TenantUsernameNavigation { get; set; }
         public virtual ICollection<Bill> Bills { get; set; }
-        public virtual ICollection<ClockInContract> ClockInContracts { get; set; }
         public virtual ICollection<ServiceContract> ServiceContracts { get; set; }
     }
 }

@@ -9,7 +9,6 @@ namespace HMS.Data.Models
     {
         public Service()
         {
-            BillItems = new HashSet<BillItem>();
             ServiceContracts = new HashSet<ServiceContract>();
         }
 
@@ -23,7 +22,6 @@ namespace HMS.Data.Models
 
         public virtual House House { get; set; }
         public virtual ServiceType ServiceType { get; set; }
-        public virtual ICollection<BillItem> BillItems { get; set; }
         public virtual ICollection<ServiceContract> ServiceContracts { get; set; }
     }
 }

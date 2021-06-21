@@ -84,9 +84,9 @@ namespace HouseManagementSystemAPI.Controllers
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [Route("house")]
         [HttpPost]
-        public async Task<ActionResult<House>> PostHouse(House house)
+        public async Task<ActionResult<House>> PostHouse(ServiceViewModel house)
         {
-            _context.Houses.Add(house);
+
             try
             {
                 await _context.SaveChangesAsync();

@@ -9,8 +9,8 @@ namespace HMS.Data.Models
     {
         public Clock()
         {
-            ClockInContracts = new HashSet<ClockInContract>();
             ClockValues = new HashSet<ClockValue>();
+            ServiceContracts = new HashSet<ServiceContract>();
         }
 
         public string Id { get; set; }
@@ -19,7 +19,7 @@ namespace HMS.Data.Models
         public bool? Status { get; set; }
 
         public virtual ClockCategory ClockCategory { get; set; }
-        public virtual ICollection<ClockInContract> ClockInContracts { get; set; }
         public virtual ICollection<ClockValue> ClockValues { get; set; }
+        public virtual ICollection<ServiceContract> ServiceContracts { get; set; }
     }
 }
