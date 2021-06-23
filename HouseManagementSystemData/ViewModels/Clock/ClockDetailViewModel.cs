@@ -13,5 +13,8 @@ namespace HMS.Data.ViewModels.Clock
 
         public string ClockCategory { get; set; }
         public virtual ICollection<ClockValueDetailViewModel> ClockValues { get; set; }
+
+
+
     }
 }

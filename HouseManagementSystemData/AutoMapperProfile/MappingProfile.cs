@@ -2,7 +2,6 @@
 using HMS.Data.Models;
 using HMS.Data.ViewModels;
 using HMS.Data.ViewModels.Clock;
-using HMS.Data.ViewModels.ClockInContract;
 using HMS.Data.ViewModels.Contract.Base;
 using HMS.Data.ViewModels.HouseViewModels;
 using HMS.Data.ViewModels.RoomViewModels;
@@ -41,8 +40,6 @@ namespace HMS.Data.AutoMapperProfile
                 .ForMember(dest => dest.ClockCategory, opt => opt.MapFrom(src => src.ClockCategory.Name));
 
             CreateMap<Contract, ContractDetailViewModel>();
-
-            CreateMap<ClockInContract, ClockInContractDetailViewModel>();
 
             CreateMap<ServiceContract, ServiceContractDetailViewModel>();
 

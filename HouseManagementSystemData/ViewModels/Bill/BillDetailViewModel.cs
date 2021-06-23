@@ -17,5 +17,7 @@ namespace HMS.Data.ViewModels.Bill
         public virtual ContractBaseViewModel Contract { get; set; }
         public virtual ICollection<BillItemDetailViewModel> BillItems { get; set; }
         public virtual ICollection<PaymentDetailViewModel> Payments { get; set; }
+
+
     }
 }
