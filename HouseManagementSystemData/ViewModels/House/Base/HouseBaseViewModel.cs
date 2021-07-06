@@ -11,7 +11,7 @@ namespace HMS.Data.ViewModels.HouseViewModels
         public bool? IsDeleted { get; set; }
         public bool? Status { get; set; }
 
-        public virtual AccountBaseViewModel OwnerUsernameNavigation { get; set; }
+        public virtual AccountDetailViewModel OwnerUsernameNavigation { get; set; }
         public virtual HouseInfoViewModel HouseInfo { get; set; }
     }
 }

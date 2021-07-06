@@ -85,6 +85,7 @@ namespace HMS.Data.Services.Base
         public void Update(T entity)
         {
             _repository.Update(entity);
+            _dbContext.Entry(entity).State = EntityState.Modified;
             Save();
         }
 

@@ -6,7 +6,7 @@ namespace HMS.Data.ViewModels.Contract.Base
 {
     public class ContractBaseViewModel
     {
-        public int Id { get; set; }
+        public int? Id { get; set; }
         public string OwnerUsername { get; set; }
         public string TenantUsername { get; set; }
         public int? RoomId { get; set; }
@@ -15,7 +15,7 @@ namespace HMS.Data.ViewModels.Contract.Base
         public bool? Status { get; set; }
         public string Image { get; set; }
 
-        public virtual AccountBaseViewModel TenantUsernameNavigation { get; set; }
+        public virtual AccountDetailViewModel TenantUsernameNavigation { get; set; }
 
 
     }

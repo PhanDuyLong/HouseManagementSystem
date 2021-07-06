@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using HMS.Data.Models;
 using HMS.Data.ViewModels;
+using HMS.Data.ViewModels.Account;
+using HMS.Data.ViewModels.Bill;
 using HMS.Data.ViewModels.Clock;
 using HMS.Data.ViewModels.Contract.Base;
 using HMS.Data.ViewModels.HouseViewModels;
@@ -13,15 +15,23 @@ namespace HMS.Data.AutoMapperProfile
     public class MappingProfile : Profile {
         public MappingProfile()
         {
-            CreateMap<Account, AccountBaseViewModel>();
+            CreateMap<Account, AccountDetailViewModel>();
+
+            CreateMap<CreateAccountViewModel, Account>()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => true));
+
+            CreateMap<Account, AccountTenantViewModel>();
 
             CreateMap<HouseInfo, HouseInfoViewModel>();
+            CreateMap<UpdateHouseInfoViewModel, HouseInfo>();
 
             CreateMap<House, HouseBaseViewModel>()
                 .ForMember(dest => dest.HouseInfo, opt => opt.MapFrom(src => src.HouseInfos.OfType<HouseInfo>().FirstOrDefault()));
 
             CreateMap<House, HouseDetailViewModel>()
                 .ForMember(dest => dest.HouseInfo, opt => opt.MapFrom(src => src.HouseInfos.OfType<HouseInfo>().FirstOrDefault()));
+
+            CreateMap<CreateHouseViewModel, House>();
 
             CreateMap<Room, RoomBaseViewModel>();
 
@@ -43,6 +53,17 @@ namespace HMS.Data.AutoMapperProfile
 
             CreateMap<ServiceContract, ServiceContractDetailViewModel>();
 
+            CreateMap<ClockValue, ClockValueDetailViewModel>();
+
+            CreateMap<Bill, BillDetailViewModel>();
+
+            CreateMap<BillItem, BillItemDetailViewModel>();
+
+            CreateMap<Payment, PaymentDetailViewModel>();
+
+            CreateMap<CreateBillViewModel, Bill>();
+
+            CreateMap<UpdateBillViewModel, Bill>();
         }
     }
 }

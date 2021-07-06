@@ -32,15 +32,6 @@ namespace HMS.Data.Models
         public virtual DbSet<ServiceContract> ServiceContracts { get; set; }
         public virtual DbSet<ServiceType> ServiceTypes { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Server=localhost,1433;Initial Catalog=HMSDB;User ID=sa;Password=123456;Trusted_Connection=True;");
-            }
-        }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasAnnotation("Relational:Collation", "SQL_Latin1_General_CP1_CI_AS");
@@ -70,22 +61,18 @@ namespace HMS.Data.Models
                     .HasMaxLength(30)
                     .IsUnicode(false);
 
-                entity.Property(e => e.Role)
-                    .HasMaxLength(10)
-                    .IsUnicode(false);
+                entity.Property(e => e.Role).HasMaxLength(20);
             });
 
             modelBuilder.Entity<Bill>(entity =>
             {
                 entity.ToTable("Bill");
 
-                entity.Property(e => e.Id)
-                    .HasMaxLength(30)
-                    .IsUnicode(false);
-
                 entity.Property(e => e.EndDate).HasColumnType("date");
 
                 entity.Property(e => e.IssueDate).HasColumnType("date");
+
+                entity.Property(e => e.Note).HasMaxLength(150);
 
                 entity.Property(e => e.StartDate).HasColumnType("date");
 
@@ -98,12 +85,6 @@ namespace HMS.Data.Models
             modelBuilder.Entity<BillItem>(entity =>
             {
                 entity.ToTable("BillItem");
-
-                entity.Property(e => e.Id).ValueGeneratedNever();
-
-                entity.Property(e => e.BillId)
-                    .HasMaxLength(30)
-                    .IsUnicode(false);
 
                 entity.HasOne(d => d.Bill)
                     .WithMany(p => p.BillItems)
@@ -132,6 +113,11 @@ namespace HMS.Data.Models
                     .WithMany(p => p.Clocks)
                     .HasForeignKey(d => d.ClockCategoryId)
                     .HasConstraintName("FK_Clock_Clock_Category");
+
+                entity.HasOne(d => d.Room)
+                    .WithMany(p => p.Clocks)
+                    .HasForeignKey(d => d.RoomId)
+                    .HasConstraintName("FK_Clock_Room");
             });
 
             modelBuilder.Entity<ClockCategory>(entity =>
@@ -168,10 +154,6 @@ namespace HMS.Data.Models
                 entity.ToTable("Contract");
 
                 entity.Property(e => e.EndDate).HasColumnType("date");
-
-                entity.Property(e => e.Image)
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
 
                 entity.Property(e => e.OwnerUsername)
                     .HasMaxLength(30)
@@ -224,6 +206,8 @@ namespace HMS.Data.Models
                     .HasMaxLength(30)
                     .IsUnicode(false);
 
+                entity.Property(e => e.Image).IsUnicode(false);
+
                 entity.Property(e => e.Name).HasMaxLength(50);
 
                 entity.HasOne(d => d.House)
@@ -236,13 +220,9 @@ namespace HMS.Data.Models
             {
                 entity.ToTable("Payment");
 
-                entity.Property(e => e.BillId)
-                    .HasMaxLength(30)
-                    .IsUnicode(false);
-
                 entity.Property(e => e.Date).HasColumnType("date");
 
-                entity.Property(e => e.Name).HasMaxLength(50);
+                entity.Property(e => e.Note).HasMaxLength(50);
 
                 entity.HasOne(d => d.Bill)
                     .WithMany(p => p.Payments)
@@ -272,13 +252,7 @@ namespace HMS.Data.Models
             {
                 entity.ToTable("Service");
 
-                entity.Property(e => e.Id)
-                    .HasMaxLength(30)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.CalculationUnit)
-                    .HasMaxLength(20)
-                    .IsUnicode(false);
+                entity.Property(e => e.CalculationUnit).HasMaxLength(50);
 
                 entity.Property(e => e.HouseId)
                     .HasMaxLength(30)
@@ -302,10 +276,6 @@ namespace HMS.Data.Models
                 entity.ToTable("ServiceContract");
 
                 entity.Property(e => e.ClockId)
-                    .HasMaxLength(30)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.ServiceId)
                     .HasMaxLength(30)
                     .IsUnicode(false);
 

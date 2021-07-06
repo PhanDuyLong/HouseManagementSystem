@@ -19,6 +19,7 @@ namespace HMS.Data.Models
         public bool? Status { get; set; }
 
         public virtual ClockCategory ClockCategory { get; set; }
+        public virtual Room Room { get; set; }
         public virtual ICollection<ClockValue> ClockValues { get; set; }
         public virtual ICollection<ServiceContract> ServiceContracts { get; set; }
     }

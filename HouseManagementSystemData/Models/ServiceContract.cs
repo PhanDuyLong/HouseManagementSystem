@@ -14,7 +14,7 @@ namespace HMS.Data.Models
 
         public int Id { get; set; }
         public int? ContractId { get; set; }
-        public string ServiceId { get; set; }
+        public int? ServiceId { get; set; }
         public double? UnitPrice { get; set; }
         public bool? Status { get; set; }
         public string ClockId { get; set; }

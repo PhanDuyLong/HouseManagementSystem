@@ -13,12 +13,15 @@ namespace HMS.Data.Models
             Payments = new HashSet<Payment>();
         }
 
-        public string Id { get; set; }
+        public int Id { get; set; }
         public int? ContractId { get; set; }
         public DateTime? IssueDate { get; set; }
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public bool? Status { get; set; }
+        public string Note { get; set; }
+        public bool? IsDeleted { get; set; }
+        public bool? IsSent { get; set; }
 
         public virtual Contract Contract { get; set; }
         public virtual ICollection<BillItem> BillItems { get; set; }

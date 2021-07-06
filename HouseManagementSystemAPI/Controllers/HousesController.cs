@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using HMS.Data.Models;
+﻿using HMS.Data.Models;
 using HMS.Data.Services;
 using HMS.Data.ViewModels;
 using HMS.Data.ViewModels.HouseViewModels;
+using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace HouseManagementSystemAPI.Controllers
 {
@@ -23,16 +20,24 @@ namespace HouseManagementSystemAPI.Controllers
             _context = context;
             _houseService = houseService;
         }
+
         /// <summary>
-        /// Get Houses
+        /// Get Houses by ownerUsername
         /// </summary>
         /// <param name="username"></param>
         /// <returns></returns>
-        // GET: api/houses/abc
         [HttpGet]
-        public List<HouseBaseViewModel> GetHouses(String username)
+        [ProducesResponseType(typeof(List<HouseDetailViewModel>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
+        public IActionResult GetHouses(string username)
         {
-            return _houseService.GetByOwnerUsername(username);
+            var houses = _houseService.GetByOwnerUsername(username);
+            if(houses == null)
+            {
+                return NotFound("House(s) is/are not found");
+            }
+            return Ok(houses);
         }
 
         /// <summary>
@@ -41,91 +46,53 @@ namespace HouseManagementSystemAPI.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("{id}")]
-        public HouseDetailViewModel GetHouse(string id)
+        [ProducesResponseType(typeof(HouseDetailViewModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
+        public IActionResult GetHouse(string id)
         {
-            return _houseService.GetByID(id);
-        }
-
-        // PUT: api/houses/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for
-        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
-        [Route("house/{id}")]
-        [HttpPut]
-        public async Task<IActionResult> PutHouse(string id, House house)
-        {
-            if (id != house.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(house).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!HouseExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/Houses
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for
-        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
-        [Route("house")]
-        [HttpPost]
-        public async Task<ActionResult<House>> PostHouse(ServiceViewModel house)
-        {
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                if (HouseExists(house.Id))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return CreatedAtAction("GetHouse", new { id = house.Id }, house);
-        }
-
-        // DELETE: api/Houses/5
-        [Route("house/{id}")]
-        [HttpDelete]
-        public async Task<ActionResult<House>> DeleteHouse(string id)
-        {
-            var house = await _context.Houses.FindAsync(id);
+            var house = _houseService.GetByID(id);
             if (house == null)
             {
-                return NotFound();
+                return NotFound("House is not found");
             }
-
-            _context.Houses.Remove(house);
-            await _context.SaveChangesAsync();
-
-            return house;
+            return Ok(house);
         }
 
-        private bool HouseExists(string id)
+        /// <summary>
+        /// Create House
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [ProducesResponseType(typeof(HouseDetailViewModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> Create(CreateHouseViewModel model)
         {
-            return _context.Houses.Any(e => e.Id == id);
+            return Ok(await _houseService.CreateHouse(model));
+        }
+
+
+
+        /// <summary>
+        /// Delete House
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpDelete]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
+        public async Task<ActionResult> Delete(int id)
+        {
+            var house = await _houseService.GetAsyn(id);
+            if (house == null)
+            {
+                return NotFound("Room is not found");
+            }
+
+            return Ok(_houseService.DeleteHouse(house));
         }
     }
 }

@@ -19,6 +19,7 @@ namespace HMS.Data.Models
         public string Phone { get; set; }
         public string Email { get; set; }
         public string Role { get; set; }
+        public bool? Status { get; set; }
 
         public virtual ICollection<Contract> Contracts { get; set; }
         public virtual ICollection<House> Houses { get; set; }

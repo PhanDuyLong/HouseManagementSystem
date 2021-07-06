@@ -1,21 +1,19 @@
 ﻿using HMS.Data.ViewModels;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System;
-using System.Web.Mvc;
 
 namespace HMS.Data.Attributes
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-    public class AuthorizeAttribute : Attribute, Microsoft.AspNetCore.Mvc.Filters.IAuthorizationFilter
+    public class AuthorizeAttribute : Attribute, IAuthorizationFilter
     {
         public void OnAuthorization(AuthorizationFilterContext context)
         {
-            var accountViewModel = (AccountBaseViewModel)context.HttpContext.Items["Account"];
+            var accountViewModel = (CreateAccountViewModel)context.HttpContext.Items["Account"];
             if (accountViewModel == null)
             {
                 // not logged in
-                /*context.Result = new JsonResult(new { message = "Unauthorized" }) { StatusCode = StatusCodes.Status401Unauthorized };*/
+                //context.Result = new JsonResult(new { message = "Unauthorized" }) { StatusCode = StatusCodes.Status401Unauthorized };
             }
         }
     }

@@ -20,7 +20,6 @@ namespace HMS.Data.Models
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public bool? Status { get; set; }
-        public string Image { get; set; }
 
         public virtual Room Room { get; set; }
         public virtual Account TenantUsernameNavigation { get; set; }

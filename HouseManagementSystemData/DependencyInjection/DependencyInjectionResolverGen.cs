@@ -42,9 +42,6 @@ namespace HMS.Data.DependencyInjection
             services.AddScoped<IClockCategoryRepository, ClockCategoryRepository>();
             services.AddScoped<IClockCategoryService, ClockCategoryService>();
 
-            services.AddScoped<IClockInContractRepository, ClockInContractRepository>();
-            services.AddScoped<IClockInContractService, ClockInContractService>();
-
             services.AddScoped<IClockValueRepository, ClockValueRepository>();
             services.AddScoped<IClockValueService, ClockValueService>();
 

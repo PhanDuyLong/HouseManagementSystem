@@ -10,9 +10,8 @@ namespace HMS.Data.Models
         public int Id { get; set; }
         public string Name { get; set; }
         public string Address { get; set; }
-        public bool? Status { get; set; }
         public string HouseId { get; set; }
-        public int? NumberOfRoom { get; set; }
+        public string Image { get; set; }
 
         public virtual House House { get; set; }
     }

@@ -9,6 +9,7 @@ namespace HMS.Data.Models
     {
         public Room()
         {
+            Clocks = new HashSet<Clock>();
             Contracts = new HashSet<Contract>();
         }
 
@@ -19,6 +20,7 @@ namespace HMS.Data.Models
         public bool? IsDeleted { get; set; }
 
         public virtual House House { get; set; }
+        public virtual ICollection<Clock> Clocks { get; set; }
         public virtual ICollection<Contract> Contracts { get; set; }
     }
 }

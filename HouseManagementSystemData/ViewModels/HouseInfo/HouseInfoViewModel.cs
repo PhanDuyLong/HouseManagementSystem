@@ -11,6 +11,5 @@ namespace HMS.Data.ViewModels
         public string Address { get; set; }
         public bool? Status { get; set; }
         public string HouseId { get; set; }
-        public int? NumberOfRoom { get; set; }
     }
 }
