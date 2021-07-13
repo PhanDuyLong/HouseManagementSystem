@@ -10,12 +10,19 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HMSAPI.Controllers
 {
-    [Route("api/[controller]")]
+    /// <summary>
+    /// ServiceContractsController
+    /// </summary>
+    [Route("api/serviceContracts")]
     [ApiController]
     public class ServiceContractsController : ControllerBase
     {
         private IServiceContractService _serviceContractService;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="serviceContractService"></param>
         public ServiceContractsController(IServiceContractService serviceContractService)
         {
             _serviceContractService = serviceContractService;

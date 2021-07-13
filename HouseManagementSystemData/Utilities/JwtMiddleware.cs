@@ -48,10 +48,10 @@ namespace HMS.Data.Utilities
                 }, out SecurityToken validatedToken);
 
                 var jwtToken = (JwtSecurityToken)validatedToken;
-                var username = jwtToken.Claims.First(x => x.Type == "username").Value.ToString();
+                var userId = jwtToken.Claims.First(x => x.Type == "userId").Value.ToString();
 
                 // attach user to context on successful jwt validation
-                context.Items["Account"] = accountService.GetByUsername(username);
+                context.Items["Account"] = accountService.GetByUserId(userId);
             }
             catch
             {

@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HMS.Data", "HouseManagement
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HMSAPI", "HouseManagementSystemAPI\HMSAPI.csproj", "{624962A6-C049-4D1C-A598-D6476E561046}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HMS.Authen", "HMS.Authen\HMS.Authen.csproj", "{D7AC8950-CA89-474B-BF20-E236F178F89C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{624962A6-C049-4D1C-A598-D6476E561046}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{624962A6-C049-4D1C-A598-D6476E561046}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{624962A6-C049-4D1C-A598-D6476E561046}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7AC8950-CA89-474B-BF20-E236F178F89C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7AC8950-CA89-474B-BF20-E236F178F89C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7AC8950-CA89-474B-BF20-E236F178F89C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7AC8950-CA89-474B-BF20-E236F178F89C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

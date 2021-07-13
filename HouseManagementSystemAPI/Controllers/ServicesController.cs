@@ -7,12 +7,19 @@ using System.Threading.Tasks;
 
 namespace HMSAPI.Controllers
 {
+    /// <summary>
+    /// ServicesController
+    /// </summary>
     [Route("api/services")]
     [ApiController]
     public class ServicesController : ControllerBase
     {
         private IServiceService _serviceService;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="serviceService"></param>
         public ServicesController(IServiceService serviceService)
         {
             _serviceService = serviceService;
@@ -46,7 +53,7 @@ namespace HMSAPI.Controllers
         [ProducesResponseType(typeof(HouseDetailViewModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
-        public IActionResult GetHouse(string id)
+        public IActionResult GetHouse(int id)
         {
             var service = _serviceService.GetByID(id);
             if (service == null)

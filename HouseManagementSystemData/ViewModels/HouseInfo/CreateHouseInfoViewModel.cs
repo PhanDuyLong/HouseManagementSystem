@@ -8,5 +8,6 @@ namespace HMS.Data.ViewModels
     {
         public string Name { get; set; }
         public string Address { get; set; }
+        public string Image { get; set; }
     }
 }

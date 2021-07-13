@@ -11,6 +11,6 @@ namespace HMS.Data.ViewModels
         public string CalculationUnit { get; set; }
         public double? Price { get; set; }
 
-        public string ServiceType { get; set; }
+        public string ServiceTypeName { get; set; }
     }
 }

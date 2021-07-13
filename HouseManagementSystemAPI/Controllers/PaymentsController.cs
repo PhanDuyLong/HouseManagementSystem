@@ -6,15 +6,25 @@ using System.Threading.Tasks;
 
 namespace HMSAPI.Controllers
 {
+    /// <summary>
+    /// PaymentsController
+    /// </summary>
     [Route("api/payments")]
     [ApiController]
     public class PaymentsController : ControllerBase
     {
         private IPaymentService _paymentService;
+        private IBillService _billService;
 
-        public PaymentsController(IPaymentService paymentService)
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="paymentService"></param>
+        /// <param name="billService"></param>
+        public PaymentsController(IPaymentService paymentService, IBillService billService)
         {
             _paymentService = paymentService;
+            _billService = billService;
         }
 
         /// <summary>
@@ -28,17 +38,12 @@ namespace HMSAPI.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public async Task<ActionResult> Payment(BillPaymentViewModel model)
         {
-            var bill = await _paymentService.GetAsyn(model.BillId);
+            var bill = await _billService.GetAsyn(model.BillId);
             if (bill == null)
                 return NotFound("Bill is not found");
             return Ok(await _paymentService.Payment(model));
         }
 
-        /// <summary>
-        /// Approve/Deny payment
-        /// </summary>
-        /// <param name="model"></param>
-        /// <returns></returns>
         /*[HttpPut]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]

@@ -8,30 +8,36 @@ using System.Threading.Tasks;
 
 namespace HMSAPI.Controllers
 {
+    /// <summary>
+    /// ContractsController
+    /// </summary>
     [Route("api/contracts")]
     [ApiController]
     public class ContractsController : ControllerBase
     {
         private IContractService _contractService;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="contractService"></param>
         public ContractsController(IContractService contractService)
         {
             _contractService = contractService;
         }
 
         /// <summary>
-        /// Get Contracts by Username
+        /// Get Contracts by UserId
         /// </summary>
-        /// <param name="username"></param>
         /// <returns></returns>
         [HttpGet]
         [ProducesResponseType(typeof(List<ContractBaseViewModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
-        public IActionResult GetContracts(string username)
+        public IActionResult GetContracts()
         {
-            var contracts = _contractService.GetByUsername(username);
-
+            var userId = User.Identity.Name;
+            var contracts = _contractService.GetByUserId(userId);
             if (contracts == null)
                 return NotFound("Contract(s) is/are not found");
 

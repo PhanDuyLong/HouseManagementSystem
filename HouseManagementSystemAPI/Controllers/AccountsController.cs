@@ -1,8 +1,10 @@
-﻿using HMS.Data.Requests;
+﻿using HMS.Data.Constants;
+using HMS.Data.Requests;
 using HMS.Data.Responses;
 using HMS.Data.Services;
 using HMS.Data.ViewModels;
 using HMS.Data.ViewModels.Account;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Net;
@@ -10,34 +12,115 @@ using System.Threading.Tasks;
 
 namespace HMSAPI.Controllers
 {
+    /// <summary>
+    /// AccountsController
+    /// </summary>
     [Route("api/accounts")]
     [ApiController]
     public class AccountsController : ControllerBase
     {
         private IAccountService _accountService;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="accountService"></param>
         public AccountsController(IAccountService accountService)
         {
             _accountService = accountService;
         }
+
         /// <summary>
-        /// Authenticate login
+        /// Login
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        [Route("authenticate")]
         [HttpPost]
+        [Route("authenticate")]
         [ProducesResponseType(typeof(AuthenticateResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
-        public IActionResult Authenticate(AuthenticateRequest model)
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> Login([FromBody] AuthenticateRequest model)
         {
-            var response = _accountService.Authenticate(model);
+            if(ModelState.IsValid)
+            {
+                var result = await _accountService.LoginAccountAsync(model);
+                if (result.IsSuccess)
+                {
+                    return Ok(result);
+                }
+                return BadRequest(result.Message);
+            }
+            return BadRequest("Some properties are not valid");
+        }
 
-            if (response == null)
-                return NotFound("Username or password is incorrect");
+        /// <summary>
+        /// Authenticate with firebase
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("authenticate-firebase")]
+        [ProducesResponseType(typeof(AuthenticateResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> LoginByFirebase([FromBody] AuthenticateFirebaseRequest model)
+        {
+            if (ModelState.IsValid)
+            {
+                var result = await _accountService.LoginAccountByFirebaseAsync(model);
+                if (result.IsSuccess)
+                {
+                    return Ok(result);
+                }
+                return BadRequest(result.Message);
+            }
+            return BadRequest("Some properties are not valid");
+        }
 
-            return Ok(response);
+        /// <summary>
+        /// Register account
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("register")]
+        [ProducesResponseType(typeof(ResultResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> Register([FromBody] RegisterRequest model)
+        {
+            if (ModelState.IsValid)
+            {
+                var result = await _accountService.RegisterAccountAsync(model);
+                if (result.IsSuccess)
+                {
+                    return Ok(result.Message);
+                }
+                return BadRequest(result.Message);
+            }
+            return BadRequest("Some properties are not valid");
+        }
+
+        /// <summary>
+        /// Register admin account
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [Authorize(Roles = AccountConstants.ROLE_IS_ADMIN)]
+        [HttpPost]
+        [Route("register-admin")]
+        [ProducesResponseType(typeof(ResultResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> RegisterAdmin([FromBody] RegisterRequest model)
+        {
+            if(ModelState.IsValid)
+            {
+                var result = await _accountService.RegisterAccountAsync(model);
+                if (result.IsSuccess)
+                {
+                    return Ok(result.Message);
+                }
+                return BadRequest(result.Message);
+            }
+            return BadRequest("Some properties are not valid");
         }
 
         /// <summary>
@@ -54,58 +137,18 @@ namespace HMSAPI.Controllers
         }
 
         /// <summary>
-        /// Register Account
-        /// </summary>
-        /// <param name="model"></param>
-        /// <returns></returns>
-        [HttpPost]
-        [ProducesResponseType(typeof(AuthenticateResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.Conflict)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> Register(CreateAccountViewModel model)
-        {
-            var account = await _accountService.GetAsyn(model.Username);
-            if (account != null)
-                return Conflict("Username is existed");
-            return Ok(await _accountService.CreateAccount(model));
-        }
-
-        /// <summary>
         /// Update profile
         /// </summary>
-        /// <param name="username"></param>
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPut]
         [ProducesResponseType(typeof(AccountDetailViewModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> Update(string username, UpdateAccountViewModel model)
+        public async Task<IActionResult> Update(UpdateAccountViewModel model)
         {
-            var account = await _accountService.GetAsyn(username);
-            if (account == null)
-                return NotFound("Account is not found");
-            return Ok(_accountService.UpdateAccount(account, model));
-        }
-
-
-        /// <summary>
-        /// Change password
-        /// </summary>
-        /// <param name="username"></param>
-        /// <param name="password"></param>
-        /// <returns></returns>
-        [Route("change-password")]
-        [HttpPut]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> ChangePassword(string username, string password)
-        {
-            var account = await _accountService.GetAsyn(username);
-            if (account == null)
-                return NotFound("Account is not found");
-            return Ok(_accountService.UpdatePassword(account, password));
+            var username = User.Identity.Name;
+            return Ok(await _accountService.UpdateAccountAsync(username, model));
         }
 
         /// <summary>
@@ -113,6 +156,7 @@ namespace HMSAPI.Controllers
         /// </summary>
         /// <param name="username"></param>
         /// <returns></returns>
+        [Authorize(Roles = AccountConstants.ROLE_IS_ADMIN)]
         [HttpDelete]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]

@@ -6,7 +6,7 @@ namespace HMS.Data.Constants
 {
     public class ServiceConstants
     {
-        public const string SERVICE_IS_ELECTRIC = "SVD";
-        public const string SERVICE_IS_WATER = "SVW";
+        public const bool SERVICE_IS_ACTIVE = true;
+        public const bool SERVICE_IS_INACTIVE = false;
     }
 }

@@ -21,7 +21,7 @@ namespace HMS.Data.Services
         Task<ContractDetailViewModel> CreateContract(CreateContractViewModel model);
         ContractDetailViewModel UpdateContract(Contract contract, UpdateContractViewModel model);
         string DeleteContract(Contract contract);
-        List<ContractDetailViewModel> GetByUsername(string username);
+        List<ContractDetailViewModel> GetByUserId(string userId);
     }
     public partial class ContractService : BaseService<Contract>, IContractService
     {
@@ -51,17 +51,17 @@ namespace HMS.Data.Services
             return contract;
         }
 
-        public List<ContractDetailViewModel> GetByUsername(string username)
+        public List<ContractDetailViewModel> GetByUserId(string userId)
         {
-            var user = _accountService.GetByUsername(username);
+            var user = _accountService.GetByUserId(userId);
             var contract = new List<ContractDetailViewModel>();
             if (user.Role.Equals(AccountConstants.ROLE_IS_OWNER))
             {
-                contract = Get().Where(c => c.OwnerUsername == username && c.Status == ContractConstants.CONTRACT_IS_ACTIVE).ProjectTo<ContractDetailViewModel>(_mapper.ConfigurationProvider).ToList();
+                contract = Get().Where(c => c.OwnerUserId == userId && c.Status == ContractConstants.CONTRACT_IS_ACTIVE).ProjectTo<ContractDetailViewModel>(_mapper.ConfigurationProvider).ToList();
             }
             else
             {
-                contract = Get().Where(c => c.TenantUsername == username && c.Status == ContractConstants.CONTRACT_IS_ACTIVE).ProjectTo<ContractDetailViewModel>(_mapper.ConfigurationProvider).ToList();
+                contract = Get().Where(c => c.TenantUserId == userId && c.Status == ContractConstants.CONTRACT_IS_ACTIVE).ProjectTo<ContractDetailViewModel>(_mapper.ConfigurationProvider).ToList();
             }
             return contract;
         }

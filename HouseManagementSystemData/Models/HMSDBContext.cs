@@ -38,18 +38,20 @@ namespace HMS.Data.Models
 
             modelBuilder.Entity<Account>(entity =>
             {
-                entity.HasKey(e => e.Username)
+                entity.HasKey(e => e.UserId)
                     .HasName("PK_Account_1");
 
                 entity.ToTable("Account");
 
-                entity.Property(e => e.Username)
+                entity.Property(e => e.UserId)
                     .HasMaxLength(30)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Email)
                     .HasMaxLength(50)
                     .IsUnicode(false);
+
+                entity.Property(e => e.Image).IsUnicode(false);
 
                 entity.Property(e => e.Name).HasMaxLength(50);
 
@@ -155,13 +157,13 @@ namespace HMS.Data.Models
 
                 entity.Property(e => e.EndDate).HasColumnType("date");
 
-                entity.Property(e => e.OwnerUsername)
+                entity.Property(e => e.OwnerUserId)
                     .HasMaxLength(30)
                     .IsUnicode(false);
 
                 entity.Property(e => e.StartDate).HasColumnType("date");
 
-                entity.Property(e => e.TenantUsername)
+                entity.Property(e => e.TenantUserId)
                     .HasMaxLength(30)
                     .IsUnicode(false);
 
@@ -170,9 +172,9 @@ namespace HMS.Data.Models
                     .HasForeignKey(d => d.RoomId)
                     .HasConstraintName("FK_Contract_Room");
 
-                entity.HasOne(d => d.TenantUsernameNavigation)
+                entity.HasOne(d => d.TenantUser)
                     .WithMany(p => p.Contracts)
-                    .HasForeignKey(d => d.TenantUsername)
+                    .HasForeignKey(d => d.TenantUserId)
                     .HasConstraintName("FK_Contract_Account1");
             });
 
@@ -186,13 +188,13 @@ namespace HMS.Data.Models
 
                 entity.Property(e => e.IsDeleted).HasColumnName("isDeleted");
 
-                entity.Property(e => e.OwnerUsername)
+                entity.Property(e => e.OwnerUserId)
                     .HasMaxLength(30)
                     .IsUnicode(false);
 
-                entity.HasOne(d => d.OwnerUsernameNavigation)
+                entity.HasOne(d => d.OwnerUser)
                     .WithMany(p => p.Houses)
-                    .HasForeignKey(d => d.OwnerUsername)
+                    .HasForeignKey(d => d.OwnerUserId)
                     .HasConstraintName("FK_House_Account");
             });
 

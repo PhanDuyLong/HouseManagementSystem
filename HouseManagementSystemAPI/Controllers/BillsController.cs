@@ -1,7 +1,10 @@
-﻿using HMS.Data.Attributes;
+﻿using HMS.Data.Constants;
+using HMS.Data.Parameters;
 using HMS.Data.Services;
-using HMS.Data.ViewModels;
+using HMS.Data.Utilities;
 using HMS.Data.ViewModels.Bill;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Net;
@@ -9,50 +12,39 @@ using System.Threading.Tasks;
 
 namespace HMSAPI.Controllers
 {
+    /// <summary>
+    /// BillsController
+    /// </summary>
     [Route("api/bills")]
     [ApiController]
     public class BillsController : ControllerBase
     {
         private IBillService _billService;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="billService"></param>
         public BillsController(IBillService billService)
         {
             _billService = billService;
         }
 
         /// <summary>
-        /// Get Bills by contractId
+        /// Filter Bills
         /// </summary>
-        /// <param name="contractId"></param>
-        /// <returns></returns>
-        [HttpGet("{contractId}")]
-        [ProducesResponseType(typeof(List<BillDetailViewModel>), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
-        public IActionResult GetBills(int contractId)
-        {
-            var bills = _billService.GetByContractID(contractId);
-
-            if (bills == null) 
-                return NotFound("Bill(s) is/are not found");
-
-            return Ok(bills);
-        }
-
-        /// <summary>
-        /// Get Bill by username
-        /// </summary>
-        /// <param name="username"></param>
+        /// <param name="billParameters"></param>
         /// <returns></returns>
         [HttpGet]
-        [ProducesResponseType(typeof(List<BillDetailViewModel>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(List<ShowBillViewModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
-        public IActionResult GetBillsByUsername(string username)
+        public IActionResult GetBills([FromQuery] BillParameters billParameters)
         {
-            var bills = _billService.GetByUsername(username);
+            var username = User.Identity.Name;
+            var bills = _billService.FilterByParameter(username, billParameters);
 
-            if (bills == null)
+            if (bills == null || bills.Count == 0) 
                 return NotFound("Bill(s) is/are not found");
 
             return Ok(bills);
@@ -71,9 +63,8 @@ namespace HMSAPI.Controllers
         public IActionResult GetBill(int id)
         {
             var bill = _billService.GetByID(id);
-
             if (bill == null) 
-                return NotFound("Bill is not found"); 
+                return NotFound(new MessageResult("MS02", new string[] { "Bill"})); 
 
             return Ok(bill);
         }
@@ -83,6 +74,7 @@ namespace HMSAPI.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
+        [Authorize(Roles = AccountConstants.ROLE_IS_OWNER + "," + AccountConstants.ROLE_IS_ADMIN)]
         [HttpPost]
         [ProducesResponseType(typeof(BillDetailViewModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string),(int)HttpStatusCode.BadRequest)]
@@ -97,6 +89,7 @@ namespace HMSAPI.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
+        [Authorize(Roles = AccountConstants.ROLE_IS_OWNER + "," + AccountConstants.ROLE_IS_ADMIN)]
         [HttpPut]
         [ProducesResponseType(typeof(BillDetailViewModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]

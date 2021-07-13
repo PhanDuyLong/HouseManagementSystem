@@ -2,6 +2,7 @@
 using AutoMapper.QueryableExtensions;
 using HMS.Data.Constants;
 using HMS.Data.Models;
+using HMS.Data.Parameters;
 using HMS.Data.Repositories;
 using HMS.Data.Services.Base;
 using HMS.Data.ViewModels;
@@ -16,34 +17,30 @@ namespace HMS.Data.Services
 {
     public partial interface IRoomService : IBaseService<Room>
     {
-        List<RoomShowViewModel> GetByHouseID(string id);
+        List<RoomShowViewModel> FilterByParameter(RoomParameters roomParameters);
         RoomDetailViewModel GetByID(int id);
         Task<RoomDetailViewModel> CreateRoom(CreateRoomViewModel model);
         RoomDetailViewModel UpdateRoom(Room room, UpdateRoomViewModel model);
         string DeleteRoom(Room room);
+        int CountRooms(RoomParameters roomParameters);
     }
     public partial class RoomService : BaseService<Room>, IRoomService
     {
         private readonly IMapper _mapper;
         public RoomService(DbContext dbContext, IRoomRepository repository, IMapper mapper) : base(dbContext, repository)
         {
-            this._dbContext = dbContext;
-            this._mapper = mapper;
+            _dbContext = dbContext;
+            _mapper = mapper;
         }
 
-        public Task<string> CreateRoom(CreateRoomViewModel model)
+        public List<RoomShowViewModel> FilterByParameter(RoomParameters roomParameters)
         {
-            throw new System.NotImplementedException();
-        }
-
-        public Task<string> DeleteRoom(Room room)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public List<RoomShowViewModel> GetByHouseID(string id)
-        {
-            var rooms = Get().Where(r => r.HouseId == id && r.IsDeleted == RoomConstants.ROOM_IS_NOT_DELETED).ProjectTo<RoomShowViewModel>(_mapper.ConfigurationProvider).ToList();
+            var rooms = Get().Where(r => r.HouseId == roomParameters.HouseId && r.IsDeleted == RoomConstants.ROOM_IS_NOT_DELETED).ProjectTo<RoomShowViewModel>(_mapper.ConfigurationProvider).ToList();
+            var status = roomParameters.Status;
+            if(status != null)
+            {
+                rooms = rooms.Where(r => r.Status == roomParameters.Status).ToList();
+            }
             return rooms;
         }
 
@@ -51,6 +48,31 @@ namespace HMS.Data.Services
         {
             var room = Get().Where(r => r.Id == id && r.IsDeleted == RoomConstants.ROOM_IS_NOT_DELETED).ProjectTo<RoomDetailViewModel>(_mapper.ConfigurationProvider).FirstOrDefault();
             return room;
+        }
+
+        string DeleteRoom(Room room)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public int CountRooms(RoomParameters roomParameters)
+        {
+            return FilterByParameter(roomParameters).Count;
+        }
+
+        Task<RoomDetailViewModel> CreateRoom(CreateRoomViewModel model)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        RoomDetailViewModel UpdateRoom(Room room, UpdateRoomViewModel model)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        string IRoomService.DeleteRoom(Room room)
+        {
+            throw new System.NotImplementedException();
         }
 
         Task<RoomDetailViewModel> IRoomService.CreateRoom(CreateRoomViewModel model)
@@ -62,12 +84,5 @@ namespace HMS.Data.Services
         {
             throw new System.NotImplementedException();
         }
-
-        string IRoomService.DeleteRoom(Room room)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        
     }
 }

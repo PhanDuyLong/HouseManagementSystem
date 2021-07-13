@@ -30,8 +30,8 @@ namespace HMS.Data.Services.Base
 
         public BaseService(DbContext dbContext, IBaseRepository<T> repository)
         {
-            this._dbContext = dbContext;
-            this._repository = repository;
+            _dbContext = dbContext;
+            _repository = repository;
         }
 
         public int Count()

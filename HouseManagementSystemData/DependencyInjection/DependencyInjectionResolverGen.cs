@@ -53,6 +53,12 @@ namespace HMS.Data.DependencyInjection
 
             services.AddScoped<IServiceContractRepository, ServiceContractRepository>();
             services.AddScoped<IServiceContractService, ServiceContractService>();
+
+            services.AddScoped<IServiceTypeRepository, ServiceTypeRepository>();
+            services.AddScoped<IServiceTypeService, ServiceTypeService>();
+
+            services.AddScoped<IServiceTypeRepository, ServiceTypeRepository>();
+            services.AddScoped<IServiceTypeService, ServiceTypeService>();
         }
     }
 }

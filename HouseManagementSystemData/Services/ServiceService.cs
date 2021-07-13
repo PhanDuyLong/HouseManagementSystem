@@ -1,10 +1,14 @@
 ﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using HMS.Data.Constants;
 using HMS.Data.Models;
 using HMS.Data.Repositories;
 using HMS.Data.Services.Base;
 using HMS.Data.ViewModels;
 using Microsoft.EntityFrameworkCore;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace HMS.Data.Services
@@ -12,23 +16,32 @@ namespace HMS.Data.Services
     public partial interface IServiceService : IBaseService<Service>
     {
         List<ServiceViewModel> GetByHouseId(string houseId);
-        ServiceViewModel GetByID(string id);
+        ServiceViewModel GetByID(int id);
         Task<ServiceViewModel> CreateService(CreateServiceViewModel model);
         ServiceViewModel UpdateService(Service service, UpdateServiceViewModel model);
         string DeleteService(Service service);
+        Task<int> CreateDefaultServicesAsync(string houseId);
     }
     public partial class ServiceService : BaseService<Service>, IServiceService
     {
         private readonly IMapper _mapper;
-        public ServiceService(DbContext dbContext, IServiceRepository repository, IMapper mapper) : base(dbContext, repository)
+        private readonly IServiceTypeService _serviceTypeService;
+        public ServiceService(DbContext dbContext, IServiceRepository repository, IMapper mapper
+            , IServiceTypeService serviceTypeService) : base(dbContext, repository)
         {
-            this._dbContext = dbContext;
-            this._mapper = mapper;
+            _dbContext = dbContext;
+            _mapper = mapper;
+            _serviceTypeService = serviceTypeService;
         }
 
-        public Task<ServiceViewModel> CreateService(CreateServiceViewModel model)
+        public async Task<ServiceViewModel> CreateService(CreateServiceViewModel model)
         {
-            throw new System.NotImplementedException();
+            var serviceTypes = await _serviceTypeService.GetServiceTypes();
+            var service = _mapper.Map<Service>(model);
+            service.Status = ServiceConstants.SERVICE_IS_ACTIVE;
+            service.ServiceTypeId = serviceTypes.Where(serviceType => serviceType.Name.Equals(ServiceTypeConstants.SERVICE_TYPE_IS_DEFAULT_DIFFERENT)).FirstOrDefault().Id;
+            await CreateAsyn(service);
+            return GetByID(service.Id);
         }
 
         public string DeleteService(Service service)
@@ -41,14 +54,52 @@ namespace HMS.Data.Services
             throw new System.NotImplementedException();
         }
 
-        public ServiceViewModel GetByID(string id)
+        public ServiceViewModel GetByID(int id)
         {
-            throw new System.NotImplementedException();
+            var service = Get().Where(s => s.Id == id && s.Status == ServiceConstants.SERVICE_IS_ACTIVE).ProjectTo<ServiceViewModel>(_mapper.ConfigurationProvider).FirstOrDefault();
+            return service;
         }
 
         public ServiceViewModel UpdateService(Service service, UpdateServiceViewModel model)
         {
             throw new System.NotImplementedException();
+        }
+
+        public async Task<int> CreateDefaultServicesAsync(string houseId)
+        {
+            var serviceTypes = await _serviceTypeService.GetServiceTypes();
+            var defaultServices = new ArrayList();
+            var houseService = new CreateServiceViewModel
+            {
+                HouseId = houseId,
+                Name = "Tiền Nhà",
+                CalculationUnit = "tháng",
+                ServiceTypeName = serviceTypes.Where(serviceType => serviceType.Name.Equals(ServiceTypeConstants.SERVICE_TYPE_IS_DEFAULT_FIXED)).FirstOrDefault().Name
+            };
+            defaultServices.Add(houseService);
+            var eletricService = new CreateServiceViewModel
+            {
+                HouseId = houseId,
+                Name = "Tiền Điện",
+                CalculationUnit = "kWH",
+                ServiceTypeName = serviceTypes.Where(serviceType => serviceType.Name.Equals(ServiceTypeConstants.SERVICE_TYPE_IS_DEFAULT_DIFFERENT)).FirstOrDefault().Name
+            };
+            defaultServices.Add(eletricService);
+            var waterService = new CreateServiceViewModel
+            {
+                HouseId = houseId,
+                Name = "Tiền Nước",
+                CalculationUnit = "m^3",
+                ServiceTypeName = serviceTypes.Where(serviceType => serviceType.Name.Equals(ServiceTypeConstants.SERVICE_TYPE_IS_DEFAULT_DIFFERENT)).FirstOrDefault().Name
+            };
+            defaultServices.Add(waterService);
+            int count = 0;
+            foreach(CreateServiceViewModel model in defaultServices)
+            {
+                await CreateService(model);
+                count++;
+            }
+            return count;
         }
     }
 }

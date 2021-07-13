@@ -10,28 +10,44 @@ using HMS.Data.ViewModels.HouseViewModels;
 using HMS.Data.ViewModels;
 using HMS.Data.Constants;
 using System.Threading.Tasks;
+using HMS.Data.Parameters;
+using HMS.Data.Responses;
+using HMS.Data.Utilities;
+using HMS.Data.ViewModels.House;
 
 namespace HMS.Data.Services
 {
     public partial interface IHouseService : IBaseService<House>
     {
-        List<HouseBaseViewModel> GetByOwnerUsername(string ownerUsername);
+        List<HouseBaseViewModel> FilterByParameter(string ownerUserId, HouseParameters houseParameters);
         HouseDetailViewModel GetByID(string id);
-        Task<HouseDetailViewModel> CreateHouse(CreateHouseViewModel model);
-        string DeleteHouse(House house);
+        Task<ResultResponse> CreateHouseAsync(string userId, CreateHouseViewModel model);
+        Task<ResultResponse> DeleteHouseAsync(string id);
+        Task<ResultResponse> UpdateHouseAsync(UpdateHouseViewModel model);
+        int CountHouses(string userId, HouseParameters houseParameters);
     }
     public partial class HouseService : BaseService<House>, IHouseService
     {
         private readonly IMapper _mapper;
-        public HouseService(DbContext dbContext, IHouseRepository repository, IMapper mapper) : base(dbContext, repository)
+        private readonly IServiceService _serviceService;
+        private readonly IHouseInfoService _houseInfoService;
+        public HouseService(DbContext dbContext, IHouseRepository repository, IMapper mapper
+            , IServiceService serviceService, IHouseInfoService houseInfoService) : base(dbContext, repository)
         {
-            this._dbContext = dbContext;
-            this._mapper = mapper;
+            _dbContext = dbContext;
+            _mapper = mapper;
+            _serviceService = serviceService;
+            _houseInfoService = houseInfoService;
         }
 
-        public List<HouseBaseViewModel> GetByOwnerUsername(string ownerUsername)
+        public List<HouseBaseViewModel> FilterByParameter(string ownerUserId, HouseParameters houseParameters)
         {
-            var houses = Get().Where(h => h.OwnerUsername == ownerUsername && h.IsDeleted == HouseConstants.HOUSE_IS_NOT_DELETED).ProjectTo<HouseBaseViewModel>(_mapper.ConfigurationProvider).ToList();
+            var houses = Get().Where(h => h.OwnerUserId == ownerUserId && h.IsDeleted == HouseConstants.HOUSE_IS_NOT_DELETED).ProjectTo<HouseBaseViewModel>(_mapper.ConfigurationProvider).ToList();
+            var status = houseParameters.Status;
+            if(status != null)
+            {
+                houses = houses.Where(h => h.Status == houseParameters.Status).ToList();
+            }
             return houses;
         }
 
@@ -41,25 +57,63 @@ namespace HMS.Data.Services
             return house;
         }
 
-        public async Task<HouseDetailViewModel> CreateHouse(CreateHouseViewModel model)
+        public async Task<ResultResponse> CreateHouseAsync(string userId, CreateHouseViewModel model)
         {
             var house = _mapper.Map<House>(model);
-            string houseID = GenerateHouseID();
+            house.OwnerUserId = userId;
+            house.Id = GenerateHouseID();
             house.Status = HouseConstants.HOUSE_IS_INACTIVE;
             house.IsDeleted = HouseConstants.HOUSE_IS_NOT_DELETED;
             await CreateAsyn(house);
-            return GetByID(house.Id);
+            await _serviceService.CreateDefaultServicesAsync(house.Id);
+            return new ResultResponse
+            {
+                Message = new MessageResult("OK01", new string[] { "House" }),
+                IsSuccess = true,
+            };
         }
 
-        public string DeleteHouse(House house)
+        public async Task<ResultResponse> DeleteHouseAsync(string houseId)
         {
-            throw new System.NotImplementedException();
+            var houseModel = GetByID(houseId);
+            if(houseModel == null)
+            {
+                return new ResultResponse
+                {
+                    Message = new MessageResult("NF02", new string[] { "House" }),
+                    IsSuccess = false
+                };
+            }
+
+            if(houseModel.Status == HouseConstants.HOUSE_IS_ACTIVE)
+            {
+                return new ResultResponse
+                {
+                    Message = new MessageResult("NF02", new string[] { "House" }),
+                    IsSuccess = false
+                };
+            }
+
+            var house = await GetAsyn(houseId);
+            house.IsDeleted = HouseConstants.HOUSE_IS_DELETED;
+            Update(house);
+
+            return new ResultResponse
+            {
+                Message = new MessageResult("OK02", new string[] { "House" }),
+                IsSuccess = true
+            };
+        }
+
+        public int CountHouses(string userId, HouseParameters houseParameters)
+        {
+            return FilterByParameter(userId, houseParameters).Count;
         }
 
         private string GenerateHouseID()
         {
             var count = Count();
-            var houseId = "";
+            string houseId;
             do
             {
                 houseId = "H";
@@ -70,11 +124,44 @@ namespace HMS.Data.Services
                 }
                 else
                 {
-                    houseId = houseId + count.ToString();
+                    houseId += count.ToString();
                 }
             } while (Get(houseId) != null);
             return houseId;
+        }
 
+        public async Task<ResultResponse> UpdateHouseAsync(UpdateHouseViewModel model)
+        {
+            var houseId = model.Id;
+            var houseModel = GetByID(houseId);
+            if (houseModel == null)
+            {
+                return new ResultResponse
+                {
+                    Message = new MessageResult("NF02", new string[] { "House" }),
+                    IsSuccess = false
+                };
+            }
+
+            var houseInfoModelId = houseModel.HouseInfo.Id;
+            var result = await _houseInfoService.UpdateHouseInfoAsync(houseInfoModelId, model.HouseInfo);
+
+            if (result.IsSuccess)
+            {
+                return new ResultResponse
+                {
+                    Message = new MessageResult("OK03", new string[] { "House" }),
+                    IsSuccess = true
+                };
+            }
+            else
+            {
+                return new ResultResponse
+                {
+                    Message = new MessageResult("BR05", new string[] { "House" }),
+                    IsSuccess = false
+                };
+            }
         }
     }
 }

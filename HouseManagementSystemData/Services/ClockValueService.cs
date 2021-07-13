@@ -15,8 +15,8 @@ namespace HMS.Data.Services
         private readonly IMapper _mapper;
         public ClockValueService(DbContext dbContext, IClockValueRepository repository, IMapper mapper) : base(dbContext, repository)
         {
-            this._dbContext = dbContext;
-            this._mapper = mapper;
+            _dbContext = dbContext;
+            _mapper = mapper;
         }
     }
 }

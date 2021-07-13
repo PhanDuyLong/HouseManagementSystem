@@ -1,4 +1,5 @@
-﻿using HMS.Data.Services;
+﻿using HMS.Data.Parameters;
+using HMS.Data.Services;
 using HMS.Data.ViewModels;
 using HMS.Data.ViewModels.Room;
 using HMS.Data.ViewModels.RoomViewModels;
@@ -9,30 +10,37 @@ using System.Threading.Tasks;
 
 namespace HMSAPI.Controllers
 {
+    /// <summary>
+    /// RoomsController
+    /// </summary>
     [Route("api/rooms")]
     [ApiController]
     public class RoomsController : ControllerBase
     {
         private IRoomService _roomService;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="roomService"></param>
         public RoomsController(IRoomService roomService)
         {
             _roomService = roomService;
         }
 
         /// <summary>
-        /// Get Rooms by HouseId
+        /// Filter Rooms
         /// </summary>
-        /// <param name="houseId"></param>
+        /// <param name="roomParameters"></param>
         /// <returns></returns>
         [HttpGet]
         [ProducesResponseType(typeof(List<RoomShowViewModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
-        public IActionResult GetRooms(string houseId)
+        public IActionResult GetRooms([FromQuery] RoomParameters roomParameters)
         {
-            var rooms = _roomService.GetByHouseID(houseId);
-            if (rooms == null)
+            var rooms = _roomService.FilterByParameter(roomParameters);
+            if (rooms == null || rooms.Count == 0)
             {
                 return NotFound("Room(s) is/are not found");
             }
@@ -111,5 +119,18 @@ namespace HMSAPI.Controllers
             return Ok(_roomService.DeleteRoom(room));
         }
 
+        /// <summary>
+        /// Count Rooms
+        /// </summary>
+        /// <param name="roomParameters"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("count")]
+        [ProducesResponseType(typeof(int), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
+        public ActionResult Count([FromQuery] RoomParameters roomParameters)
+        {
+            return Ok(_roomService.CountRooms(roomParameters));
+        }
     }
 }

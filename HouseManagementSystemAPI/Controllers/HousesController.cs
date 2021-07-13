@@ -1,7 +1,13 @@
-﻿using HMS.Data.Models;
+﻿using HMS.Data.Constants;
+using HMS.Data.Models;
+using HMS.Data.Parameters;
+using HMS.Data.Responses;
 using HMS.Data.Services;
+using HMS.Data.Utilities;
 using HMS.Data.ViewModels;
+using HMS.Data.ViewModels.House;
 using HMS.Data.ViewModels.HouseViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Net;
@@ -9,34 +15,37 @@ using System.Threading.Tasks;
 
 namespace HouseManagementSystemAPI.Controllers
 {
-    [Route("api/houses/")]
+    /// <summary>
+    /// HousesController
+    /// </summary>
+    [Route("api/houses")]
     [ApiController]
     public class HousesController : ControllerBase
     {
-        private readonly HMSDBContext _context;
         private IHouseService _houseService;
-        public HousesController(HMSDBContext context, IHouseService houseService)
+
+        /// <summary>
+        /// Constructor 
+        /// </summary>
+        /// <param name="houseService"></param>
+        public HousesController(IHouseService houseService)
         {
-            _context = context;
             _houseService = houseService;
         }
 
         /// <summary>
-        /// Get Houses by ownerUsername
+        /// Filter Houses
         /// </summary>
-        /// <param name="username"></param>
         /// <returns></returns>
         [HttpGet]
         [ProducesResponseType(typeof(List<HouseDetailViewModel>), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
-        public IActionResult GetHouses(string username)
+        [ProducesResponseType(typeof(ResultResponse), (int)HttpStatusCode.NotFound)]
+        public IActionResult GetHouses([FromQuery] HouseParameters houseParameters)
         {
-            var houses = _houseService.GetByOwnerUsername(username);
-            if(houses == null)
-            {
-                return NotFound("House(s) is/are not found");
-            }
+            var userId = User.Identity.Name;
+            var houses = _houseService.FilterByParameter(userId, houseParameters);
+            if(houses == null || houses.Count == 0)
+                return NotFound(new MessageResult("NF01", new string[] { "House" }));
             return Ok(houses);
         }
 
@@ -48,13 +57,12 @@ namespace HouseManagementSystemAPI.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(HouseDetailViewModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public IActionResult GetHouse(string id)
         {
             var house = _houseService.GetByID(id);
             if (house == null)
             {
-                return NotFound("House is not found");
+                return NotFound(new MessageResult("NF02", new string[] { "House" }));
             }
             return Ok(house);
         }
@@ -64,35 +72,91 @@ namespace HouseManagementSystemAPI.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
+        [Authorize(Roles = AccountConstants.ROLE_IS_OWNER + "," + AccountConstants.ROLE_IS_ADMIN)]
+        //[Authorize]
         [HttpPost]
-        [ProducesResponseType(typeof(HouseDetailViewModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> Create(CreateHouseViewModel model)
         {
-            return Ok(await _houseService.CreateHouse(model));
+            if (ModelState.IsValid)
+            {
+                var userId = User.Identity.Name;
+                var result = await _houseService.CreateHouseAsync(userId, model);
+                if (result.IsSuccess)
+                {
+                    return Ok(result.Message.Value);
+                }
+                return BadRequest(result.Message.Value);
+            }
+            return BadRequest(new MessageResult("BR01"));
         }
 
-
+        /// <summary>
+        /// Update House
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [Authorize(Roles = AccountConstants.ROLE_IS_OWNER + "," + AccountConstants.ROLE_IS_ADMIN)]
+        [HttpPut]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> Update(UpdateHouseViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var userId = User.Identity.Name;
+                var result = await _houseService.UpdateHouseAsync(model);
+                if (result.IsSuccess)
+                {
+                    return Ok(result.Message.Value);
+                }
+                return BadRequest(result.Message.Value);
+            }
+            return BadRequest(new MessageResult("BR01"));
+        }
 
         /// <summary>
         /// Delete House
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="houseId"></param>
         /// <returns></returns>
+        [Authorize(Roles = AccountConstants.ROLE_IS_OWNER + "," + AccountConstants.ROLE_IS_ADMIN)]
         [HttpDelete]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
-        public async Task<ActionResult> Delete(int id)
+        [ProducesResponseType(typeof(ResultResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ResultResponse), (int)HttpStatusCode.BadRequest)]
+        public async Task<ActionResult> Delete(string houseId)
         {
-            var house = await _houseService.GetAsyn(id);
-            if (house == null)
+            if (ModelState.IsValid)
             {
-                return NotFound("Room is not found");
+                var result = await _houseService.DeleteHouseAsync(houseId);
+                if (result.IsSuccess)
+                {
+                    return Ok(result.Message.Value);
+                }
+                return BadRequest(result.Message.Value);
             }
-
-            return Ok(_houseService.DeleteHouse(house));
+            return BadRequest(new MessageResult("BR01"));
         }
+
+        /// <summary>
+        /// Count Houses
+        /// </summary>
+        /// <param name="houseParameters"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("count")]
+        [ProducesResponseType(typeof(int), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
+        public ActionResult Count([FromQuery] HouseParameters houseParameters)
+        {
+            if (ModelState.IsValid)
+            {
+                var username = User.Identity.Name;
+                return Ok(_houseService.CountHouses(username, houseParameters));
+            }
+            return BadRequest(new MessageResult("BR01"));
+        }
+
     }
 }

@@ -6,8 +6,8 @@ namespace HMS.Data.ViewModels.Contract
 {
     public class CreateContractViewModel
     {
-        public string OwnerUsername { get; set; }
-        public string TenantUsername { get; set; }
+        public string OwnerUserId { get; set; }
+        public string TenantUserId { get; set; }
         public int? RoomId { get; set; }
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }

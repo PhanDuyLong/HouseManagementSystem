@@ -7,6 +7,6 @@ namespace HMS.Data.ViewModels.Account
     public class AccountTenantViewModel
     {
         public string Name { get; set; }
-        public string Username { get; set; }
+        public string UserId { get; set; }
     }
 }

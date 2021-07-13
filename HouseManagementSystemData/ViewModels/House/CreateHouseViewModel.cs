@@ -6,8 +6,6 @@ namespace HMS.Data.ViewModels.HouseViewModels
 {
     public class CreateHouseViewModel
     {
-        public string OwnerUsername { get; set; }
-
-        public virtual CreateHouseInfoViewModel HouseInfo { get; set; }
+        public virtual CreateHouseInfoViewModel HouseInfos { get; set; }
     }
 }
