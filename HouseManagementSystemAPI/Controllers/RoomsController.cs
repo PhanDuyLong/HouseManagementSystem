@@ -39,7 +39,8 @@ namespace HMSAPI.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public IActionResult GetRooms([FromQuery] RoomParameters roomParameters)
         {
-            var rooms = _roomService.FilterByParameter(roomParameters);
+            var userId = User.Identity.Name;
+            var rooms = _roomService.FilterByParameter(userId, roomParameters);
             if (rooms == null || rooms.Count == 0)
             {
                 return NotFound("Room(s) is/are not found");
@@ -130,7 +131,8 @@ namespace HMSAPI.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
         public ActionResult Count([FromQuery] RoomParameters roomParameters)
         {
-            return Ok(_roomService.CountRooms(roomParameters));
+            var userId = User.Identity.Name;
+            return Ok(_roomService.CountRooms(userId, roomParameters));
         }
     }
 }

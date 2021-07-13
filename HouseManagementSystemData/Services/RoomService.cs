@@ -6,6 +6,7 @@ using HMS.Data.Parameters;
 using HMS.Data.Repositories;
 using HMS.Data.Services.Base;
 using HMS.Data.ViewModels;
+using HMS.Data.ViewModels.HouseViewModels;
 using HMS.Data.ViewModels.Room;
 using HMS.Data.ViewModels.RoomViewModels;
 using Microsoft.EntityFrameworkCore;
@@ -17,25 +18,37 @@ namespace HMS.Data.Services
 {
     public partial interface IRoomService : IBaseService<Room>
     {
-        List<RoomShowViewModel> FilterByParameter(RoomParameters roomParameters);
+        List<RoomShowViewModel> FilterByParameter(string userId, RoomParameters roomParameters);
         RoomDetailViewModel GetByID(int id);
         Task<RoomDetailViewModel> CreateRoom(CreateRoomViewModel model);
         RoomDetailViewModel UpdateRoom(Room room, UpdateRoomViewModel model);
         string DeleteRoom(Room room);
-        int CountRooms(RoomParameters roomParameters);
+        int CountRooms(string userId, RoomParameters roomParameters);
     }
     public partial class RoomService : BaseService<Room>, IRoomService
     {
         private readonly IMapper _mapper;
-        public RoomService(DbContext dbContext, IRoomRepository repository, IMapper mapper) : base(dbContext, repository)
+        private readonly IHouseService _houseService;
+        public RoomService(DbContext dbContext, IRoomRepository repository, IMapper mapper
+            , IHouseService houseService) : base(dbContext, repository)
         {
             _dbContext = dbContext;
             _mapper = mapper;
+            _houseService = houseService;
         }
 
-        public List<RoomShowViewModel> FilterByParameter(RoomParameters roomParameters)
+        public List<RoomShowViewModel> FilterByParameter(string userId, RoomParameters roomParameters)
         {
-            var rooms = Get().Where(r => r.HouseId == roomParameters.HouseId && r.IsDeleted == RoomConstants.ROOM_IS_NOT_DELETED).ProjectTo<RoomShowViewModel>(_mapper.ConfigurationProvider).ToList();
+            List<RoomShowViewModel> rooms;
+            var houseId = roomParameters.HouseId;
+            if (houseId != null)
+            {
+                rooms = GetByHouseId(roomParameters);
+            }
+            else
+            {
+                rooms = GetByUserId(userId, roomParameters);
+            }
             var status = roomParameters.Status;
             if(status != null)
             {
@@ -43,6 +56,24 @@ namespace HMS.Data.Services
             }
             return rooms;
         }
+
+        public List<RoomShowViewModel> GetByUserId(string userId, RoomParameters roomParameters)
+        {
+            List<RoomShowViewModel> rooms;
+            var parameters = new HouseParameters();
+            List<HouseBaseViewModel> houses = _houseService.FilterByParameter(userId, parameters);
+            var houseIds = houses.Select(c => c.Id);
+            rooms = Get().Where(r => houseIds.Contains(r.HouseId) && r.IsDeleted == RoomConstants.ROOM_IS_NOT_DELETED).ProjectTo<RoomShowViewModel>(_mapper.ConfigurationProvider).ToList();
+            return rooms;
+        }
+
+        public List<RoomShowViewModel> GetByHouseId(RoomParameters roomParameters)
+        {
+            List<RoomShowViewModel> rooms;
+            rooms = Get().Where(r => r.HouseId == roomParameters.HouseId && r.IsDeleted == RoomConstants.ROOM_IS_NOT_DELETED).ProjectTo<RoomShowViewModel>(_mapper.ConfigurationProvider).ToList();
+            return rooms;
+        }
+
 
         public RoomDetailViewModel GetByID(int id)
         {
@@ -55,9 +86,9 @@ namespace HMS.Data.Services
             throw new System.NotImplementedException();
         }
 
-        public int CountRooms(RoomParameters roomParameters)
+        public int CountRooms(string userId, RoomParameters roomParameters)
         {
-            return FilterByParameter(roomParameters).Count;
+            return FilterByParameter(userId, roomParameters).Count;
         }
 
         Task<RoomDetailViewModel> CreateRoom(CreateRoomViewModel model)

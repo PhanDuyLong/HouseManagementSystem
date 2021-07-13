@@ -135,7 +135,6 @@ namespace HMS.Data.Services
         public List<ShowBillViewModel> GetByUserId(string userId, BillParameters billParameters)
         {
             List<ShowBillViewModel> bills;
-            var account = _accountService.GetByUserId(userId);
             List<ContractDetailViewModel> contracts = _contractService.GetByUserId(userId);
             var contractIds = contracts.Select(c => c.Id);
 

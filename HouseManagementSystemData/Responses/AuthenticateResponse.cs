@@ -21,6 +21,7 @@ namespace HMS.Data.Responses
             UserId = accountViewModel.UserId;
             Phone = accountViewModel.Phone;
             Email = accountViewModel.Email;
+            Image = accountViewModel.Image;
             Role = accountViewModel.Role;
             Token = token;
             IsSuccess = isSuccess;
