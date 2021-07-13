@@ -2,6 +2,7 @@
 using HMS.Data.Requests;
 using HMS.Data.Responses;
 using HMS.Data.Services;
+using HMS.Data.Utilities;
 using HMS.Data.ViewModels;
 using HMS.Data.ViewModels.Account;
 using Microsoft.AspNetCore.Authorization;
@@ -48,9 +49,9 @@ namespace HMSAPI.Controllers
                 {
                     return Ok(result);
                 }
-                return BadRequest(result.Message);
+                return BadRequest(result.Message.Value);
             }
-            return BadRequest("Some properties are not valid");
+            return BadRequest(new MessageResult("BR01"));
         }
 
         /// <summary>
@@ -59,21 +60,21 @@ namespace HMSAPI.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
-        [Route("authenticate-firebase")]
+        [Route("authenticate-google")]
         [ProducesResponseType(typeof(AuthenticateResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> LoginByFirebase([FromBody] AuthenticateFirebaseRequest model)
+        public async Task<IActionResult> LoginByGoogle([FromBody] AuthenticateGoogleRequest model)
         {
             if (ModelState.IsValid)
             {
-                var result = await _accountService.LoginAccountByFirebaseAsync(model);
+                var result = await _accountService.LoginAccountByGoogleAsync(model);
                 if (result.IsSuccess)
                 {
                     return Ok(result);
                 }
-                return BadRequest(result.Message);
+                return BadRequest(result.Message.Value);
             }
-            return BadRequest("Some properties are not valid");
+            return BadRequest(new MessageResult("BR01"));
         }
 
         /// <summary>
@@ -96,7 +97,7 @@ namespace HMSAPI.Controllers
                 }
                 return BadRequest(result.Message);
             }
-            return BadRequest("Some properties are not valid");
+            return BadRequest(new MessageResult("BR01"));
         }
 
         /// <summary>
@@ -120,7 +121,7 @@ namespace HMSAPI.Controllers
                 }
                 return BadRequest(result.Message);
             }
-            return BadRequest("Some properties are not valid");
+            return BadRequest(new MessageResult("BR01"));
         }
 
         /// <summary>

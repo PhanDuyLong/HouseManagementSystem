@@ -10,6 +10,7 @@ namespace HMS.Data.Utilities
         public const string OK01 = "{0} created successfully!";
         public const string OK02 = "{0} deleted successfully!";
         public const string OK03 = "{0} updated successfully!";
+        public const string OK04 = "Login successfully";
 
         //404 Not Found
         public const string NF01 = "{0}(s) is/are not found!";
@@ -21,6 +22,8 @@ namespace HMS.Data.Utilities
         public const string BR03 = "{0} already exists!";
         public const string BR04 = "{0} is active!";
         public const string BR05 = "{0} update failed! Please check details and try again!";
+        public const string BR06 = "There is no user with that {0}";
+        public const string BR07 = "Invalid password";
 
         //500 Internal Server Error
         public const string ISE01 = "Something wrong with server!";

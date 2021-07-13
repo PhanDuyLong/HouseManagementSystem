@@ -15,10 +15,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,7 +32,7 @@ namespace HMS.Data.Services
     public partial interface IAccountService : IBaseService<Account>
     {
         Task<AuthenticateResponse> LoginAccountAsync(AuthenticateRequest request);
-        Task<AuthenticateResponse> LoginAccountByFirebaseAsync(AuthenticateFirebaseRequest model);
+        Task<AuthenticateResponse> LoginAccountByGoogleAsync(AuthenticateGoogleRequest model);
         Task<ResultResponse> RegisterAccountAsync(RegisterRequest model);
         Task<ResultResponse> RegisterAdminAccountAsync(RegisterRequest model);
         AccountDetailViewModel GetByUserId(string userId);
@@ -88,11 +92,12 @@ namespace HMS.Data.Services
         {
             var account = await _accountManager.FindByEmailAsync(model.Email);
             var acc = GetByEmail(model.Email);
+
             if (account == null || acc == null)
             {
                 return new AuthenticateResponse
                 {
-                    Message = "There is no user with that Email address",
+                    Message = new MessageResult("BR06", new string[] { "email" }),
                     IsSuccess = false,
                 };
             }
@@ -102,9 +107,23 @@ namespace HMS.Data.Services
             if (!result)
                 return new AuthenticateResponse
                 {
-                    Message = "Invalid password",
+                    Message = new MessageResult("BR07"),
                     IsSuccess = false,
                 };
+
+            var userId = FirebaseAuth(model.Email, model.Password);
+
+            if (userId.Length != 0)
+            {
+                if (!userId.Equals(acc.UserId) || !userId.Equals(account.UserName))
+                {
+                    return new AuthenticateResponse
+                    {
+                        Message = new MessageResult("BR06", new string[] { "email" }),
+                        IsSuccess = false,
+                    };
+                }
+            }
 
             var accountRoles = await _accountManager.GetRolesAsync(account);
 
@@ -129,8 +148,15 @@ namespace HMS.Data.Services
                 signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
                 );
 
+
             var accountViewModel = GetByUserId(account.UserName);
-            return new AuthenticateResponse(accountViewModel, new JwtSecurityTokenHandler().WriteToken(token), true, token.ValidTo);
+
+            var response = new ResultResponse
+            {
+                Message = new MessageResult("OK04"),
+                IsSuccess = true,
+            };
+            return new AuthenticateResponse(accountViewModel, new JwtSecurityTokenHandler().WriteToken(token), response, token.ValidTo);
         }
 
         public async Task<ResultResponse> RegisterAccountAsync(RegisterRequest model)
@@ -162,7 +188,7 @@ namespace HMS.Data.Services
                     Message = new MessageResult("BR03", new string[] { "Account" }),
                     IsSuccess = false,
                 };
-            
+
             await CreateAsyn(acc);
             if (Get(acc.UserId) == null)
                 return new ResultResponse
@@ -193,6 +219,7 @@ namespace HMS.Data.Services
                     await _accountManager.AddToRoleAsync(account, AccountConstants.ROLE_IS_TENACT);
                 }
             }
+
 
             return new ResultResponse
             {
@@ -272,7 +299,7 @@ namespace HMS.Data.Services
                 isUpdateAccount = true;
             }
 
-            if(model.Phone != null)
+            if (model.Phone != null)
             {
                 acc.PhoneNumber = model.Phone;
                 account.Phone = model.Phone;
@@ -295,11 +322,11 @@ namespace HMS.Data.Services
 
             if (isUpdateAccount)
                 Update(account);
-            
+
             return GetByUserId(account.UserId);
         }
 
-        public async Task<AuthenticateResponse> LoginAccountByFirebaseAsync(AuthenticateFirebaseRequest model)
+        public async Task<AuthenticateResponse> LoginAccountByGoogleAsync(AuthenticateGoogleRequest model)
         {
             var account = await _accountManager.FindByNameAsync(model.UserId);
             var acc = GetByUserId(model.UserId);
@@ -307,7 +334,7 @@ namespace HMS.Data.Services
             {
                 return new AuthenticateResponse
                 {
-                    Message = "There is no user with that User Id",
+                    Message = new MessageResult("BRO6", new string[] { "userId" }),
                     IsSuccess = false,
                 };
             }
@@ -337,7 +364,12 @@ namespace HMS.Data.Services
 
 
             var accountViewModel = GetByUserId(account.UserName);
-            return new AuthenticateResponse(accountViewModel, new JwtSecurityTokenHandler().WriteToken(token), true, token.ValidTo);
+            var response = new ResultResponse
+            {
+                Message = new MessageResult("OK04"),
+                IsSuccess = true,
+            };
+            return new AuthenticateResponse(accountViewModel, new JwtSecurityTokenHandler().WriteToken(token), response, token.ValidTo);
         }
 
         public async Task<bool> IsAccountExistsAsync(string userId, string email)
@@ -347,9 +379,49 @@ namespace HMS.Data.Services
             var accExists = GetByUserId(userId);
             var accExistsWithEmail = GetByEmail(email);
 
-            if (accountExists != null || accExists != null || accExistsWithEmail != null || accExistsWithEmail != null)
+            if (accountExists != null || accExists != null || accExistsWithEmail != null || accountExistsWithEmail != null)
                 return true;
             return false;
+        }
+
+        public string FirebaseAuth(string email, string password)
+        {
+            try
+            {
+                WebRequest tRequest = WebRequest.Create("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=" + "AIzaSyBOUnY4MomlWzp-8pMw2QNStK-k6Q27FB4");
+                tRequest.Method = "post";
+                tRequest.ContentType = "application/json";
+                var payload = new
+                {
+                    email = email + "h",
+                    password = password,
+                };
+
+                string postbody = JsonConvert.SerializeObject(payload).ToString();
+                Byte[] byteArray = Encoding.UTF8.GetBytes(postbody);
+                tRequest.ContentLength = byteArray.Length;
+                using Stream dataStream = tRequest.GetRequestStream();
+                dataStream.Write(byteArray, 0, byteArray.Length);
+                using WebResponse tResponse = tRequest.GetResponse();
+                using Stream dataStreamResponse = tResponse.GetResponseStream();
+                string sResponseFromServer = "";
+                if (dataStreamResponse != null) using (StreamReader tReader = new StreamReader(dataStreamResponse))
+                    {
+                        sResponseFromServer = tReader.ReadToEnd();
+                    }
+                if (sResponseFromServer.Length != 0)
+                {
+                    var json = JObject.Parse(sResponseFromServer); ;
+                    string userId = (string)json.SelectToken("localId");
+                    return userId;
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex != null)
+                    return "";
+            }
+            return "";
         }
     }
 }

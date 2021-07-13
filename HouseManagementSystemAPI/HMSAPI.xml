@@ -22,7 +22,7 @@
             <param name="model"></param>
             <returns></returns>
         </member>
-        <member name="M:HMSAPI.Controllers.AccountsController.LoginByFirebase(HMS.Data.Requests.AuthenticateFirebaseRequest)">
+        <member name="M:HMSAPI.Controllers.AccountsController.LoginByGoogle(HMS.Data.Requests.AuthenticateGoogleRequest)">
             <summary>
             Authenticate with firebase
             </summary>

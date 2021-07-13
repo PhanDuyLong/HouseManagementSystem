@@ -104,25 +104,6 @@ namespace HMSAPI
                 };
             });
 
-
-            /*services.AddAuthentication(options =>
-           {
-               options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-               options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-               options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-           }).AddJwtBearer(options =>
-           {
-               options.Authority = "https://securetoken.google.com/hms-project-5d6b1";
-               options.TokenValidationParameters = new TokenValidationParameters
-               {
-                   ValidateIssuer = true,
-                   ValidIssuer = "https://securetoken.google.com/hms-project-5d6b1",
-                   ValidateAudience = true,
-                   ValidAudience = "hms-project-5d6b1",
-                   ValidateLifetime = true
-               };
-           });*/
-
             services.AddControllers();
 
             services.AddSwaggerGen(c =>

@@ -11,7 +11,5 @@ namespace HMS.Data.Responses
     {
         public MessageResult Message { get; set; }
         public bool IsSuccess { get; set; }
-
-
     }
 }

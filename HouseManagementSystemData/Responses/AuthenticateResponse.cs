@@ -5,18 +5,21 @@ using System.Text;
 
 namespace HMS.Data.Responses
 {
-    public class AuthenticateResponse : AccountDetailViewModel
+    public class AuthenticateResponse : ResultResponse
     {
         public string Token { get; set; }
-        public string Message { get; set; }
-        public bool IsSuccess { get; set; }
         public DateTime? ExpireDate { get; set; }
+        public string Name { get; set; }
+        public string UserId { get; set; }
+        public string Phone { get; set; }
+        public string Email { get; set; }
+        public string Image { get; set; }
+        public string Role { get; set; }
 
         public AuthenticateResponse() { }
 
-        public AuthenticateResponse(AccountDetailViewModel accountViewModel, string token, bool isSuccess, DateTime expireDate)
+        public AuthenticateResponse(AccountDetailViewModel accountViewModel, string token, ResultResponse response, DateTime expireDate)
         {
-
             Name = accountViewModel.Name;
             UserId = accountViewModel.UserId;
             Phone = accountViewModel.Phone;
@@ -24,7 +27,8 @@ namespace HMS.Data.Responses
             Image = accountViewModel.Image;
             Role = accountViewModel.Role;
             Token = token;
-            IsSuccess = isSuccess;
+            IsSuccess = response.IsSuccess;
+            Message = response.Message;
             ExpireDate = expireDate;
         }
     }

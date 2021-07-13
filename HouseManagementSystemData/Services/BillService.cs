@@ -54,16 +54,14 @@ namespace HMS.Data.Services
             bill.Status = BillConstants.BILL_IS_NOT_PAID;
             bill.IsDeleted = BillConstants.BILL_IS_NOT_DELETED;
             bill.IsSent = BillConstants.BILL_IS_NOT_SENT;
-            await CreateAsyn(bill);
 
             var billItems = new ArrayList();
             var contract = _contractService.GetByID(createModel.ContractId);
             var serviceContracts = contract.ServiceContracts.ToList();
+            double total = 0;
             foreach (ServiceContractDetailViewModel serviceContract in serviceContracts)
             {
                 var item = new BillItem();
-                item.BillId = bill.Id;
-                await _billItemService.CreateAsyn(item);
                 item.ServiceContractId = serviceContract.Id;
                 var createBillItem = createModel.CreateBillItems.ToList().Find(item => item.ServiceContractId.Equals(serviceContract.Id));
                 if (createBillItem != null)
@@ -77,6 +75,7 @@ namespace HMS.Data.Services
                         item.StartValue = startClockValue;
                         item.EndValue = endClockValue;
                         item.TotalPrice = totalPrice;
+                        total += totalPrice;
                     }
                     else if (serviceContract.Service.ServiceType.Equals(ServiceTypeConstants.SERVICE_TYPE_IS_ADDITIONAL_DIFFERENT))
                     {
@@ -86,19 +85,24 @@ namespace HMS.Data.Services
                         item.StartValue = startValue;
                         item.EndValue = endValue;
                         item.TotalPrice = totalPrice;
+                        total += totalPrice;
                     }
                 }
                 else
                 {
                     item.TotalPrice = serviceContract.Service.Price;
+                    total += serviceContract.Service.Price;
                 }
                 item.Status = BillItemConstants.BILL_ITEM_IS_NOT_DELETED;
                 billItems.Add(item);
             }
 
+            bill.TotalPrice = total;
+            await CreateAsyn(bill);
             foreach (BillItem billItem in billItems)
             {
-                _billItemService.Update(billItem);
+                billItem.BillId = bill.Id;
+                await _billItemService.CreateAsyn(billItem);
             }
 
             return GetByID(bill.Id);
