@@ -1,5 +1,8 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using FirebaseAdmin;
+using FirebaseAdmin.Auth;
+using Google.Apis.Auth.OAuth2;
 using HMS.Authen.Authentication;
 using HMS.Data.Constants;
 using HMS.Data.Models;
@@ -97,7 +100,7 @@ namespace HMS.Data.Services
             {
                 return new AuthenticateResponse
                 {
-                    Message = new MessageResult("BR06", new string[] { "email" }),
+                    Message = new MessageResult("BR06", new string[] { "email" }).Value,
                     IsSuccess = false,
                 };
             }
@@ -107,11 +110,11 @@ namespace HMS.Data.Services
             if (!result)
                 return new AuthenticateResponse
                 {
-                    Message = new MessageResult("BR07"),
+                    Message = new MessageResult("BR07").Value,
                     IsSuccess = false,
                 };
 
-            var userId = FirebaseAuth(model.Email, model.Password);
+            var userId = CustomFirebaseAuth(model.Email, model.Password);
 
             if (userId.Length != 0)
             {
@@ -119,7 +122,7 @@ namespace HMS.Data.Services
                 {
                     return new AuthenticateResponse
                     {
-                        Message = new MessageResult("BR06", new string[] { "email" }),
+                        Message = new MessageResult("BR06", new string[] { "email" }).Value,
                         IsSuccess = false,
                     };
                 }
@@ -151,12 +154,9 @@ namespace HMS.Data.Services
 
             var accountViewModel = GetByUserId(account.UserName);
 
-            var response = new ResultResponse
-            {
-                Message = new MessageResult("OK04"),
-                IsSuccess = true,
-            };
-            return new AuthenticateResponse(accountViewModel, new JwtSecurityTokenHandler().WriteToken(token), response, token.ValidTo);
+            var message = new MessageResult("OK04");
+
+            return new AuthenticateResponse(accountViewModel, new JwtSecurityTokenHandler().WriteToken(token), message, true , token.ValidTo);
         }
 
         public async Task<ResultResponse> RegisterAccountAsync(RegisterRequest model)
@@ -166,7 +166,7 @@ namespace HMS.Data.Services
             if (check)
                 return new ResultResponse
                 {
-                    Message = new MessageResult("BRO3", new string[] { "Account" }),
+                    Message = new MessageResult("BRO3", new string[] { "Account" }).Value,
                     IsSuccess = false,
                 };
 
@@ -179,13 +179,14 @@ namespace HMS.Data.Services
             };
 
             var acc = _mapper.Map<Account>(model);
+            acc.Password = null;
 
             var result = await _accountManager.CreateAsync(account, model.Password);
 
             if (!result.Succeeded)
                 return new ResultResponse
                 {
-                    Message = new MessageResult("BR03", new string[] { "Account" }),
+                    Message = new MessageResult("BR03", new string[] { "Account" }).Value,
                     IsSuccess = false,
                 };
 
@@ -193,7 +194,7 @@ namespace HMS.Data.Services
             if (Get(acc.UserId) == null)
                 return new ResultResponse
                 {
-                    Message = new MessageResult("BR03", new string[] { "Account" }),
+                    Message = new MessageResult("BR03", new string[] { "Account" }).Value,
                     IsSuccess = false,
                 };
 
@@ -223,7 +224,7 @@ namespace HMS.Data.Services
 
             return new ResultResponse
             {
-                Message = new MessageResult("OK01", new string[] { "Account" }),
+                Message = new MessageResult("OK01", new string[] { "Account" }).Value,
                 IsSuccess = true,
             };
         }
@@ -235,7 +236,7 @@ namespace HMS.Data.Services
             if (check)
                 return new ResultResponse
                 {
-                    Message = new MessageResult("BRO3", new string[] { "Account" }),
+                    Message = new MessageResult("BRO3", new string[] { "Account" }).Value,
                     IsSuccess = false,
                 };
 
@@ -247,13 +248,14 @@ namespace HMS.Data.Services
                 PhoneNumber = model.Phone
             };
             var acc = _mapper.Map<Account>(model);
+            acc.Password = null;
 
             var result = await _accountManager.CreateAsync(account, model.Password);
 
             if (!result.Succeeded)
                 return new ResultResponse
                 {
-                    Message = new MessageResult("BR03", new string[] { "Account" }),
+                    Message = new MessageResult("BR03", new string[] { "Account" }).Value,
                     IsSuccess = false,
                 };
 
@@ -261,7 +263,7 @@ namespace HMS.Data.Services
             if (Get(acc.UserId) == null)
                 return new ResultResponse
                 {
-                    Message = new MessageResult("BR03", new string[] { "Account" }),
+                    Message = new MessageResult("BR03", new string[] { "Account" }).Value,
                     IsSuccess = false,
                 };
 
@@ -279,7 +281,7 @@ namespace HMS.Data.Services
 
             return new ResultResponse
             {
-                Message = new MessageResult("OK01", new string[] { "Account" }),
+                Message = new MessageResult("OK01", new string[] { "Account" }).Value,
                 IsSuccess = true,
             };
         }
@@ -334,7 +336,7 @@ namespace HMS.Data.Services
             {
                 return new AuthenticateResponse
                 {
-                    Message = new MessageResult("BRO6", new string[] { "userId" }),
+                    Message = new MessageResult("BR06", new string[] { "userId" }).Value,
                     IsSuccess = false,
                 };
             }
@@ -363,13 +365,12 @@ namespace HMS.Data.Services
                 );
 
 
+            await GoogleFirebaseAuthAsync(model.UserId);
+
+
             var accountViewModel = GetByUserId(account.UserName);
-            var response = new ResultResponse
-            {
-                Message = new MessageResult("OK04"),
-                IsSuccess = true,
-            };
-            return new AuthenticateResponse(accountViewModel, new JwtSecurityTokenHandler().WriteToken(token), response, token.ValidTo);
+            var message = new MessageResult("OK04");
+            return new AuthenticateResponse(accountViewModel, new JwtSecurityTokenHandler().WriteToken(token), message, true, token.ValidTo);
         }
 
         public async Task<bool> IsAccountExistsAsync(string userId, string email)
@@ -384,7 +385,7 @@ namespace HMS.Data.Services
             return false;
         }
 
-        public string FirebaseAuth(string email, string password)
+        public string CustomFirebaseAuth(string email, string password)
         {
             try
             {
@@ -393,7 +394,7 @@ namespace HMS.Data.Services
                 tRequest.ContentType = "application/json";
                 var payload = new
                 {
-                    email = email + "h",
+                    email = email,
                     password = password,
                 };
 
@@ -422,6 +423,19 @@ namespace HMS.Data.Services
                     return "";
             }
             return "";
+        }
+
+        public async Task<string> GoogleFirebaseAuthAsync(string userId)
+        {
+/*            var defaultApp = FirebaseApp.Create(new AppOptions()
+            {
+                Credential = GoogleCredential.FromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "key.json")),
+            });
+*/
+
+
+            string customToken = await FirebaseAuth.DefaultInstance.CreateCustomTokenAsync(userId);
+            return customToken;
         }
     }
 }

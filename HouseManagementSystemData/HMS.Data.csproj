@@ -36,6 +36,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\HMS.Authen\HMS.Authen.csproj" />
+    <ProjectReference Include="..\HMS.FirebaseNotification\HMS.FirebaseNotification.csproj" />
   </ItemGroup>
 
 </Project>

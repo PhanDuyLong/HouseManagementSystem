@@ -44,8 +44,8 @@ namespace HouseManagementSystemAPI.Controllers
         {
             var userId = User.Identity.Name;
             var houses = _houseService.FilterByParameter(userId, houseParameters);
-            if(houses == null || houses.Count == 0)
-                return NotFound(new MessageResult("NF01", new string[] { "House" }));
+            if (houses == null || houses.Count == 0)
+                return NotFound(new MessageResult("NF01", new string[] { "House" }).Value);
             return Ok(houses);
         }
 
@@ -62,7 +62,7 @@ namespace HouseManagementSystemAPI.Controllers
             var house = _houseService.GetByID(id);
             if (house == null)
             {
-                return NotFound(new MessageResult("NF02", new string[] { "House" }));
+                return NotFound(new MessageResult("NF02", new string[] { "House" }).Value);
             }
             return Ok(house);
         }
@@ -85,11 +85,11 @@ namespace HouseManagementSystemAPI.Controllers
                 var result = await _houseService.CreateHouseAsync(userId, model);
                 if (result.IsSuccess)
                 {
-                    return Ok(result.Message.Value);
+                    return Ok(result.Message);
                 }
-                return BadRequest(result.Message.Value);
+                return BadRequest(result.Message);
             }
-            return BadRequest(new MessageResult("BR01"));
+            return BadRequest(new MessageResult("BR01").Value);
         }
 
         /// <summary>
@@ -109,11 +109,11 @@ namespace HouseManagementSystemAPI.Controllers
                 var result = await _houseService.UpdateHouseAsync(model);
                 if (result.IsSuccess)
                 {
-                    return Ok(result.Message.Value);
+                    return Ok(result.Message);
                 }
-                return BadRequest(result.Message.Value);
+                return BadRequest(result.Message);
             }
-            return BadRequest(new MessageResult("BR01"));
+            return BadRequest(new MessageResult("BR01").Value);
         }
 
         /// <summary>
@@ -132,11 +132,11 @@ namespace HouseManagementSystemAPI.Controllers
                 var result = await _houseService.DeleteHouseAsync(houseId);
                 if (result.IsSuccess)
                 {
-                    return Ok(result.Message.Value);
+                    return Ok(result.Message);
                 }
-                return BadRequest(result.Message.Value);
+                return BadRequest(result.Message);
             }
-            return BadRequest(new MessageResult("BR01"));
+            return BadRequest(new MessageResult("BR01").Value);
         }
 
         /// <summary>
@@ -150,13 +150,8 @@ namespace HouseManagementSystemAPI.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
         public ActionResult Count([FromQuery] HouseParameters houseParameters)
         {
-            if (ModelState.IsValid)
-            {
-                var username = User.Identity.Name;
-                return Ok(_houseService.CountHouses(username, houseParameters));
-            }
-            return BadRequest(new MessageResult("BR01"));
+            var username = User.Identity.Name;
+            return Ok(_houseService.CountHouses(username, houseParameters));
         }
-
     }
 }

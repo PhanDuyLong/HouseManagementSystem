@@ -54,6 +54,8 @@ namespace HMS.Data.Services
         public HouseDetailViewModel GetByID(string id)
         {
             var house = Get().Where(h => h.Id == id && h.IsDeleted == HouseConstants.HOUSE_IS_NOT_DELETED).ProjectTo<HouseDetailViewModel>(_mapper.ConfigurationProvider).FirstOrDefault();
+            house.Rooms = house.Rooms.Where(r => r.IsDeleted == RoomConstants.ROOM_IS_NOT_DELETED).ToList();
+            //house.Services = house.Services.Where(h => h.isDel)
             return house;
         }
 
@@ -62,13 +64,13 @@ namespace HMS.Data.Services
             var house = _mapper.Map<House>(model);
             house.OwnerUserId = userId;
             house.Id = GenerateHouseID();
-            house.Status = HouseConstants.HOUSE_IS_INACTIVE;
+            house.Status = HouseConstants.HOUSE_IS_NOT_RENTED;
             house.IsDeleted = HouseConstants.HOUSE_IS_NOT_DELETED;
             await CreateAsyn(house);
             await _serviceService.CreateDefaultServicesAsync(house.Id);
             return new ResultResponse
             {
-                Message = new MessageResult("OK01", new string[] { "House" }),
+                Message = new MessageResult("OK01", new string[] { "House" }).Value,
                 IsSuccess = true,
             };
         }
@@ -76,31 +78,29 @@ namespace HMS.Data.Services
         public async Task<ResultResponse> DeleteHouseAsync(string houseId)
         {
             var houseModel = GetByID(houseId);
-            if(houseModel == null)
+            if (houseModel == null)
             {
                 return new ResultResponse
                 {
-                    Message = new MessageResult("NF02", new string[] { "House" }),
+                    Message = new MessageResult("NF02", new string[] { "House" }).Value,
                     IsSuccess = false
                 };
             }
 
-            if(houseModel.Status == HouseConstants.HOUSE_IS_ACTIVE)
+            if(houseModel.Status == HouseConstants.HOUSE_IS_RENTED)
             {
                 return new ResultResponse
                 {
-                    Message = new MessageResult("NF02", new string[] { "House" }),
+                    Message = new MessageResult("BR04", new string[] { "House" }).Value,
                     IsSuccess = false
                 };
             }
-
             var house = await GetAsyn(houseId);
             house.IsDeleted = HouseConstants.HOUSE_IS_DELETED;
             Update(house);
-
             return new ResultResponse
             {
-                Message = new MessageResult("OK02", new string[] { "House" }),
+                Message = new MessageResult("OK02", new string[] { "House" }).Value,
                 IsSuccess = true
             };
         }
@@ -138,19 +138,18 @@ namespace HMS.Data.Services
             {
                 return new ResultResponse
                 {
-                    Message = new MessageResult("NF02", new string[] { "House" }),
+                    Message = new MessageResult("NF02", new string[] { "House" }).Value,
                     IsSuccess = false
                 };
             }
 
-            var houseInfoModelId = houseModel.HouseInfo.Id;
-            var result = await _houseInfoService.UpdateHouseInfoAsync(houseInfoModelId, model.HouseInfo);
+            var result = await _houseInfoService.UpdateHouseInfoAsync(houseModel, model.HouseInfo);
 
             if (result.IsSuccess)
             {
                 return new ResultResponse
                 {
-                    Message = new MessageResult("OK03", new string[] { "House" }),
+                    Message = new MessageResult("OK03", new string[] { "House" }).Value,
                     IsSuccess = true
                 };
             }
@@ -158,7 +157,7 @@ namespace HMS.Data.Services
             {
                 return new ResultResponse
                 {
-                    Message = new MessageResult("BR05", new string[] { "House" }),
+                    Message = new MessageResult("BR05", new string[] { "House" }).Value,
                     IsSuccess = false
                 };
             }

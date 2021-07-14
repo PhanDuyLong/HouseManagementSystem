@@ -1,8 +1,12 @@
-﻿using HMS.Data.Parameters;
+﻿using HMS.Data.Constants;
+using HMS.Data.Parameters;
+using HMS.Data.Responses;
 using HMS.Data.Services;
+using HMS.Data.Utilities;
 using HMS.Data.ViewModels;
 using HMS.Data.ViewModels.Room;
 using HMS.Data.ViewModels.RoomViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Net;
@@ -43,7 +47,7 @@ namespace HMSAPI.Controllers
             var rooms = _roomService.FilterByParameter(userId, roomParameters);
             if (rooms == null || rooms.Count == 0)
             {
-                return NotFound("Room(s) is/are not found");
+                return NotFound(new MessageResult("NF01", new string[] { "Room" }).Value);
             }
             return Ok(rooms);
         }
@@ -62,7 +66,7 @@ namespace HMSAPI.Controllers
             var room = _roomService.GetByID(id);
             if (room == null)
             {
-                return NotFound("Room is not found");
+                return NotFound(new MessageResult("NF02", new string[] { "Room" }).Value);
             }
             return Ok(room);
         }
@@ -72,13 +76,23 @@ namespace HMSAPI.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
+        [Authorize(Roles = AccountConstants.ROLE_IS_OWNER + "," + AccountConstants.ROLE_IS_ADMIN)]
         [HttpPost]
         [ProducesResponseType(typeof(RoomDetailViewModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> Create(CreateRoomViewModel model)
         {
-            return Ok(await _roomService.CreateRoom(model));
+            if (ModelState.IsValid)
+            {
+                var result = await _roomService.CreateRoomAsync(model);
+                if (result.IsSuccess)
+                {
+                    return Ok(result.Message);
+                }
+                return BadRequest(result.Message);
+            }
+            return BadRequest(new MessageResult("BR01").Value);
         }
 
         /// <summary>
@@ -86,18 +100,22 @@ namespace HMSAPI.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
+        [Authorize(Roles = AccountConstants.ROLE_IS_OWNER + "," + AccountConstants.ROLE_IS_ADMIN)]
         [HttpPut]
-        [ProducesResponseType(typeof(RoomDetailViewModel), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ResultResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ResultResponse), (int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> Update(UpdateRoomViewModel model)
         {
-            var room = await _roomService.GetAsyn(model.Id);
-            if (room == null)
+            if (ModelState.IsValid)
             {
-                return NotFound("Room is not found");
+                var result = await _roomService.UpdateRoomAsync(model);
+                if (result.IsSuccess)
+                {
+                    return Ok(result.Message);
+                }
+                return BadRequest(result.Message);
             }
-            return Ok(_roomService.UpdateRoom(room, model));
+            return BadRequest(new MessageResult("BR01").Value);
         }
 
         /// <summary>
@@ -105,19 +123,23 @@ namespace HMSAPI.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
+        [Authorize(Roles = AccountConstants.ROLE_IS_OWNER + "," + AccountConstants.ROLE_IS_ADMIN)]
         [HttpDelete]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public async Task<ActionResult> Delete(int id)
         {
-            var room = await _roomService.GetAsyn(id);
-            if (room == null)
+            if (ModelState.IsValid)
             {
-                return NotFound("Room is not found");
+                var result = await _roomService.DeleteRoomAsync(id);
+                if (result.IsSuccess)
+                {
+                    return Ok(result.Message);
+                }
+                return BadRequest(result.Message);
             }
-
-            return Ok(_roomService.DeleteRoom(room));
+            return BadRequest(new MessageResult("BR01").Value);
         }
 
         /// <summary>

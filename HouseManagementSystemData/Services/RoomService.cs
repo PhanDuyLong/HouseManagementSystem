@@ -4,7 +4,9 @@ using HMS.Data.Constants;
 using HMS.Data.Models;
 using HMS.Data.Parameters;
 using HMS.Data.Repositories;
+using HMS.Data.Responses;
 using HMS.Data.Services.Base;
+using HMS.Data.Utilities;
 using HMS.Data.ViewModels;
 using HMS.Data.ViewModels.HouseViewModels;
 using HMS.Data.ViewModels.Room;
@@ -20,9 +22,9 @@ namespace HMS.Data.Services
     {
         List<RoomShowViewModel> FilterByParameter(string userId, RoomParameters roomParameters);
         RoomDetailViewModel GetByID(int id);
-        Task<RoomDetailViewModel> CreateRoom(CreateRoomViewModel model);
-        RoomDetailViewModel UpdateRoom(Room room, UpdateRoomViewModel model);
-        string DeleteRoom(Room room);
+        Task<ResultResponse> CreateRoomAsync(CreateRoomViewModel model);
+        Task<ResultResponse> UpdateRoomAsync(UpdateRoomViewModel model);
+        Task<ResultResponse> DeleteRoomAsync(int id);
         int CountRooms(string userId, RoomParameters roomParameters);
     }
     public partial class RoomService : BaseService<Room>, IRoomService
@@ -50,7 +52,7 @@ namespace HMS.Data.Services
                 rooms = GetByUserId(userId, roomParameters);
             }
             var status = roomParameters.Status;
-            if(status != null)
+            if (status != null)
             {
                 rooms = rooms.Where(r => r.Status == roomParameters.Status).ToList();
             }
@@ -74,16 +76,10 @@ namespace HMS.Data.Services
             return rooms;
         }
 
-
         public RoomDetailViewModel GetByID(int id)
         {
             var room = Get().Where(r => r.Id == id && r.IsDeleted == RoomConstants.ROOM_IS_NOT_DELETED).ProjectTo<RoomDetailViewModel>(_mapper.ConfigurationProvider).FirstOrDefault();
             return room;
-        }
-
-        string DeleteRoom(Room room)
-        {
-            throw new System.NotImplementedException();
         }
 
         public int CountRooms(string userId, RoomParameters roomParameters)
@@ -91,29 +87,67 @@ namespace HMS.Data.Services
             return FilterByParameter(userId, roomParameters).Count;
         }
 
-        Task<RoomDetailViewModel> CreateRoom(CreateRoomViewModel model)
+        public Task<ResultResponse> CreateRoomAsync(CreateRoomViewModel model)
         {
-            throw new System.NotImplementedException();
+            return null;
         }
 
-        RoomDetailViewModel UpdateRoom(Room room, UpdateRoomViewModel model)
+        public async Task<ResultResponse> UpdateRoomAsync(UpdateRoomViewModel model)
         {
-            throw new System.NotImplementedException();
+            var roomModel = GetByID(model.Id);
+            if (roomModel == null)
+            {
+                return new ResultResponse
+                {
+                    Message = new MessageResult("NF02", new string[] { "Room" }).Value,
+                    IsSuccess = false
+                };
+            }
+
+            var room = await GetAsyn(model.Id);
+            if (model.Name != null)
+            {
+                room.Name = model.Name;
+            }
+
+            Update(room);
+
+            return new ResultResponse
+            {
+                Message = new MessageResult("OK03", new string[] { "Room" }).Value,
+                IsSuccess = true
+            };
         }
 
-        string IRoomService.DeleteRoom(Room room)
+        public async Task<ResultResponse> DeleteRoomAsync(int id)
         {
-            throw new System.NotImplementedException();
-        }
+            var room = await GetAsyn(id);
+            if (room == null)
+            {
+                return new ResultResponse
+                {
+                    Message = new MessageResult("NF02", new string[] { "Room" }).Value,
+                    IsSuccess = false
+                };
+            }
 
-        Task<RoomDetailViewModel> IRoomService.CreateRoom(CreateRoomViewModel model)
-        {
-            throw new System.NotImplementedException();
-        }
+            if (room.Status == RoomConstants.ROOM_IS_RENTED)
+            {
+                return new ResultResponse
+                {
+                    Message = new MessageResult("BR04", new string[] { "Room" }).Value,
+                    IsSuccess = false
+                };
+            }
 
-        RoomDetailViewModel IRoomService.UpdateRoom(Room room, UpdateRoomViewModel model)
-        {
-            throw new System.NotImplementedException();
+            room.IsDeleted = RoomConstants.ROOM_IS_DELETED;
+            Update(room);
+
+            return new ResultResponse
+            {
+                Message = new MessageResult("OK02", new string[] { "Room" }).Value,
+                IsSuccess = true
+            };
         }
     }
 }

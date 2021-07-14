@@ -1,6 +1,7 @@
 ﻿using HMS.Data.Models;
 using HMS.Data.Repositories;
 using HMS.Data.Services;
+using HMS.FirebaseNotification;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -59,6 +60,8 @@ namespace HMS.Data.DependencyInjection
 
             services.AddScoped<IServiceTypeRepository, ServiceTypeRepository>();
             services.AddScoped<IServiceTypeService, ServiceTypeService>();
+
+            services.AddScoped<INotificationService, NotificationService>();
         }
     }
 }

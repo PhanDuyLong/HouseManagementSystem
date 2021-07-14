@@ -1,4 +1,6 @@
 using AutoMapper;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 using HMS.Authen.Authentication;
 using HMS.Data.AutoMapperProfile;
 using HMS.Data.DependencyInjection;
@@ -116,7 +118,7 @@ namespace HMSAPI
                     Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
                     In = ParameterLocation.Header,
                     Type = SecuritySchemeType.Http,
-                    Scheme = "oauth2",
+                    Scheme = "bearer",
                     Reference = new OpenApiReference
                     {
                         Id = JwtBearerDefaults.AuthenticationScheme,
@@ -136,6 +138,13 @@ namespace HMSAPI
                 //Config show comment of API
                 var filePath = Path.Combine(System.AppContext.BaseDirectory, "HMSAPI.xml");
                 c.IncludeXmlComments(filePath);
+
+
+                //Create Firebase App
+                FirebaseApp.Create(new AppOptions()
+                {
+                    Credential = GoogleCredential.FromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "key.json")),
+                });
             });
         }
 

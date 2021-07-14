@@ -64,7 +64,7 @@ namespace HMSAPI.Controllers
         {
             var bill = _billService.GetByID(id);
             if (bill == null) 
-                return NotFound(new MessageResult("MS02", new string[] { "Bill"})); 
+                return NotFound(new MessageResult("NF02", new string[] { "Bill"})); 
 
             return Ok(bill);
         }

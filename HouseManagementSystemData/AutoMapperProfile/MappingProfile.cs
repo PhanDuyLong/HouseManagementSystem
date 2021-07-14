@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using HMS.Data.Constants;
 using HMS.Data.Models;
 using HMS.Data.Requests;
 using HMS.Data.ViewModels;
@@ -21,7 +22,7 @@ namespace HMS.Data.AutoMapperProfile
             CreateMap<Account, AccountDetailViewModel>();
 
             CreateMap<RegisterRequest, Account>()
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => true));
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => AccountConstants.ACCOUNT_IS_ACTIVE));
 
             CreateMap<Account, AccountTenantViewModel>();
 

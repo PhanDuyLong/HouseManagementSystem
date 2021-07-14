@@ -7,6 +7,7 @@ using HMS.Data.Responses;
 using HMS.Data.Services.Base;
 using HMS.Data.Utilities;
 using HMS.Data.ViewModels;
+using HMS.Data.ViewModels.HouseViewModels;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +18,7 @@ namespace HMS.Data.Services
     public partial interface IHouseInfoService : IBaseService<HouseInfo>
     {
         HouseInfoViewModel GetByID(int id);
-        Task<ResultResponse> UpdateHouseInfoAsync(int id, UpdateHouseInfoViewModel model);
+        Task<ResultResponse> UpdateHouseInfoAsync(HouseBaseViewModel houseModel, UpdateHouseInfoViewModel model);
     }
     public partial class HouseInfoService : BaseService<HouseInfo>, IHouseInfoService
     {
@@ -34,16 +35,39 @@ namespace HMS.Data.Services
             return hInfo;
         }
 
-        public async Task<ResultResponse> UpdateHouseInfoAsync(int id, UpdateHouseInfoViewModel model)
+        public async Task<ResultResponse> UpdateHouseInfoAsync(HouseBaseViewModel houseModel, UpdateHouseInfoViewModel model)
         {
-            var houseInfo = await GetAsyn(id);
-            houseInfo.Name = model.Name;
-            houseInfo.Address = model.Address;
-            houseInfo.Image = model.Image;
+            HouseInfo houseInfo;
+            if(houseModel.HouseInfo == null)
+            {
+                houseInfo = new HouseInfo();
+                houseInfo.HouseId = houseModel.Id;
+            }
+            else
+            {
+                houseInfo = await GetAsyn(houseModel.HouseInfo.Id);
+            }
+            if(model.Name != null)
+            {
+                houseInfo.Name = model.Name;
+
+            }
+            if(model.Address != null)
+            {
+                houseInfo.Address = model.Address;
+            }
+            if (model.Image != null)
+            {
+                houseInfo.Image = model.Image;
+            }
+            if(houseInfo.Id == 0)
+            {
+                await CreateAsyn(houseInfo);
+            }
             Update(houseInfo);
             return new ResultResponse
             {
-                Message = new MessageResult("OK03", new string[] { "HouseInfo" }),
+                Message = new MessageResult("OK03", new string[] { "HouseInfo" }).Value,
                 IsSuccess = true,
             };
         }

@@ -67,14 +67,13 @@ namespace HMS.Data.Services
 
         public async Task<int> CreateDefaultServicesAsync(string houseId)
         {
-            var serviceTypes = await _serviceTypeService.GetServiceTypes();
             var defaultServices = new ArrayList();
             var houseService = new CreateServiceViewModel
             {
                 HouseId = houseId,
                 Name = "Tiền Nhà",
                 CalculationUnit = "tháng",
-                ServiceTypeName = serviceTypes.Where(serviceType => serviceType.Name.Equals(ServiceTypeConstants.SERVICE_TYPE_IS_DEFAULT_FIXED)).FirstOrDefault().Name
+                ServiceTypeName = ServiceTypeConstants.SERVICE_TYPE_IS_DEFAULT_FIXED
             };
             defaultServices.Add(houseService);
             var eletricService = new CreateServiceViewModel
@@ -82,7 +81,7 @@ namespace HMS.Data.Services
                 HouseId = houseId,
                 Name = "Tiền Điện",
                 CalculationUnit = "kWH",
-                ServiceTypeName = serviceTypes.Where(serviceType => serviceType.Name.Equals(ServiceTypeConstants.SERVICE_TYPE_IS_DEFAULT_DIFFERENT)).FirstOrDefault().Name
+                ServiceTypeName = ServiceTypeConstants.SERVICE_TYPE_IS_DEFAULT_DIFFERENT
             };
             defaultServices.Add(eletricService);
             var waterService = new CreateServiceViewModel
@@ -90,7 +89,7 @@ namespace HMS.Data.Services
                 HouseId = houseId,
                 Name = "Tiền Nước",
                 CalculationUnit = "m^3",
-                ServiceTypeName = serviceTypes.Where(serviceType => serviceType.Name.Equals(ServiceTypeConstants.SERVICE_TYPE_IS_DEFAULT_DIFFERENT)).FirstOrDefault().Name
+                ServiceTypeName = ServiceTypeConstants.SERVICE_TYPE_IS_DEFAULT_DIFFERENT
             };
             defaultServices.Add(waterService);
             int count = 0;

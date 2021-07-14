@@ -49,7 +49,7 @@ namespace HMSAPI.Controllers
                 {
                     return Ok(result);
                 }
-                return BadRequest(result.Message.Value);
+                return BadRequest(result.Message);
             }
             return BadRequest(new MessageResult("BR01"));
         }
@@ -72,7 +72,7 @@ namespace HMSAPI.Controllers
                 {
                     return Ok(result);
                 }
-                return BadRequest(result.Message.Value);
+                return BadRequest(result.Message);
             }
             return BadRequest(new MessageResult("BR01"));
         }

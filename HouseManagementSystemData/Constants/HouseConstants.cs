@@ -8,7 +8,7 @@ namespace HMS.Data.Constants
     {
         public const bool HOUSE_IS_DELETED = true;
         public const bool HOUSE_IS_NOT_DELETED = false;
-        public const bool HOUSE_IS_ACTIVE = true;
-        public const bool HOUSE_IS_INACTIVE = false;
+        public const bool HOUSE_IS_RENTED = true;
+        public const bool HOUSE_IS_NOT_RENTED = false;
     }
 }

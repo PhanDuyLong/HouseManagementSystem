@@ -1,4 +1,5 @@
-﻿using HMS.Data.ViewModels;
+﻿using HMS.Data.Utilities;
+using HMS.Data.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -16,9 +17,10 @@ namespace HMS.Data.Responses
         public string Image { get; set; }
         public string Role { get; set; }
 
+
         public AuthenticateResponse() { }
 
-        public AuthenticateResponse(AccountDetailViewModel accountViewModel, string token, ResultResponse response, DateTime expireDate)
+        public AuthenticateResponse(AccountDetailViewModel accountViewModel, string token, MessageResult message, bool isSuccess, DateTime expireDate)
         {
             Name = accountViewModel.Name;
             UserId = accountViewModel.UserId;
@@ -27,8 +29,8 @@ namespace HMS.Data.Responses
             Image = accountViewModel.Image;
             Role = accountViewModel.Role;
             Token = token;
-            IsSuccess = response.IsSuccess;
-            Message = response.Message;
+            IsSuccess = isSuccess;
+            Message = message.Value;
             ExpireDate = expireDate;
         }
     }

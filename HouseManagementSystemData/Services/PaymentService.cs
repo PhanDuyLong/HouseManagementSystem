@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
-using FirebaseAdmin.Messaging;
 using HMS.Data.Models;
 using HMS.Data.Repositories;
 using HMS.Data.Services.Base;
 using HMS.Data.ViewModels;
+using HMS.FirebaseNotification;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
@@ -23,14 +23,26 @@ namespace HMS.Data.Services
     public partial class PaymentService : BaseService<Payment>, IPaymentService
     {
         private readonly IMapper _mapper;
-        public PaymentService(DbContext dbContext, IPaymentRepository repository, IMapper mapper) : base(dbContext, repository)
+        private readonly INotificationService _notificationService;
+        public PaymentService(DbContext dbContext, IPaymentRepository repository, IMapper mapper, INotificationService notificationService) : base(dbContext, repository)
         {
             _dbContext = dbContext;
             _mapper = mapper;
+            _notificationService = notificationService;
         }
 
         public async Task<string> Payment(BillPaymentViewModel model)
         {
+            MobileNotification firebaseNotification = new MobileNotification
+            {
+                Title = "Payment",
+                Body = "New Payment",
+                Topic = "all"
+            };
+
+            await _notificationService.PushNotificationAsync(firebaseNotification);
+
+
             /*string noti = getAndroidMessage("Hello", "Hi", "");
             Send(noti);*/
             return null;
