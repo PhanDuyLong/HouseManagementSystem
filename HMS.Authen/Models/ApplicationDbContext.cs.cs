@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HMS.Authen.Authentication
+namespace HMS.Authen.Models
 {
     public class AuthenDbContext : IdentityDbContext<ApplicationAccount>
     {

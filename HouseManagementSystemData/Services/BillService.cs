@@ -23,7 +23,7 @@ namespace HMS.Data.Services
     public partial interface IBillService : IBaseService<Bill>
     {
         List<ShowBillViewModel> FilterByParameter(string userId, BillParameters billParameters);
-        BillDetailViewModel GetByID(int id);
+        BillDetailViewModel GetById(int id);
         Task<BillDetailViewModel> CreateBill(CreateBillViewModel model);
         BillDetailViewModel UpdateBill(Bill bill, UpdateBillViewModel model);
         string DeleteBill(Bill bill);
@@ -56,7 +56,7 @@ namespace HMS.Data.Services
             bill.IsSent = BillConstants.BILL_IS_NOT_SENT;
 
             var billItems = new ArrayList();
-            var contract = _contractService.GetByID(createModel.ContractId);
+            var contract = _contractService.GetById(createModel.ContractId);
             var serviceContracts = contract.ServiceContracts.ToList();
             double total = 0;
             foreach (ServiceContractDetailViewModel serviceContract in serviceContracts)
@@ -105,7 +105,7 @@ namespace HMS.Data.Services
                 await _billItemService.CreateAsyn(billItem);
             }
 
-            return GetByID(bill.Id);
+            return GetById(bill.Id);
         }
 
         public string DeleteBill(Bill bill)
@@ -167,7 +167,7 @@ namespace HMS.Data.Services
             return bills;
         }
 
-        public BillDetailViewModel GetByID(int id)
+        public BillDetailViewModel GetById(int id)
         {
             var bill = Get().Where(b => b.Id == id && b.IsDeleted == BillConstants.BILL_IS_NOT_DELETED).ProjectTo<BillDetailViewModel>(_mapper.ConfigurationProvider).FirstOrDefault();
             return bill;
@@ -207,7 +207,7 @@ namespace HMS.Data.Services
                     _billItemService.Update(item);
                 }
             }
-            return GetByID(bill.Id);
+            return GetById(bill.Id);
         }
 
 

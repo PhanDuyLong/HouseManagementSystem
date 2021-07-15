@@ -20,10 +20,10 @@ namespace HMS.Data.Utilities
         public const string BR01 = "Some properties are not valid!";
         public const string BR02 = "{0} creation failed! Please check details and try again!";
         public const string BR03 = "{0} already exists!";
-        public const string BR04 = "{0} is rented!";
+        public const string BR04 = "{0} is {1}!";
         public const string BR05 = "{0} update failed! Please check details and try again!";
-        public const string BR06 = "There is no user with that {0}";
-        public const string BR07 = "Invalid password";
+        public const string BR06 = "There is no user with that {0}!";
+        public const string BR07 = "Invalid {0}!";
 
         //500 Internal Server Error
         public const string ISE01 = "Something wrong with server!";

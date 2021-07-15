@@ -1,7 +1,7 @@
 using AutoMapper;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
-using HMS.Authen.Authentication;
+using HMS.Authen.Models;
 using HMS.Data.AutoMapperProfile;
 using HMS.Data.DependencyInjection;
 using HMS.Data.Models;

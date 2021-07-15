@@ -62,7 +62,7 @@ namespace HMSAPI.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public IActionResult GetBill(int id)
         {
-            var bill = _billService.GetByID(id);
+            var bill = _billService.GetById(id);
             if (bill == null) 
                 return NotFound(new MessageResult("NF02", new string[] { "Bill"})); 
 

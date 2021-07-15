@@ -3,7 +3,8 @@ using AutoMapper.QueryableExtensions;
 using FirebaseAdmin;
 using FirebaseAdmin.Auth;
 using Google.Apis.Auth.OAuth2;
-using HMS.Authen.Authentication;
+using HMS.Authen.Models;
+using HMS.Authen.Services;
 using HMS.Data.Constants;
 using HMS.Data.Models;
 using HMS.Data.Repositories;
@@ -16,7 +17,6 @@ using HMS.Data.ViewModels.Account;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -41,23 +41,19 @@ namespace HMS.Data.Services
         AccountDetailViewModel GetByUserId(string userId);
         AccountDetailViewModel GetByEmail(string email);
         List<AccountTenantViewModel> GetTenantNames();
-        Task<AccountDetailViewModel> UpdateAccountAsync(string userId, UpdateAccountViewModel model);
+        Task<ResultResponse> UpdateAccountAsync(string userId, UpdateAccountViewModel model);
         string DeleteAccount(Account account);
     }
     public partial class AccountService : BaseService<Account>, IAccountService
     {
         private readonly IMapper _mapper;
-        private readonly UserManager<ApplicationAccount> _accountManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly IConfiguration _configuration;
+        private readonly IAccountAuthenService _accountAuthenService;
         public AccountService(DbContext dbContext, IAccountRepository repository, IMapper mapper
-            , UserManager<ApplicationAccount> accountManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration) : base(dbContext, repository)
+            , IAccountAuthenService accountAuthenService) : base(dbContext, repository)
         {
             _dbContext = dbContext;
             _mapper = mapper;
-            _accountManager = accountManager;
-            _roleManager = roleManager;
-            _configuration = configuration;
+            _accountAuthenService = accountAuthenService;
         }
 
         public string DeleteAccount(Account account)
@@ -93,10 +89,28 @@ namespace HMS.Data.Services
 
         public async Task<AuthenticateResponse> LoginAccountAsync(AuthenticateRequest model)
         {
-            var account = await _accountManager.FindByEmailAsync(model.Email);
-            var acc = GetByEmail(model.Email);
+            var internalRequest = new AuthenticateInternalRequest
+            {
+                Email = model.Email,
+                Password = model.Password
+            };
 
-            if (account == null || acc == null)
+            var result = await _accountAuthenService.LoginAccountAsync(internalRequest);
+
+            if (!result.IsSuccess)
+            {
+                return new AuthenticateResponse
+                {
+                    Message = result.Message,
+                    IsSuccess = false,
+                };
+            }
+
+            var accountViewModel = GetByEmail(model.Email);
+
+            var firebaseCheck = CustomFirebaseAuth(accountViewModel.UserId, model.Email, model.Password);
+
+            if (!firebaseCheck)
             {
                 return new AuthenticateResponse
                 {
@@ -105,122 +119,52 @@ namespace HMS.Data.Services
                 };
             }
 
-            var result = await _accountManager.CheckPasswordAsync(account, model.Password);
-
-            if (!result)
-                return new AuthenticateResponse
-                {
-                    Message = new MessageResult("BR07").Value,
-                    IsSuccess = false,
-                };
-
-            var userId = CustomFirebaseAuth(model.Email, model.Password);
-
-            if (userId.Length != 0)
-            {
-                if (!userId.Equals(acc.UserId) || !userId.Equals(account.UserName))
-                {
-                    return new AuthenticateResponse
-                    {
-                        Message = new MessageResult("BR06", new string[] { "email" }).Value,
-                        IsSuccess = false,
-                    };
-                }
-            }
-
-            var accountRoles = await _accountManager.GetRolesAsync(account);
-
-            var authClaims = new List<Claim>
-                {
-                    new Claim(ClaimTypes.Name, account.UserName),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                };
-
-            foreach (var accountRole in accountRoles)
-            {
-                authClaims.Add(new Claim(ClaimTypes.Role, accountRole));
-            }
-
-            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
-
-            var token = new JwtSecurityToken(
-                issuer: _configuration["JWT:ValidIssuer"],
-                audience: _configuration["JWT:ValidAudience"],
-                expires: DateTime.Now.AddDays(30),
-                claims: authClaims,
-                signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
-                );
-
-
-            var accountViewModel = GetByUserId(account.UserName);
-
             var message = new MessageResult("OK04");
 
-            return new AuthenticateResponse(accountViewModel, new JwtSecurityTokenHandler().WriteToken(token), message, true , token.ValidTo);
+            return new AuthenticateResponse(accountViewModel, result.Token, message, true, result.ExpireDate);
         }
 
         public async Task<ResultResponse> RegisterAccountAsync(RegisterRequest model)
         {
-            var check = await IsAccountExistsAsync(model.UserId, model.Email);
+            var check = await CheckValidUserIdAndEmailAsync(model.UserId, model.Email);
+            if (!check.IsSuccess)
+                return check;
 
-            if (check)
+            check = CheckValidRole(model.Role);
+            if (!check.IsSuccess)
+                return check;
+
+            var registerAccountRequest = new RegisterAccountRequest
+            {
+                UserId = model.UserId,
+                Email = model.Email,
+                Password = model.Password,
+                Role = model.Role,
+            };
+
+            var result = await _accountAuthenService.RegisterAccountAsync(registerAccountRequest);
+
+            if (!result.IsSuccess)
+            {
+                if(result.Errors != null)
+                {
+                    return new ResultResponse
+                    {
+                        Message = new MessageResult("BRO3", new string[] { "Account" }).Value + "\n" + result.GetErrors(),
+                        IsSuccess = false,
+                    };
+                }
+
                 return new ResultResponse
                 {
-                    Message = new MessageResult("BRO3", new string[] { "Account" }).Value,
+                    Message = result.Message,
                     IsSuccess = false,
                 };
-
-            ApplicationAccount account = new ApplicationAccount()
-            {
-                Email = model.Email,
-                SecurityStamp = Guid.NewGuid().ToString(),
-                UserName = model.UserId,
-                PhoneNumber = model.Phone
-            };
+            }
 
             var acc = _mapper.Map<Account>(model);
             acc.Password = null;
-
-            var result = await _accountManager.CreateAsync(account, model.Password);
-
-            if (!result.Succeeded)
-                return new ResultResponse
-                {
-                    Message = new MessageResult("BR03", new string[] { "Account" }).Value,
-                    IsSuccess = false,
-                };
-
             await CreateAsyn(acc);
-            if (Get(acc.UserId) == null)
-                return new ResultResponse
-                {
-                    Message = new MessageResult("BR03", new string[] { "Account" }).Value,
-                    IsSuccess = false,
-                };
-
-            if (!await _roleManager.RoleExistsAsync(AccountConstants.ROLE_IS_ADMIN))
-                await _roleManager.CreateAsync(new IdentityRole(AccountConstants.ROLE_IS_ADMIN));
-            if (!await _roleManager.RoleExistsAsync(AccountConstants.ROLE_IS_OWNER))
-                await _roleManager.CreateAsync(new IdentityRole(AccountConstants.ROLE_IS_OWNER));
-            if (!await _roleManager.RoleExistsAsync(AccountConstants.ROLE_IS_TENACT))
-                await _roleManager.CreateAsync(new IdentityRole(AccountConstants.ROLE_IS_TENACT));
-
-            if (model.Role.Equals(AccountConstants.ROLE_IS_OWNER))
-            {
-                if (await _roleManager.RoleExistsAsync(AccountConstants.ROLE_IS_OWNER))
-                {
-                    await _accountManager.AddToRoleAsync(account, AccountConstants.ROLE_IS_OWNER);
-                }
-            }
-
-            if (model.Role.Equals(AccountConstants.ROLE_IS_TENACT))
-            {
-                if (await _roleManager.RoleExistsAsync(AccountConstants.ROLE_IS_TENACT))
-                {
-                    await _accountManager.AddToRoleAsync(account, AccountConstants.ROLE_IS_TENACT);
-                }
-            }
-
 
             return new ResultResponse
             {
@@ -231,53 +175,44 @@ namespace HMS.Data.Services
 
         public async Task<ResultResponse> RegisterAdminAccountAsync(RegisterRequest model)
         {
-            var check = await IsAccountExistsAsync(model.UserId, model.Email);
+            var check = await CheckValidUserIdAndEmailAsync(model.UserId, model.Email);
 
-            if (check)
+            if (!check.IsSuccess)
+                return check;
+
+            model.Role = AccountConstants.ROLE_IS_ADMIN;
+
+            var registerAccountRequest = new RegisterAccountRequest
+            {
+                UserId = model.UserId,
+                Email = model.Email,
+                Password = model.Password,
+                Role = model.Role,
+            };
+
+            var result = await _accountAuthenService.RegisterAccountAsync(registerAccountRequest);
+
+            if (!result.IsSuccess)
+            {
+                if (result.Errors != null)
+                {
+                    return new ResultResponse
+                    {
+                        Message = new MessageResult("BR02", new string[] { "Account" }).Value + "\n" + result.GetErrors(),
+                        IsSuccess = false,
+                    };
+                }
+
                 return new ResultResponse
                 {
-                    Message = new MessageResult("BRO3", new string[] { "Account" }).Value,
+                    Message = result.Message,
                     IsSuccess = false,
                 };
+            }
 
-            ApplicationAccount account = new ApplicationAccount()
-            {
-                Email = model.Email,
-                SecurityStamp = Guid.NewGuid().ToString(),
-                UserName = model.UserId,
-                PhoneNumber = model.Phone
-            };
             var acc = _mapper.Map<Account>(model);
             acc.Password = null;
-
-            var result = await _accountManager.CreateAsync(account, model.Password);
-
-            if (!result.Succeeded)
-                return new ResultResponse
-                {
-                    Message = new MessageResult("BR03", new string[] { "Account" }).Value,
-                    IsSuccess = false,
-                };
-
             await CreateAsyn(acc);
-            if (Get(acc.UserId) == null)
-                return new ResultResponse
-                {
-                    Message = new MessageResult("BR03", new string[] { "Account" }).Value,
-                    IsSuccess = false,
-                };
-
-            if (!await _roleManager.RoleExistsAsync(AccountConstants.ROLE_IS_ADMIN))
-                await _roleManager.CreateAsync(new IdentityRole(AccountConstants.ROLE_IS_ADMIN));
-            if (!await _roleManager.RoleExistsAsync(AccountConstants.ROLE_IS_OWNER))
-                await _roleManager.CreateAsync(new IdentityRole(AccountConstants.ROLE_IS_OWNER));
-            if (!await _roleManager.RoleExistsAsync(AccountConstants.ROLE_IS_TENACT))
-                await _roleManager.CreateAsync(new IdentityRole(AccountConstants.ROLE_IS_TENACT));
-
-            if (await _roleManager.RoleExistsAsync(AccountConstants.ROLE_IS_ADMIN))
-            {
-                await _accountManager.AddToRoleAsync(account, AccountConstants.ROLE_IS_ADMIN);
-            }
 
             return new ResultResponse
             {
@@ -286,51 +221,45 @@ namespace HMS.Data.Services
             };
         }
 
-        public async Task<AccountDetailViewModel> UpdateAccountAsync(string userId, UpdateAccountViewModel model)
+        public async Task<ResultResponse> UpdateAccountAsync(string userId, UpdateAccountViewModel model)
         {
             var account = await GetAsyn(userId);
-            var acc = await _accountManager.FindByNameAsync(userId);
-            if (account == null || acc == null)
-                return null;
-            bool isUpdateAccount = false;
-            bool isUpdateAcc = false;
-
+            if (account == null || account.Status == AccountConstants.ACCOUNT_IS_INACTIVE)
+            {
+                return new AuthenticateResponse
+                {
+                    Message = new MessageResult("BR06", new string[] { "userId" }).Value,
+                    IsSuccess = false,
+                };
+            }
+            
             if (model.Name != null)
             {
                 account.Name = model.Name;
-                isUpdateAccount = true;
             }
 
             if (model.Phone != null)
             {
-                acc.PhoneNumber = model.Phone;
                 account.Phone = model.Phone;
-                isUpdateAccount = true;
-                isUpdateAcc = true;
             }
 
             if (model.Image != null)
             {
                 account.Image = model.Image;
-                isUpdateAccount = true;
             }
 
-            if (isUpdateAcc)
+            Update(account);
+
+            return new ResultResponse
             {
-                var result = await _accountManager.UpdateAsync(acc);
-                if (!result.Succeeded)
-                    return null;
-            }
-
-            if (isUpdateAccount)
-                Update(account);
-
-            return GetByUserId(account.UserId);
+                Message = new MessageResult("OK03", new string[] { "Account's profile" }).Value,
+                IsSuccess = true
+            }; ;
         }
 
         public async Task<AuthenticateResponse> LoginAccountByGoogleAsync(AuthenticateGoogleRequest model)
         {
-            var account = await _accountManager.FindByNameAsync(model.UserId);
+            /*var account = await _accountManager.FindByNameAsync(model.UserId);
             var acc = GetByUserId(model.UserId);
             if (account == null || acc == null)
             {
@@ -370,22 +299,36 @@ namespace HMS.Data.Services
 
             var accountViewModel = GetByUserId(account.UserName);
             var message = new MessageResult("OK04");
-            return new AuthenticateResponse(accountViewModel, new JwtSecurityTokenHandler().WriteToken(token), message, true, token.ValidTo);
+            return new AuthenticateResponse(accountViewModel, new JwtSecurityTokenHandler().WriteToken(token), message, true, token.ValidTo);*/
+            return null;
         }
 
-        public async Task<bool> IsAccountExistsAsync(string userId, string email)
+        public async Task<ResultResponse> CheckValidUserIdAndEmailAsync(string userId, string email)
         {
-            var accountExists = await _accountManager.FindByNameAsync(userId);
-            var accountExistsWithEmail = await _accountManager.FindByEmailAsync(email);
-            var accExists = GetByUserId(userId);
-            var accExistsWithEmail = GetByEmail(email);
+            var accountExistsWithId = await GetAsyn(userId);
+            var accountExistsWithEmail = GetByEmail(email);
 
-            if (accountExists != null || accExists != null || accExistsWithEmail != null || accountExistsWithEmail != null)
-                return true;
-            return false;
+            if (accountExistsWithId != null || accountExistsWithEmail != null)
+                return new ResultResponse
+                {
+                    Message = new MessageResult("BR03", new string[] { "Account" }).Value,
+                    IsSuccess = false,
+                };
+            if (accountExistsWithId.Status.Equals(AccountConstants.ACCOUNT_IS_INACTIVE))
+            {
+                return new ResultResponse
+                {
+                    Message = new MessageResult("BR04", new string[] { "Account", "inactive"}).Value,
+                    IsSuccess = false,
+                };
+            }
+            return new ResultResponse
+            {
+                IsSuccess = true
+            };
         }
 
-        public string CustomFirebaseAuth(string email, string password)
+        public bool CustomFirebaseAuth(string userId, string email, string password)
         {
             try
             {
@@ -410,32 +353,35 @@ namespace HMS.Data.Services
                     {
                         sResponseFromServer = tReader.ReadToEnd();
                     }
-                if (sResponseFromServer.Length != 0)
+                if (sResponseFromServer != null && sResponseFromServer.Length != 0)
                 {
                     var json = JObject.Parse(sResponseFromServer); ;
-                    string userId = (string)json.SelectToken("localId");
-                    return userId;
+                    string firebaseUserId = (string)json.SelectToken("localId");
+                    return firebaseUserId.Equals(userId);
                 }
             }
             catch (Exception ex)
             {
-                if (ex != null)
-                    return "";
+                if(ex != null)
+                    return false;
             }
-            return "";
+            return false;
         }
 
-        public async Task<string> GoogleFirebaseAuthAsync(string userId)
+        public ResultResponse CheckValidRole(string role)
         {
-/*            var defaultApp = FirebaseApp.Create(new AppOptions()
+            if (AccountConstants.ROLE_IS_TENACT.Equals(role) || AccountConstants.ROLE_IS_OWNER.Equals(role) || AccountConstants.ROLE_IS_ADMIN.Equals(role))
             {
-                Credential = GoogleCredential.FromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "key.json")),
-            });
-*/
-
-
-            string customToken = await FirebaseAuth.DefaultInstance.CreateCustomTokenAsync(userId);
-            return customToken;
+                return new ResultResponse
+                {
+                    IsSuccess = true
+                };   
+            }
+            return new ResultResponse
+            {
+                Message = new MessageResult("BRO7", new string[] { "role" }).Value,
+                IsSuccess = false,
+            };
         }
     }
 }

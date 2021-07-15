@@ -2,7 +2,7 @@
 
 namespace HMS.Data.Requests
 {
-    public class AuthenticateGoogleRequest
+    public class AuthenticateExternalRequest
     {
         [Required(ErrorMessage = "Id token is required")]
         public string IdToken { get; set; }

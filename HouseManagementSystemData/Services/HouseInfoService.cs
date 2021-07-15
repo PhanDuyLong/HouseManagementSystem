@@ -17,7 +17,7 @@ namespace HMS.Data.Services
 {
     public partial interface IHouseInfoService : IBaseService<HouseInfo>
     {
-        HouseInfoViewModel GetByID(int id);
+        HouseInfoViewModel GetById(int id);
         Task<ResultResponse> UpdateHouseInfoAsync(HouseBaseViewModel houseModel, UpdateHouseInfoViewModel model);
     }
     public partial class HouseInfoService : BaseService<HouseInfo>, IHouseInfoService
@@ -29,7 +29,7 @@ namespace HMS.Data.Services
             _mapper = mapper;
         }
 
-        public HouseInfoViewModel GetByID(int id)
+        public HouseInfoViewModel GetById(int id)
         {
             var hInfo = Get().Where(hInfo => hInfo.Id == id).ProjectTo<HouseInfoViewModel>(_mapper.ConfigurationProvider).FirstOrDefault();
             return hInfo;

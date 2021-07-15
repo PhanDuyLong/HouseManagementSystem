@@ -63,7 +63,7 @@ namespace HMSAPI.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public IActionResult GetRoom(int id)
         {
-            var room = _roomService.GetByID(id);
+            var room = _roomService.GetById(id);
             if (room == null)
             {
                 return NotFound(new MessageResult("NF02", new string[] { "Room" }).Value);

@@ -11,7 +11,7 @@ namespace HMS.Data.Services
     public partial interface IServiceContractService : IBaseService<ServiceContract>
     {
         List<ServiceContractDetailViewModel> GetByContractId(int contractId);
-        ServiceContractDetailViewModel GetByID(int id);
+        ServiceContractDetailViewModel GetById(int id);
         ServiceContractDetailViewModel UpdateServiceContract(ServiceContract serviceContract, UpdateServiceContractViewModel model);
         string DeleteServiceContract(ServiceContract serviceContract);
     }
@@ -34,7 +34,7 @@ namespace HMS.Data.Services
             throw new System.NotImplementedException();
         }
 
-        public ServiceContractDetailViewModel GetByID(int id)
+        public ServiceContractDetailViewModel GetById(int id)
         {
             throw new System.NotImplementedException();
         }

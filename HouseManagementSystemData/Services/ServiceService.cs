@@ -16,7 +16,7 @@ namespace HMS.Data.Services
     public partial interface IServiceService : IBaseService<Service>
     {
         List<ServiceViewModel> GetByHouseId(string houseId);
-        ServiceViewModel GetByID(int id);
+        ServiceViewModel GetById(int id);
         Task<ServiceViewModel> CreateService(CreateServiceViewModel model);
         ServiceViewModel UpdateService(Service service, UpdateServiceViewModel model);
         string DeleteService(Service service);
@@ -41,7 +41,7 @@ namespace HMS.Data.Services
             service.Status = ServiceConstants.SERVICE_IS_ACTIVE;
             service.ServiceTypeId = serviceTypes.Where(serviceType => serviceType.Name.Equals(ServiceTypeConstants.SERVICE_TYPE_IS_DEFAULT_DIFFERENT)).FirstOrDefault().Id;
             await CreateAsyn(service);
-            return GetByID(service.Id);
+            return GetById(service.Id);
         }
 
         public string DeleteService(Service service)
@@ -54,7 +54,7 @@ namespace HMS.Data.Services
             throw new System.NotImplementedException();
         }
 
-        public ServiceViewModel GetByID(int id)
+        public ServiceViewModel GetById(int id)
         {
             var service = Get().Where(s => s.Id == id && s.Status == ServiceConstants.SERVICE_IS_ACTIVE).ProjectTo<ServiceViewModel>(_mapper.ConfigurationProvider).FirstOrDefault();
             return service;

@@ -55,7 +55,7 @@ namespace HMSAPI.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public IActionResult GetHouse(int id)
         {
-            var service = _serviceService.GetByID(id);
+            var service = _serviceService.GetById(id);
             if (service == null)
                 return NotFound("Service is not found");
             return Ok(service);

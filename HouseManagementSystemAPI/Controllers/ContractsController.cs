@@ -55,7 +55,7 @@ namespace HMSAPI.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public IActionResult GetContract(int id)
         {
-            var contract = _contractService.GetByID(id);
+            var contract = _contractService.GetById(id);
             if (contract == null)
             {
                 return NotFound("Contract is not found");

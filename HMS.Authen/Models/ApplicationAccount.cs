@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace HMS.Authen.Authentication
+namespace HMS.Authen.Models
 {
     public class ApplicationAccount : IdentityUser
     {

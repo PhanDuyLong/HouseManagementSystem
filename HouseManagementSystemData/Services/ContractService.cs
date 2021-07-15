@@ -17,7 +17,7 @@ namespace HMS.Data.Services
 {
     public partial interface IContractService : IBaseService<Contract>
     {
-        ContractDetailViewModel GetByID(int id);
+        ContractDetailViewModel GetById(int id);
         Task<ContractDetailViewModel> CreateContract(CreateContractViewModel model);
         ContractDetailViewModel UpdateContract(Contract contract, UpdateContractViewModel model);
         string DeleteContract(Contract contract);
@@ -45,7 +45,7 @@ namespace HMS.Data.Services
             throw new System.NotImplementedException();
         }
 
-        public ContractDetailViewModel GetByID(int id)
+        public ContractDetailViewModel GetById(int id)
         {
             var contract = Get().Where(c => c.Id == id && c.Status == ContractConstants.CONTRACT_IS_ACTIVE).ProjectTo<ContractDetailViewModel>(_mapper.ConfigurationProvider).FirstOrDefault();
             return contract;

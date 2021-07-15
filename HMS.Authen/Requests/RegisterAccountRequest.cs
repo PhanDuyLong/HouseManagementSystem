@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace HMS.Data.Requests
 {
-    public class RegisterRequest
+    public class RegisterAccountRequest
     {
         [Required(ErrorMessage = "User Id is required")]
         public string UserId { get; set; }
@@ -20,10 +20,5 @@ namespace HMS.Data.Requests
         public string Email { get; set; }
 
         public string Role { get; set; }
-
-        [Phone]
-        public string Phone { get; set; }
-        public string Name { get; set; }
-        public string Image { get; set; }
     }
 }
