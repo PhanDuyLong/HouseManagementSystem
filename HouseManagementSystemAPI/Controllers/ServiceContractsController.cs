@@ -1,11 +1,13 @@
-﻿using System;
+﻿
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using HMS.Data.Constants;
 using HMS.Data.Services;
+using HMS.Data.Utilities;
 using HMS.Data.ViewModels.ServiceContract;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
+
 using Microsoft.AspNetCore.Mvc;
 
 namespace HMSAPI.Controllers
@@ -33,10 +35,10 @@ namespace HMSAPI.Controllers
         /// </summary>
         /// <param name="contractId"></param>
         /// <returns></returns>
+        
         [HttpGet]
         [ProducesResponseType(typeof(List<ServiceContractDetailViewModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public IActionResult GetServiceContracts(int contractId)
         {
             var serviceContracts = _serviceContractService.GetByContractId(contractId);
@@ -53,13 +55,14 @@ namespace HMSAPI.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
+        /// 
+        
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(ServiceContractDetailViewModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public IActionResult GetServiceContract(int id)
         {
-            var serviceContract = _serviceContractService.GetByID(id);
+            var serviceContract = _serviceContractService.GetById(id);
             if (serviceContract == null)
             {
                 return NotFound("ServiceContract is not found");
@@ -72,18 +75,23 @@ namespace HMSAPI.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
+        [Authorize(Roles = AccountConstants.ROLE_IS_OWNER + "," + AccountConstants.ROLE_IS_ADMIN)]
         [HttpPut]
         [ProducesResponseType(typeof(UpdateServiceContractViewModel), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)] 
         public async Task<IActionResult> Update(UpdateServiceContractViewModel model)
         {
-            var serviceContract = await _serviceContractService.GetAsyn(model.Id);
-            if (serviceContract == null)
+            if (ModelState.IsValid)
             {
-                return NotFound("ServiceContract is not found");
+                var result = await _serviceContractService.UpdateServiceContractAsync(model);
+                if (result.IsSuccess)
+                {
+                    return Ok(result.Message);
+
+                }
+                return BadRequest(result.Message);
             }
-            return Ok(_serviceContractService.UpdateServiceContract(serviceContract, model));
+            return BadRequest(new MessageResult("BR01").Value);
         }
 
         /// <summary>
@@ -91,19 +99,22 @@ namespace HMSAPI.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
+        [Authorize(Roles = AccountConstants.ROLE_IS_OWNER + "," + AccountConstants.ROLE_IS_ADMIN)]
         [HttpDelete]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public async Task<ActionResult> Delete(int id)
         {
-            var serviceContract = await _serviceContractService.GetAsyn(id);
-            if (serviceContract == null)
+            if (ModelState.IsValid)
             {
-                return NotFound("ServiceContract is not found");
+                var result = await _serviceContractService.DeleteServiceContractAsync(id);
+                if (result.IsSuccess)
+                {
+                    return Ok(result.Message);
+                }
+                return BadRequest(result.Message);
             }
-
-            return Ok(_serviceContractService.DeleteServiceContract(serviceContract));
+            return BadRequest(new MessageResult("BR01").Value);
         }
     }
 }

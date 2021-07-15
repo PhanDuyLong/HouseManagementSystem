@@ -59,7 +59,7 @@ namespace HouseManagementSystemAPI.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         public IActionResult GetHouse(string id)
         {
-            var house = _houseService.GetByID(id);
+            var house = _houseService.GetById(id);
             if (house == null)
             {
                 return NotFound(new MessageResult("NF02", new string[] { "House" }).Value);

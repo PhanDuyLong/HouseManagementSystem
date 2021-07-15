@@ -20,7 +20,7 @@ namespace HMS.Data.Services
     public partial interface IHouseService : IBaseService<House>
     {
         List<HouseBaseViewModel> FilterByParameter(string ownerUserId, HouseParameters houseParameters);
-        HouseDetailViewModel GetByID(string id);
+        HouseDetailViewModel GetById(string id);
         Task<ResultResponse> CreateHouseAsync(string userId, CreateHouseViewModel model);
         Task<ResultResponse> DeleteHouseAsync(string id);
         Task<ResultResponse> UpdateHouseAsync(UpdateHouseViewModel model);
@@ -51,7 +51,7 @@ namespace HMS.Data.Services
             return houses;
         }
 
-        public HouseDetailViewModel GetByID(string id)
+        public HouseDetailViewModel GetById(string id)
         {
             var house = Get().Where(h => h.Id == id && h.IsDeleted == HouseConstants.HOUSE_IS_NOT_DELETED).ProjectTo<HouseDetailViewModel>(_mapper.ConfigurationProvider).FirstOrDefault();
             house.Rooms = house.Rooms.Where(r => r.IsDeleted == RoomConstants.ROOM_IS_NOT_DELETED).ToList();
@@ -63,7 +63,7 @@ namespace HMS.Data.Services
         {
             var house = _mapper.Map<House>(model);
             house.OwnerUserId = userId;
-            house.Id = GenerateHouseID();
+            house.Id = GenerateHouseId();
             house.Status = HouseConstants.HOUSE_IS_NOT_RENTED;
             house.IsDeleted = HouseConstants.HOUSE_IS_NOT_DELETED;
             await CreateAsyn(house);
@@ -77,7 +77,7 @@ namespace HMS.Data.Services
 
         public async Task<ResultResponse> DeleteHouseAsync(string houseId)
         {
-            var houseModel = GetByID(houseId);
+            var houseModel = GetById(houseId);
             if (houseModel == null)
             {
                 return new ResultResponse
@@ -110,7 +110,7 @@ namespace HMS.Data.Services
             return FilterByParameter(userId, houseParameters).Count;
         }
 
-        private string GenerateHouseID()
+        private string GenerateHouseId()
         {
             var count = Count();
             string houseId;
@@ -133,7 +133,7 @@ namespace HMS.Data.Services
         public async Task<ResultResponse> UpdateHouseAsync(UpdateHouseViewModel model)
         {
             var houseId = model.Id;
-            var houseModel = GetByID(houseId);
+            var houseModel = GetById(houseId);
             if (houseModel == null)
             {
                 return new ResultResponse
@@ -141,6 +141,8 @@ namespace HMS.Data.Services
                     Message = new MessageResult("NF02", new string[] { "House" }).Value,
                     IsSuccess = false
                 };
+
+
             }
 
             var result = await _houseInfoService.UpdateHouseInfoAsync(houseModel, model.HouseInfo);

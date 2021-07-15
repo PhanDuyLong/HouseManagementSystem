@@ -1,6 +1,9 @@
-﻿using HMS.Data.Services;
+﻿using HMS.Data.Constants;
+using HMS.Data.Services;
+using HMS.Data.Utilities;
 using HMS.Data.ViewModels.Contract;
 using HMS.Data.ViewModels.Contract.Base;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Net;
@@ -33,7 +36,6 @@ namespace HMSAPI.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(List<ContractBaseViewModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public IActionResult GetContracts()
         {
             var userId = User.Identity.Name;
@@ -52,10 +54,9 @@ namespace HMSAPI.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(ContractDetailViewModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public IActionResult GetContract(int id)
         {
-            var contract = _contractService.GetByID(id);
+            var contract = _contractService.GetById(id);
             if (contract == null)
             {
                 return NotFound("Contract is not found");
@@ -68,13 +69,13 @@ namespace HMSAPI.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
+        [Authorize(Roles = AccountConstants.ROLE_IS_OWNER + "," + AccountConstants.ROLE_IS_ADMIN)]
         [HttpPost]
         [ProducesResponseType(typeof(ContractDetailViewModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> Create(CreateContractViewModel model)
         {
-            return Ok(await _contractService.CreateContract(model));
+            return Ok(await _contractService.CreateContractAsync(model));
         }
 
         /// <summary>
@@ -82,10 +83,10 @@ namespace HMSAPI.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
+        [Authorize(Roles = AccountConstants.ROLE_IS_OWNER + "," + AccountConstants.ROLE_IS_ADMIN)]
         [HttpPut]
         [ProducesResponseType(typeof(ContractDetailViewModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> Update(UpdateContractViewModel model)
         {
             var contract = await _contractService.GetAsyn(model.Id);
@@ -93,27 +94,30 @@ namespace HMSAPI.Controllers
             {
                 return NotFound("Contract is not found");
             }
-            return Ok(_contractService.UpdateContract(contract, model));
+            return Ok(_contractService.UpdateContractAsync(model));
         }
 
         /// <summary>
         /// Delete Contract
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="contractId"></param>
         /// <returns></returns>
+        [Authorize(Roles = AccountConstants.ROLE_IS_OWNER + "," + AccountConstants.ROLE_IS_ADMIN)]
         [HttpDelete]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
-        public async Task<ActionResult> Delete(int id)
+        public async Task<ActionResult> Delete(int contractId)
         {
-            var house = await _contractService.GetAsyn(id);
-            if (house == null)
+            if (ModelState.IsValid)
             {
-                return NotFound("Room is not found");
+                var result = await _contractService.DeleteContractAsync(contractId);
+                if (result.IsSuccess)
+                {
+                    return Ok(result.Message);
+                }
+                return BadRequest(result.Message);
             }
-
-            return Ok(_contractService.DeleteContract(house));
+            return BadRequest(new MessageResult("BR01").Value);
         }
     }
 }

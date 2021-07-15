@@ -21,7 +21,7 @@ namespace HMS.Data.Services
     public partial interface IRoomService : IBaseService<Room>
     {
         List<RoomShowViewModel> FilterByParameter(string userId, RoomParameters roomParameters);
-        RoomDetailViewModel GetByID(int id);
+        RoomDetailViewModel GetById(int id);
         Task<ResultResponse> CreateRoomAsync(CreateRoomViewModel model);
         Task<ResultResponse> UpdateRoomAsync(UpdateRoomViewModel model);
         Task<ResultResponse> DeleteRoomAsync(int id);
@@ -76,7 +76,7 @@ namespace HMS.Data.Services
             return rooms;
         }
 
-        public RoomDetailViewModel GetByID(int id)
+        public RoomDetailViewModel GetById(int id)
         {
             var room = Get().Where(r => r.Id == id && r.IsDeleted == RoomConstants.ROOM_IS_NOT_DELETED).ProjectTo<RoomDetailViewModel>(_mapper.ConfigurationProvider).FirstOrDefault();
             return room;
@@ -94,7 +94,7 @@ namespace HMS.Data.Services
 
         public async Task<ResultResponse> UpdateRoomAsync(UpdateRoomViewModel model)
         {
-            var roomModel = GetByID(model.Id);
+            var roomModel = GetById(model.Id);
             if (roomModel == null)
             {
                 return new ResultResponse

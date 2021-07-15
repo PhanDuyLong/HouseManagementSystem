@@ -3,7 +3,6 @@ using HMS.Data.Parameters;
 using HMS.Data.Services;
 using HMS.Data.Utilities;
 using HMS.Data.ViewModels.Bill;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -62,7 +61,7 @@ namespace HMSAPI.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public IActionResult GetBill(int id)
         {
-            var bill = _billService.GetByID(id);
+            var bill = _billService.GetById(id);
             if (bill == null) 
                 return NotFound(new MessageResult("NF02", new string[] { "Bill"})); 
 
@@ -109,6 +108,7 @@ namespace HMSAPI.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
+        [Authorize(Roles = AccountConstants.ROLE_IS_OWNER + "," + AccountConstants.ROLE_IS_ADMIN)]
         [HttpDelete]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]

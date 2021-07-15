@@ -23,5 +23,10 @@ namespace HMS.Data.Utilities
             MessageCode = messageCode;
             Value = typeof(MessageConstants).GetField(messageCode).GetValue(0).ToString();
         }
+
+        public static implicit operator string(MessageResult v)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
