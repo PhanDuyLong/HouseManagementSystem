@@ -40,7 +40,6 @@ namespace HMSAPI.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(List<RoomShowViewModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public IActionResult GetRooms([FromQuery] RoomParameters roomParameters)
         {
             var userId = User.Identity.Name;
@@ -60,7 +59,6 @@ namespace HMSAPI.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(RoomDetailViewModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public IActionResult GetRoom(int id)
         {
             var room = _roomService.GetById(id);
@@ -80,7 +78,6 @@ namespace HMSAPI.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(RoomDetailViewModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> Create(CreateRoomViewModel model)
         {
             if (ModelState.IsValid)
@@ -127,7 +124,6 @@ namespace HMSAPI.Controllers
         [HttpDelete]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public async Task<ActionResult> Delete(int id)
         {
             if (ModelState.IsValid)

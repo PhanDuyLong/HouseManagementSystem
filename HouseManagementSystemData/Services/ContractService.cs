@@ -3,12 +3,12 @@ using AutoMapper.QueryableExtensions;
 using HMS.Data.Constants;
 using HMS.Data.Models;
 using HMS.Data.Repositories;
+using HMS.Data.Responses;
 using HMS.Data.Services.Base;
+using HMS.Data.Utilities;
 using HMS.Data.ViewModels.Contract;
 using HMS.Data.ViewModels.Contract.Base;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,9 +18,9 @@ namespace HMS.Data.Services
     public partial interface IContractService : IBaseService<Contract>
     {
         ContractDetailViewModel GetById(int id);
-        Task<ContractDetailViewModel> CreateContract(CreateContractViewModel model);
-        ContractDetailViewModel UpdateContract(Contract contract, UpdateContractViewModel model);
-        string DeleteContract(Contract contract);
+        Task<ResultResponse> CreateContractAsync(CreateContractViewModel model);
+        Task<ResultResponse> UpdateContractAsync(UpdateContractViewModel model);
+        Task<ResultResponse> DeleteContractAsync(int contractId);
         List<ContractDetailViewModel> GetByUserId(string userId);
     }
     public partial class ContractService : BaseService<Contract>, IContractService
@@ -35,15 +35,41 @@ namespace HMS.Data.Services
             _accountService = accountService;
         }
 
-        public Task<ContractDetailViewModel> CreateContract(CreateContractViewModel model)
+        public async Task<ResultResponse> CreateContractAsync(CreateContractViewModel model)
         {
-            throw new System.NotImplementedException();
+            var contract = _mapper.Map<Contract>(model);
+            contract.Status = ContractConstants.CONTRACT_IS_INACTIVE;
+            await CreateAsyn(contract);
+            return new ResultResponse
+            {
+                Message = new MessageResult("OK01", new string[] { "Contract Service" }).Value,
+                IsSuccess = true,
+            };
         }
 
-        public string DeleteContract(Contract contract)
+        public async Task<ResultResponse> DeleteContractAsync(int contractId)
         {
-            throw new System.NotImplementedException();
+            var contractModel = GetById(contractId);
+            if (contractModel == null)
+            {
+                return new ResultResponse
+                {
+                    Message = new MessageResult("NF02", new string[] { "Contract Service" }),
+                    IsSuccess = false
+                };
+
+            }
+            var contractService = await GetAsyn(contractId);
+            contractService.Status = ContractServiceConstants.CONTRACT_SERVICE_IS_INACTIVE;
+            Update(contractService);
+            return new ResultResponse
+            {
+                Message = new MessageResult("OK02", new string[] { "Contract Service" }).Value,
+                IsSuccess = true
+            };
+
         }
+       
 
         public ContractDetailViewModel GetById(int id)
         {
@@ -66,9 +92,39 @@ namespace HMS.Data.Services
             return contract;
         }
 
-        public ContractDetailViewModel UpdateContract(Contract contract, UpdateContractViewModel model)
+        public async Task<ResultResponse> UpdateContractAsync(UpdateContractViewModel model)
         {
-            throw new System.NotImplementedException();
+            int contractId = (int)model.Id;
+            var contractModel = GetById(contractId);
+            if (contractModel == null)
+            {
+                return new ResultResponse
+                {
+                    Message = new MessageResult("NF02", new string[] { "Update Contract" }).Value,
+                    IsSuccess = false,
+                };
+
+            }
+            var contract = await GetAsyn(model.Id);
+            if (model.TenantUserId!=null) {
+                contract.TenantUserId = model.TenantUserId;
+            }
+            if (model.StartDate != null)
+            {
+                contract.StartDate = model.StartDate;
+            }
+            if (model.EndDate != null)
+            {
+                contract.EndDate = model.EndDate;
+
+            }
+            Update(contract);
+            return new ResultResponse
+            {
+                Message = new MessageResult("OK03", new string[] { "Contract Service" }).Value,
+                IsSuccess = true
+            };
+
         }
     }
 }

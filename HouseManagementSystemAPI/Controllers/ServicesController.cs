@@ -1,5 +1,8 @@
-﻿using HMS.Data.Services;
+﻿using HMS.Data.Constants;
+using HMS.Data.Services;
+using HMS.Data.Utilities;
 using HMS.Data.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Net;
@@ -33,13 +36,13 @@ namespace HMSAPI.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(List<ServiceViewModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public IActionResult GetServices(string houseId)
         {
             var services = _serviceService.GetByHouseId(houseId);
-            if (services == null)
+           
+            if (services == null || services.Count==0)
             {
-                return NotFound("Service(s) is/are not found");
+                return NotFound(new MessageResult("NF01", new string[] { "Service" }).Value);
             }
             return Ok(services);
         }
@@ -50,14 +53,13 @@ namespace HMSAPI.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(HouseDetailViewModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ServiceViewModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
-        public IActionResult GetHouse(int id)
+        public IActionResult GetService(int id)
         {
             var service = _serviceService.GetById(id);
             if (service == null)
-                return NotFound("Service is not found");
+                return NotFound(new MessageResult("NF02", new string[] { "Service" }).Value);
             return Ok(service);
         }
 
@@ -66,13 +68,22 @@ namespace HMSAPI.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
+        [Authorize(Roles = AccountConstants.ROLE_IS_OWNER + "," + AccountConstants.ROLE_IS_ADMIN)]
         [HttpPost]
-        [ProducesResponseType(typeof(ServiceViewModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> Create(CreateServiceViewModel model)
         {
-            return Ok(await _serviceService.CreateService(model));
+            if (ModelState.IsValid)
+            {
+                var result = await _serviceService.CreateServiceAsync(model);
+                if (result.IsSuccess)
+                {
+                    return Ok(result.Message);
+                }
+                return BadRequest(result.Message);
+            }
+            return BadRequest(new MessageResult("BR01").Value);
         }
 
         /// <summary>
@@ -80,38 +91,45 @@ namespace HMSAPI.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
+        [Authorize(Roles = AccountConstants.ROLE_IS_OWNER + "," + AccountConstants.ROLE_IS_ADMIN)]
         [HttpPut]
-        [ProducesResponseType(typeof(ServiceViewModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> Update(UpdateServiceViewModel model)
         {
-            var service = await _serviceService.GetAsyn(model.Id);
-            if (service == null)
+            if (ModelState.IsValid)
             {
-                return NotFound("Service is not found");
+                var result = await _serviceService.UpdateServiceAsync(model);
+                if (result.IsSuccess)
+                {
+                    return Ok(result.Message);
+                }
+                return BadRequest(result.Message);
             }
-            return Ok(_serviceService.UpdateService(service, model));
+            return BadRequest(new MessageResult("BR01").Value);
         }
 
         /// <summary>
-        /// Delete Contract
+        /// Delete Service
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
+        [Authorize(Roles = AccountConstants.ROLE_IS_OWNER + "," + AccountConstants.ROLE_IS_ADMIN)]
         [HttpDelete]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public async Task<ActionResult> Delete(int id)
         {
-            var service = await _serviceService.GetAsyn(id);
-            if (service == null)
+            if (ModelState.IsValid)
             {
-                return NotFound("Service is not found");
+                var result = await _serviceService.DeleteServiceAsync(id);
+                if (result.IsSuccess)
+                {
+                    return Ok(result.Message);
+                }
+                return BadRequest(result.Message);
             }
-
-            return Ok(_serviceService.DeleteService(service));
+            return BadRequest(new MessageResult("BR01").Value);
         }
     }
 }

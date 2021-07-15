@@ -63,7 +63,7 @@ namespace HMS.Data.Services
         {
             var house = _mapper.Map<House>(model);
             house.OwnerUserId = userId;
-            house.Id = GenerateHouseID();
+            house.Id = GenerateHouseId();
             house.Status = HouseConstants.HOUSE_IS_NOT_RENTED;
             house.IsDeleted = HouseConstants.HOUSE_IS_NOT_DELETED;
             await CreateAsyn(house);
@@ -110,7 +110,7 @@ namespace HMS.Data.Services
             return FilterByParameter(userId, houseParameters).Count;
         }
 
-        private string GenerateHouseID()
+        private string GenerateHouseId()
         {
             var count = Count();
             string houseId;
@@ -141,6 +141,8 @@ namespace HMS.Data.Services
                     Message = new MessageResult("NF02", new string[] { "House" }).Value,
                     IsSuccess = false
                 };
+
+
             }
 
             var result = await _houseInfoService.UpdateHouseInfoAsync(houseModel, model.HouseInfo);

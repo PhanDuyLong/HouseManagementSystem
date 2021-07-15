@@ -3,7 +3,9 @@ using AutoMapper.QueryableExtensions;
 using HMS.Data.Constants;
 using HMS.Data.Models;
 using HMS.Data.Repositories;
+using HMS.Data.Responses;
 using HMS.Data.Services.Base;
+using HMS.Data.Utilities;
 using HMS.Data.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using System.Collections;
@@ -17,10 +19,10 @@ namespace HMS.Data.Services
     {
         List<ServiceViewModel> GetByHouseId(string houseId);
         ServiceViewModel GetById(int id);
-        Task<ServiceViewModel> CreateService(CreateServiceViewModel model);
-        ServiceViewModel UpdateService(Service service, UpdateServiceViewModel model);
-        string DeleteService(Service service);
-        Task<int> CreateDefaultServicesAsync(string houseId);
+        Task<ResultResponse> CreateServiceAsync(CreateServiceViewModel model);
+        Task<ResultResponse> UpdateServiceAsync(UpdateServiceViewModel model);
+        Task<ResultResponse> DeleteServiceAsync(int serviceId);
+        Task<ResultResponse> CreateDefaultServicesAsync(string houseId);
     }
     public partial class ServiceService : BaseService<Service>, IServiceService
     {
@@ -34,24 +36,48 @@ namespace HMS.Data.Services
             _serviceTypeService = serviceTypeService;
         }
 
-        public async Task<ServiceViewModel> CreateService(CreateServiceViewModel model)
+        public async Task<ResultResponse> CreateServiceAsync(CreateServiceViewModel model)
         {
             var serviceTypes = await _serviceTypeService.GetServiceTypes();
             var service = _mapper.Map<Service>(model);
             service.Status = ServiceConstants.SERVICE_IS_ACTIVE;
             service.ServiceTypeId = serviceTypes.Where(serviceType => serviceType.Name.Equals(ServiceTypeConstants.SERVICE_TYPE_IS_DEFAULT_DIFFERENT)).FirstOrDefault().Id;
             await CreateAsyn(service);
-            return GetById(service.Id);
+            return new ResultResponse
+            {
+                Message = new MessageResult("OK01", new string[] { "Service" }).Value,
+                IsSuccess = true,
+            };
         }
 
-        public string DeleteService(Service service)
+        public async Task<ResultResponse> DeleteServiceAsync(int serviceId)
         {
-            throw new System.NotImplementedException();
+
+            var serviceModel = GetById(serviceId);
+            if (serviceModel == null)
+            {
+                return new ResultResponse
+                {
+                    Message = new MessageResult("NF02", new string[] { "Service" }).Value,
+                    IsSuccess = false
+                };
+            }
+            var service = await GetAsyn(serviceId);
+            service.Status = ServiceConstants.SERVICE_IS_INACTIVE;
+            Update(service);
+            return new ResultResponse
+            {
+                Message = new MessageResult("OK02", new string[] { "Service" }).Value,
+                IsSuccess = true
+            };
+           
         }
 
         public List<ServiceViewModel> GetByHouseId(string houseId)
         {
-            throw new System.NotImplementedException();
+            List<ServiceViewModel> services;
+            services = Get().Where(s => s.HouseId == houseId && s.Status == ServiceConstants.SERVICE_IS_ACTIVE).ProjectTo<ServiceViewModel>(_mapper.ConfigurationProvider).ToList();
+            return services;
         }
 
         public ServiceViewModel GetById(int id)
@@ -60,12 +86,53 @@ namespace HMS.Data.Services
             return service;
         }
 
-        public ServiceViewModel UpdateService(Service service, UpdateServiceViewModel model)
+        public async Task<ResultResponse> UpdateServiceAsync(UpdateServiceViewModel model)
         {
-            throw new System.NotImplementedException();
+            var serviceTypes = await _serviceTypeService.GetServiceTypes();
+            var serviceId = model.Id;
+            var serviceModel = GetById(serviceId);
+            if (serviceModel == null)
+            {
+                return new ResultResponse
+                {
+                    Message = new MessageResult("NF02", new string[] { "Service" }).Value,
+                    IsSuccess = false
+                };
+
+
+            }
+            var service = await GetAsyn(model.Id);
+            if (model.Name != null)
+            {
+                service.Name = model.Name;
+            }
+
+            if (model.CalculationUnit != null)
+            {
+                service.CalculationUnit = model.CalculationUnit;
+            }
+
+            if (model.Price != null)
+            {
+                service.Price = model.Price;
+            }
+
+            if (model.ServiceType != null)
+            {
+                service.ServiceTypeId = serviceTypes.Where(serviceType => serviceType.Name.Equals(model.ServiceType)).FirstOrDefault().Id;
+          
+            }
+
+            Update(service);
+
+            return new ResultResponse
+            {
+                Message = new MessageResult("OK03", new string[] { "Service" }).Value,
+                IsSuccess = true
+            };
         }
 
-        public async Task<int> CreateDefaultServicesAsync(string houseId)
+        public async Task<ResultResponse> CreateDefaultServicesAsync(string houseId)
         {
             var defaultServices = new ArrayList();
             var houseService = new CreateServiceViewModel
@@ -93,12 +160,16 @@ namespace HMS.Data.Services
             };
             defaultServices.Add(waterService);
             int count = 0;
-            foreach(CreateServiceViewModel model in defaultServices)
+            foreach (CreateServiceViewModel model in defaultServices)
             {
-                await CreateService(model);
+                await CreateServiceAsync(model);
                 count++;
             }
-            return count;
+            return new ResultResponse
+            {
+                Message = new MessageResult("OK01", new string[] { "Default Service" }).Value,
+                IsSuccess = true,
+            };
         }
     }
 }
