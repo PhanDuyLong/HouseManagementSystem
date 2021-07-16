@@ -40,8 +40,8 @@ namespace HMSAPI.Controllers
         {
             var userId = User.Identity.Name;
             var contracts = _contractService.GetByUserId(userId);
-            if (contracts == null)
-                return NotFound("Contract(s) is/are not found");
+            if (contracts == null || contracts.Count == 0)
+                return NotFound(new MessageResult("NF01", new string[] { "Contract" }).Value);
 
             return Ok(contracts);
         }
@@ -59,7 +59,7 @@ namespace HMSAPI.Controllers
             var contract = _contractService.GetById(id);
             if (contract == null)
             {
-                return NotFound("Contract is not found");
+                return NotFound(new MessageResult("NF02", new string[] { "Contract" }).Value);
             }
             return Ok(contract);
         }
@@ -85,16 +85,20 @@ namespace HMSAPI.Controllers
         /// <returns></returns>
         [Authorize(Roles = AccountConstants.ROLE_IS_OWNER + "," + AccountConstants.ROLE_IS_ADMIN)]
         [HttpPut]
-        [ProducesResponseType(typeof(ContractDetailViewModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> Update(UpdateContractViewModel model)
         {
-            var contract = await _contractService.GetAsyn(model.Id);
-            if (contract == null)
+            if (ModelState.IsValid)
             {
-                return NotFound("Contract is not found");
+                var result = await _contractService.UpdateContractAsync(model);
+                if (result.IsSuccess)
+                {
+                    return Ok(result.Message);
+                }
+                return BadRequest(result.Message);
             }
-            return Ok(_contractService.UpdateContractAsync(model));
+            return BadRequest(new MessageResult("BR01").Value);
         }
 
         /// <summary>
@@ -119,5 +123,6 @@ namespace HMSAPI.Controllers
             }
             return BadRequest(new MessageResult("BR01").Value);
         }
+
     }
 }

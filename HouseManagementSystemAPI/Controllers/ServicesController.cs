@@ -40,7 +40,7 @@ namespace HMSAPI.Controllers
         {
             var services = _serviceService.GetByHouseId(houseId);
            
-            if (services == null || services.Count==0)
+            if (services == null || services.Count == 0)
             {
                 return NotFound(new MessageResult("NF01", new string[] { "Service" }).Value);
             }

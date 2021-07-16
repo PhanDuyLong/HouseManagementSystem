@@ -41,12 +41,13 @@ namespace HMSAPI.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         public IActionResult GetServiceContracts(int contractId)
         {
-            var serviceContracts = _serviceContractService.GetByContractId(contractId);
-            if (serviceContracts == null)
+            var contracts = _serviceContractService.GetByContractId(contractId);
+
+            if (contracts == null || contracts.Count == 0)
             {
-                return NotFound("ServiceContract(s) is/are not found");
+                return NotFound(new MessageResult("NF01", new string[] { "Contract" }).Value);
             }
-            return Ok(serviceContracts);
+            return Ok(contracts);
         }
 
 
@@ -62,12 +63,10 @@ namespace HMSAPI.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         public IActionResult GetServiceContract(int id)
         {
-            var serviceContract = _serviceContractService.GetById(id);
-            if (serviceContract == null)
-            {
-                return NotFound("ServiceContract is not found");
-            }
-            return Ok(serviceContract);
+            var contract = _serviceContractService.GetById(id);
+            if (contract == null)
+                return NotFound(new MessageResult("NF02", new string[] { "Contract" }).Value);
+            return Ok(contract);
         }
 
         /// <summary>
@@ -77,7 +76,7 @@ namespace HMSAPI.Controllers
         /// <returns></returns>
         [Authorize(Roles = AccountConstants.ROLE_IS_OWNER + "," + AccountConstants.ROLE_IS_ADMIN)]
         [HttpPut]
-        [ProducesResponseType(typeof(UpdateServiceContractViewModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)] 
         public async Task<IActionResult> Update(UpdateServiceContractViewModel model)
         {
