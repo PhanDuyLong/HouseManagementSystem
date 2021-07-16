@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HMS.Data.Requests
+namespace HMS.Authen.Requests
 {
     public class RegisterAccountRequest
     {

@@ -9,13 +9,13 @@ using System.Threading.Tasks;
 
 namespace HMS.FirebaseNotification
 {
-    public partial interface INotificationService
+    public partial interface IFirebaseNotificationService
     {
         Task<bool> PushNotificationAsync(MobileNotification firebaseNotification);
     }
-    public partial class NotificationService : INotificationService
+    public partial class FirebaseNotificationService : IFirebaseNotificationService
     {
-        public NotificationService()
+        public FirebaseNotificationService()
         {
             var defaultApp = FirebaseApp.Create(new AppOptions()
             {

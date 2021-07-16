@@ -101,6 +101,30 @@ namespace HMSAPI.Controllers
         }
 
         /// <summary>
+        /// Change password
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("change-password")]
+        [ProducesResponseType(typeof(ResultResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePassRequest model)
+        {
+            if (ModelState.IsValid)
+            {
+                var userId = User.Identity.Name;
+                var result = await _accountService.ChangePasswordAsync(userId, model);
+                if (result.IsSuccess)
+                {
+                    return Ok(result.Message);
+                }
+                return BadRequest(result.Message);
+            }
+            return BadRequest(new MessageResult("BR01"));
+        }
+
+        /// <summary>
         /// Register admin account
         /// </summary>
         /// <param name="model"></param>
@@ -134,7 +158,10 @@ namespace HMSAPI.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public IActionResult GetTenantNames()
         {
-            return Ok(_accountService.GetTenantNames());
+            var tenants = _accountService.GetTenantNames();
+            if (tenants == null || tenants.Count == 0)
+                return NotFound(new MessageResult("NF01", new string[] { "Tenant" }).Value);
+            return Ok(tenants);
         }
 
         /// <summary>
@@ -148,12 +175,21 @@ namespace HMSAPI.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> Update(UpdateAccountViewModel model)
         {
-            var username = User.Identity.Name;
-            return Ok(await _accountService.UpdateAccountAsync(username, model));
+            if (ModelState.IsValid)
+            {
+                var username = User.Identity.Name;
+                var result = await _accountService.UpdateAccountAsync(username, model);
+                if (result.IsSuccess)
+                {
+                    return Ok(result.Message);
+                }
+                return BadRequest(result.Message);
+            }
+            return BadRequest(new MessageResult("BR01"));
         }
 
         /// <summary>
-        /// Delete Account
+        /// Delete account
         /// </summary>
         /// <param name="username"></param>
         /// <returns></returns>

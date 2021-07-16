@@ -4,6 +4,7 @@ using FirebaseAdmin;
 using FirebaseAdmin.Auth;
 using Google.Apis.Auth.OAuth2;
 using HMS.Authen.Models;
+using HMS.Authen.Requests;
 using HMS.Authen.Services;
 using HMS.Data.Constants;
 using HMS.Data.Models;
@@ -14,6 +15,8 @@ using HMS.Data.Services.Base;
 using HMS.Data.Utilities;
 using HMS.Data.ViewModels;
 using HMS.Data.ViewModels.Account;
+using HMS.FirebaseServices.Authen.Requests;
+using HMS.FirebaseServices.Authen.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -43,17 +46,20 @@ namespace HMS.Data.Services
         List<AccountTenantViewModel> GetTenantNames();
         Task<ResultResponse> UpdateAccountAsync(string userId, UpdateAccountViewModel model);
         string DeleteAccount(Account account);
+        Task<ResultResponse> ChangePasswordAsync(string userId, ChangePassRequest model);
     }
     public partial class AccountService : BaseService<Account>, IAccountService
     {
         private readonly IMapper _mapper;
         private readonly IAccountAuthenService _accountAuthenService;
+        private readonly IFirebaseAuthenService _firebaseAuthenService;
         public AccountService(DbContext dbContext, IAccountRepository repository, IMapper mapper
-            , IAccountAuthenService accountAuthenService) : base(dbContext, repository)
+            , IAccountAuthenService accountAuthenService, IFirebaseAuthenService firebaseAuthenService) : base(dbContext, repository)
         {
             _dbContext = dbContext;
             _mapper = mapper;
             _accountAuthenService = accountAuthenService;
+            _firebaseAuthenService = firebaseAuthenService;
         }
 
         public string DeleteAccount(Account account)
@@ -89,10 +95,28 @@ namespace HMS.Data.Services
 
         public async Task<AuthenticateResponse> LoginAccountAsync(AuthenticateRequest model)
         {
+            var firebaseAuthenRequest = new FirebaseAuthenticateRequest
+            {
+                UserId = model.UserId,
+                Email = model.Email,
+                Password = model.Password
+            };
+
+            var firebaseResponse = await _firebaseAuthenService.LoginByExternalAsysnc(firebaseAuthenRequest);
+
+            if (!firebaseResponse.IsSuccess)
+            {
+                return new AuthenticateResponse
+                {
+                    Message = firebaseResponse.Message,
+                    IsSuccess = false,
+                };
+            }
+
             var internalRequest = new AuthenticateInternalRequest
             {
                 Email = model.Email,
-                Password = model.Password
+                Password = model.Password,
             };
 
             var result = await _accountAuthenService.LoginAccountAsync(internalRequest);
@@ -106,20 +130,8 @@ namespace HMS.Data.Services
                 };
             }
 
-
-            var firebaseCheck = CustomFirebaseAuth(result.UserId, model.Email, model.Password);
-
-            if (!firebaseCheck)
-            {
-                return new AuthenticateResponse
-                {
-                    Message = new MessageResult("BR06", new string[] { "email" }).Value,
-                    IsSuccess = false,
-                };
-            }
-
             var accountViewModel = GetByEmail(model.Email);
-            var message = new MessageResult("OK04");
+            var message = new MessageResult("OK04", new string[] { "Login" });
             return new AuthenticateResponse(accountViewModel, result.Token, message, true, result.ExpireDate);
         }
 
@@ -258,6 +270,19 @@ namespace HMS.Data.Services
 
         public async Task<AuthenticateResponse> LoginAccountByGoogleAsync(AuthenticateGoogleRequest model)
         {
+            
+            /*var firebaseResponse = await _firebaseAuthenService.LoginByIdTokenAsync(model.IdToken);
+
+            if (!firebaseResponse.IsSuccess)
+            {
+                return new AuthenticateResponse
+                {
+                    Message = firebaseResponse.Message,
+                    IsSuccess = false,
+                };
+            }*/
+
+
             var externalRequest = new AuthenticateExternalRequest
             {
                 IdToken = model.IdToken,
@@ -294,13 +319,13 @@ namespace HMS.Data.Services
                     UserId = result.UserId,
                     Role = model.Role,
                     Email = result.Email,
+                    Image = result.Image,
                     Status = AccountConstants.ACCOUNT_IS_ACTIVE,
-                    Image = AccountConstants.DEFAULT_IMAGE
                 };
                 await CreateAsyn(account);
             }
             var accountViewModel = GetByUserId(result.UserId);
-            var message = new MessageResult("OK04");
+            var message = new MessageResult("OK04" , new string[] { "Login" });
             return new AuthenticateResponse(accountViewModel, result.Token, message, true, result.ExpireDate);
         }
 
@@ -329,46 +354,6 @@ namespace HMS.Data.Services
             };
         }
 
-        public bool CustomFirebaseAuth(string userId, string email, string password)
-        {
-            try
-            {
-                WebRequest tRequest = WebRequest.Create("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=" + "AIzaSyBOUnY4MomlWzp-8pMw2QNStK-k6Q27FB4");
-                tRequest.Method = "post";
-                tRequest.ContentType = "application/json";
-                var payload = new
-                {
-                    email = email,
-                    password = password,
-                };
-
-                string postbody = JsonConvert.SerializeObject(payload).ToString();
-                Byte[] byteArray = Encoding.UTF8.GetBytes(postbody);
-                tRequest.ContentLength = byteArray.Length;
-                using Stream dataStream = tRequest.GetRequestStream();
-                dataStream.Write(byteArray, 0, byteArray.Length);
-                using WebResponse tResponse = tRequest.GetResponse();
-                using Stream dataStreamResponse = tResponse.GetResponseStream();
-                string sResponseFromServer = "";
-                if (dataStreamResponse != null) using (StreamReader tReader = new StreamReader(dataStreamResponse))
-                    {
-                        sResponseFromServer = tReader.ReadToEnd();
-                    }
-                if (sResponseFromServer != null && sResponseFromServer.Length != 0)
-                {
-                    var json = JObject.Parse(sResponseFromServer); ;
-                    string firebaseUserId = (string)json.SelectToken("localId");
-                    return firebaseUserId.Equals(userId);
-                }
-            }
-            catch (Exception ex)
-            {
-                if(ex != null)
-                    return false;
-            }
-            return false;
-        }
-
         public ResultResponse CheckValidRole(string role)
         {
             if (AccountConstants.ROLE_IS_TENACT.Equals(role) || AccountConstants.ROLE_IS_OWNER.Equals(role) || AccountConstants.ROLE_IS_ADMIN.Equals(role))
@@ -382,6 +367,32 @@ namespace HMS.Data.Services
             {
                 Message = new MessageResult("BR07", new string[] { "role" }).Value,
                 IsSuccess = false,
+            };
+        }
+
+        public async Task<ResultResponse> ChangePasswordAsync(string userId, ChangePassRequest model)
+        {
+            var requestModel = new ChangePasswordRequest()
+            {
+                UserId = userId,
+                OldPassword = model.OldPassword,
+                NewPassword = model.NewPassword
+            };
+            var result = await _accountAuthenService.ChangePasswordAsync(requestModel);
+
+            if (!result.IsSuccess)
+            {
+                return new ResultResponse
+                {
+                    Message = result.Message,
+                    IsSuccess = false,
+                };
+            }
+
+            return new ResultResponse
+            {
+                Message = new MessageResult("OK04", new string[] { "Change password" }).Value,
+                IsSuccess = true
             };
         }
     }

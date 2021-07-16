@@ -3,7 +3,6 @@ using HMS.Authen.Utilities;
 using HMS.Data.Models;
 using HMS.Data.Repositories;
 using HMS.Data.Services;
-using HMS.FirebaseNotification;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,11 +12,7 @@ namespace HMS.Data.DependencyInjection
     {
         public static void IntializerDI(this IServiceCollection services)
         {
-
             services.AddScoped<DbContext, HMSDBContext>();
-
-            services.AddScoped<JwtHandler>();
-            services.AddScoped<IAccountAuthenService, AccountAuthenService>();
 
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IAccountRepository, AccountRepository>();
@@ -63,8 +58,6 @@ namespace HMS.Data.DependencyInjection
 
             services.AddScoped<IServiceTypeRepository, ServiceTypeRepository>();
             services.AddScoped<IServiceTypeService, ServiceTypeService>();
-
-            services.AddScoped<INotificationService, NotificationService>();
         }
     }
 }

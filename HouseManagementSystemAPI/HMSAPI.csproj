@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\HMS.Authen\HMS.Authen.csproj" />
+    <ProjectReference Include="..\HMS.FirebaseServices\HMS.FirebaseServices.csproj" />
     <ProjectReference Include="..\HouseManagementSystemData\HMS.Data.csproj" />
   </ItemGroup>
 

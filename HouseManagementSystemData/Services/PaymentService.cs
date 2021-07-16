@@ -23,12 +23,12 @@ namespace HMS.Data.Services
     public partial class PaymentService : BaseService<Payment>, IPaymentService
     {
         private readonly IMapper _mapper;
-        private readonly INotificationService _notificationService;
-        public PaymentService(DbContext dbContext, IPaymentRepository repository, IMapper mapper, INotificationService notificationService) : base(dbContext, repository)
+        private readonly IFirebaseNotificationService _firebaseNotificationService;
+        public PaymentService(DbContext dbContext, IPaymentRepository repository, IMapper mapper, IFirebaseNotificationService firebaseNotificationService) : base(dbContext, repository)
         {
             _dbContext = dbContext;
             _mapper = mapper;
-            _notificationService = notificationService;
+            _firebaseNotificationService = firebaseNotificationService;
         }
 
         public async Task<string> Payment(BillPaymentViewModel model)
@@ -40,7 +40,7 @@ namespace HMS.Data.Services
                 Topic = "all"
             };
 
-            await _notificationService.PushNotificationAsync(firebaseNotification);
+            await _firebaseNotificationService.PushNotificationAsync(firebaseNotification);
 
 
             /*string noti = getAndroidMessage("Hello", "Hi", "");

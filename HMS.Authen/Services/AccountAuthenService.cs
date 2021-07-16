@@ -1,6 +1,6 @@
 ﻿using HMS.Authen.Models;
+using HMS.Authen.Requests;
 using HMS.Authen.Utilities;
-using HMS.Data.Requests;
 using HMS.Data.Responses;
 using Microsoft.AspNetCore.Identity;
 using System;
@@ -16,6 +16,7 @@ namespace HMS.Authen.Services
         Task<AccountManagerResponse> LoginAccountAsync(AuthenticateInternalRequest request);
         Task<AccountManagerResponse> LoginAccountByExternalAsync(AuthenticateExternalRequest model);
         Task<AccountManagerResponse> RegisterAccountAsync(RegisterAccountRequest model);
+        Task<AccountManagerResponse> ChangePasswordAsync(ChangePasswordRequest model);
     }
     public partial class AccountAuthenService : IAccountAuthenService
     {
@@ -167,6 +168,7 @@ namespace HMS.Authen.Services
                             Token = token[0],
                             UserId = user.UserName,
                             Name = payload["name"].ToString(),
+                            Image = payload["picture"].ToString(),
                             Email = user.Email,
                             Message = "Login successfully",
                             IsSuccess = true,
@@ -197,6 +199,39 @@ namespace HMS.Authen.Services
                 Message = "Invalid external authentication.",
                 IsSuccess = false
             };
+        }
+
+        public async Task<AccountManagerResponse> ChangePasswordAsync(ChangePasswordRequest model)
+        {
+            var user = await _accountManager.FindByNameAsync(model.UserId);
+
+            if (user is null)
+            {
+                return new AccountManagerResponse
+                {
+                    Message = "There is no user with that userId!",
+                    IsSuccess = false,
+                };
+            }
+
+            var result = await _accountManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                return new AccountManagerResponse
+                {
+                    Message = "Invalid old password!",
+                    IsSuccess = false
+                };
+            }
+            else
+            {
+                return new AccountManagerResponse
+                {
+                    Message = "Change password successfully!",
+                    IsSuccess = true
+                };
+            }
         }
     }
 }

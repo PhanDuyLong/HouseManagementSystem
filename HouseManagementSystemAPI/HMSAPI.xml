@@ -36,6 +36,13 @@
             <param name="model"></param>
             <returns></returns>
         </member>
+        <member name="M:HMSAPI.Controllers.AccountsController.ChangePassword(HMS.Data.Requests.ChangePassRequest)">
+            <summary>
+            Change password
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
         <member name="M:HMSAPI.Controllers.AccountsController.RegisterAdmin(HMS.Data.Requests.RegisterRequest)">
             <summary>
             Register admin account
@@ -58,7 +65,7 @@
         </member>
         <member name="M:HMSAPI.Controllers.AccountsController.Delete(System.String)">
             <summary>
-            Delete Account
+            Delete account
             </summary>
             <param name="username"></param>
             <returns></returns>
@@ -358,6 +365,30 @@
             </summary>
             <param name="app"></param>
             <param name="env"></param>
+        </member>
+        <member name="T:HMSAPI.TrackServer">
+            <summary>
+            TrackerServer
+            </summary>
+        </member>
+        <member name="M:HMSAPI.TrackServer.#ctor(Microsoft.Extensions.Logging.ILogger{HMSAPI.TrackServer},System.IServiceProvider)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="logger"></param>
+            <param name="services"></param>
+        </member>
+        <member name="P:HMSAPI.TrackServer.Services">
+            <summary>
+            Services
+            </summary>
+        </member>
+        <member name="M:HMSAPI.TrackServer.ExecuteAsync(System.Threading.CancellationToken)">
+            <summary>
+            Run TrackServer
+            </summary>
+            <param name="stoppingToken"></param>
+            <returns></returns>
         </member>
         <member name="T:HouseManagementSystemAPI.Controllers.HousesController">
             <summary>

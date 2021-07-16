@@ -38,6 +38,7 @@ namespace HMS.Data.Services
             _dbContext = dbContext;
             _mapper = mapper;
             _houseService = houseService;
+            _clockService = clockService;
         }
 
         public List<RoomShowViewModel> FilterByParameter(string userId, RoomParameters roomParameters)

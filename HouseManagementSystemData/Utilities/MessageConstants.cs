@@ -10,7 +10,7 @@ namespace HMS.Data.Utilities
         public const string OK01 = "{0} created successfully!";
         public const string OK02 = "{0} deleted successfully!";
         public const string OK03 = "{0} updated successfully!";
-        public const string OK04 = "Login successfully";
+        public const string OK04 = "{0} successfully";
 
         //404 Not Found
         public const string NF01 = "{0}(s) is/are not found!";

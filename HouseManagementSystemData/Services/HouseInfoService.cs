@@ -65,6 +65,7 @@ namespace HMS.Data.Services
                 await CreateAsyn(houseInfo);
             }
             Update(houseInfo);
+
             return new ResultResponse
             {
                 Message = new MessageResult("OK03", new string[] { "HouseInfo" }).Value,

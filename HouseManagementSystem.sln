@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HMSAPI", "HouseManagementSy
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HMS.Authen", "HMS.Authen\HMS.Authen.csproj", "{D7AC8950-CA89-474B-BF20-E236F178F89C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HMS.FirebaseNotification", "HMS.FirebaseNotification\HMS.FirebaseNotification.csproj", "{CB6AE348-5F43-433B-A5E2-B982FE14F5C7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HMS.FirebaseServices", "HMS.FirebaseServices\HMS.FirebaseServices.csproj", "{E37D2862-8E89-47E7-BB6F-DBD53781527A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,10 +29,10 @@ Global
 		{D7AC8950-CA89-474B-BF20-E236F178F89C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D7AC8950-CA89-474B-BF20-E236F178F89C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D7AC8950-CA89-474B-BF20-E236F178F89C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CB6AE348-5F43-433B-A5E2-B982FE14F5C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CB6AE348-5F43-433B-A5E2-B982FE14F5C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CB6AE348-5F43-433B-A5E2-B982FE14F5C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CB6AE348-5F43-433B-A5E2-B982FE14F5C7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E37D2862-8E89-47E7-BB6F-DBD53781527A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E37D2862-8E89-47E7-BB6F-DBD53781527A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E37D2862-8E89-47E7-BB6F-DBD53781527A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E37D2862-8E89-47E7-BB6F-DBD53781527A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

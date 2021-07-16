@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace HMS.Data.Requests
+namespace HMS.Authen.Requests
 {
     public class AuthenticateInternalRequest
     {

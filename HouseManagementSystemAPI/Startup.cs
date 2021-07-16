@@ -1,10 +1,12 @@
 using AutoMapper;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
+using HMS.Authen.DependencyInjection;
 using HMS.Authen.Models;
 using HMS.Data.AutoMapperProfile;
 using HMS.Data.DependencyInjection;
 using HMS.Data.Models;
+using HMS.FirebaseServices.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -64,6 +66,13 @@ namespace HMSAPI
 
             services.AddMvc();
 
+
+            //configure IdentityDI
+            services.IntializerIndentityDI();
+
+            //configure FirebaseDI
+            services.IntializerFirebaseDI();
+
             //configure DI
             services.IntializerDI();
 
@@ -80,6 +89,7 @@ namespace HMSAPI
                     options.Password.RequireUppercase = true;
                     options.Password.RequireNonAlphanumeric = false;
                     options.Password.RequiredLength = 6;
+                    options.User.RequireUniqueEmail = true;
                 })
                 .AddEntityFrameworkStores<AuthenDbContext>()
                 .AddDefaultTokenProviders();
