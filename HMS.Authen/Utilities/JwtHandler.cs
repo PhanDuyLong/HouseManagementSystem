@@ -26,19 +26,21 @@ namespace HMS.Authen.Utilities
         private SigningCredentials GetSigningCredentials()
         {
             var key = Encoding.UTF8.GetBytes(_jwtSettings.GetSection("Secret").Value);
+
             var secret = new SymmetricSecurityKey(key);
 
             return new SigningCredentials(secret, SecurityAlgorithms.HmacSha256);
         }
 
-        private async Task<List<Claim>> GetClaims(ApplicationAccount user)
+        private async Task<List<Claim>> GetClaims(ApplicationAccount account)
         {
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, user.Email)
+                new Claim(ClaimTypes.Name, account.UserName),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             };
 
-            var roles = await _accountManager.GetRolesAsync(user);
+            var roles = await _accountManager.GetRolesAsync(account);
             foreach (var role in roles)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));
@@ -49,8 +51,8 @@ namespace HMS.Authen.Utilities
 
         private JwtSecurityToken GenerateTokenOptions(SigningCredentials signingCredentials, List<Claim> claims)
         {
-            var iss = _jwtSettings.GetSection("ValidAudience").Value;
-            var aud = _jwtSettings.GetSection("ValidIssuer").Value;
+            var iss = _jwtSettings.GetSection("ValidIssuer").Value;
+            var aud = _jwtSettings.GetSection("ValidAudience").Value;
             var timeExpireInStr = _jwtSettings.GetSection("ExpireInMonths").Value;
             var timeExpire = Int32.Parse(timeExpireInStr);
 
@@ -64,10 +66,10 @@ namespace HMS.Authen.Utilities
             return tokenOptions;
         }
 
-        public async Task<List<String>> GenerateToken(ApplicationAccount user)
+        public async Task<List<String>> GenerateToken(ApplicationAccount account)
         {
             var signingCredentials = GetSigningCredentials();
-            var claims = await GetClaims(user);
+            var claims = await GetClaims(account);
             var tokenOptions = GenerateTokenOptions(signingCredentials, claims);
             var token = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
 

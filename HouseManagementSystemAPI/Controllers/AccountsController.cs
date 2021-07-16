@@ -55,7 +55,7 @@ namespace HMSAPI.Controllers
         }
 
         /// <summary>
-        /// Authenticate with firebase
+        /// Authenticate with google
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>

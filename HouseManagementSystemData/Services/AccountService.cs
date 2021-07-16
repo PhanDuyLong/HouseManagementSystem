@@ -106,9 +106,8 @@ namespace HMS.Data.Services
                 };
             }
 
-            var accountViewModel = GetByEmail(model.Email);
 
-            var firebaseCheck = CustomFirebaseAuth(accountViewModel.UserId, model.Email, model.Password);
+            var firebaseCheck = CustomFirebaseAuth(result.UserId, model.Email, model.Password);
 
             if (!firebaseCheck)
             {
@@ -119,8 +118,8 @@ namespace HMS.Data.Services
                 };
             }
 
+            var accountViewModel = GetByEmail(model.Email);
             var message = new MessageResult("OK04");
-
             return new AuthenticateResponse(accountViewModel, result.Token, message, true, result.ExpireDate);
         }
 
@@ -259,48 +258,50 @@ namespace HMS.Data.Services
 
         public async Task<AuthenticateResponse> LoginAccountByGoogleAsync(AuthenticateGoogleRequest model)
         {
-            /*var account = await _accountManager.FindByNameAsync(model.UserId);
-            var acc = GetByUserId(model.UserId);
-            if (account == null || acc == null)
+            var externalRequest = new AuthenticateExternalRequest
+            {
+                IdToken = model.IdToken,
+                Provider = model.Provider,
+                Role = model.Role
+            };
+
+            if (model.Role != null && model.Role.Length != 0)
+            {
+                var check = CheckValidRole(model.Role);
+                if (!check.IsSuccess)
+                    return new AuthenticateResponse
+                    {
+                        Message = check.Message,
+                        IsSuccess = false,
+                    };
+            }
+
+            var result = await _accountAuthenService.LoginAccountByExternalAsync(externalRequest);
+            if (!result.IsSuccess)
             {
                 return new AuthenticateResponse
                 {
-                    Message = new MessageResult("BR06", new string[] { "userId" }).Value,
+                    Message = result.Message,
                     IsSuccess = false,
                 };
             }
 
-            var accountRoles = await _accountManager.GetRolesAsync(account);
-
-            var authClaims = new List<Claim>
-                {
-                    new Claim(ClaimTypes.Name, account.UserName),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                };
-
-            foreach (var accountRole in accountRoles)
+            if (result.IsNewAccount)
             {
-                authClaims.Add(new Claim(ClaimTypes.Role, accountRole));
+                var account = new Account
+                {
+                    Name = result.Name,
+                    UserId = result.UserId,
+                    Role = model.Role,
+                    Email = result.Email,
+                    Status = AccountConstants.ACCOUNT_IS_ACTIVE,
+                    Image = AccountConstants.DEFAULT_IMAGE
+                };
+                await CreateAsyn(account);
             }
-
-            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
-
-            var token = new JwtSecurityToken(
-                issuer: _configuration["JWT:ValidIssuer"],
-                audience: _configuration["JWT:ValidAudience"],
-                expires: DateTime.Now.AddDays(30),
-                claims: authClaims,
-                signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
-                );
-
-
-            await GoogleFirebaseAuthAsync(model.UserId);
-
-
-            var accountViewModel = GetByUserId(account.UserName);
+            var accountViewModel = GetByUserId(result.UserId);
             var message = new MessageResult("OK04");
-            return new AuthenticateResponse(accountViewModel, new JwtSecurityTokenHandler().WriteToken(token), message, true, token.ValidTo);*/
-            return null;
+            return new AuthenticateResponse(accountViewModel, result.Token, message, true, result.ExpireDate);
         }
 
         public async Task<ResultResponse> CheckValidUserIdAndEmailAsync(string userId, string email)
@@ -379,7 +380,7 @@ namespace HMS.Data.Services
             }
             return new ResultResponse
             {
-                Message = new MessageResult("BRO7", new string[] { "role" }).Value,
+                Message = new MessageResult("BR07", new string[] { "role" }).Value,
                 IsSuccess = false,
             };
         }

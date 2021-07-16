@@ -6,6 +6,7 @@ namespace HMS.Data.ViewModels.Room
 {
     public class CreateRoomViewModel
     {
+        public string HouseId { get; set; }
         public string Name { get; set; }
     }
 }

@@ -41,7 +41,7 @@ namespace HMS.Data.Services
             var serviceTypes = await _serviceTypeService.GetServiceTypes();
             var service = _mapper.Map<Service>(model);
             service.Status = ServiceConstants.SERVICE_IS_ACTIVE;
-            service.ServiceTypeId = serviceTypes.Where(serviceType => serviceType.Name.Equals(ServiceTypeConstants.SERVICE_TYPE_IS_DEFAULT_DIFFERENT)).FirstOrDefault().Id;
+            service.ServiceTypeId = serviceTypes.Where(serviceType => serviceType.Name.Equals(model.ServiceTypeName)).FirstOrDefault().Id;
             await CreateAsyn(service);
             return new ResultResponse
             {
@@ -98,8 +98,6 @@ namespace HMS.Data.Services
                     Message = new MessageResult("NF02", new string[] { "Service" }).Value,
                     IsSuccess = false
                 };
-
-
             }
             var service = await GetAsyn(model.Id);
             if (model.Name != null)
@@ -159,15 +157,13 @@ namespace HMS.Data.Services
                 ServiceTypeName = ServiceTypeConstants.SERVICE_TYPE_IS_DEFAULT_DIFFERENT
             };
             defaultServices.Add(waterService);
-            int count = 0;
             foreach (CreateServiceViewModel model in defaultServices)
             {
                 await CreateServiceAsync(model);
-                count++;
             }
             return new ResultResponse
             {
-                Message = new MessageResult("OK01", new string[] { "Default Service" }).Value,
+                Message = new MessageResult("OK01", new string[] { "Default Services" }).Value,
                 IsSuccess = true,
             };
         }

@@ -43,11 +43,11 @@ namespace HMS.Data.DependencyInjection
             services.AddScoped<IBillItemRepository, BillItemRepository>();
             services.AddScoped<IBillItemService, BillItemService>();
 
-            services.AddScoped<IClockRepository, ClockRepository>();
-            services.AddScoped<IClockService, ClockService>();
-
             services.AddScoped<IClockCategoryRepository, ClockCategoryRepository>();
             services.AddScoped<IClockCategoryService, ClockCategoryService>();
+
+            services.AddScoped<IClockRepository, ClockRepository>();
+            services.AddScoped<IClockService, ClockService>();
 
             services.AddScoped<IClockValueRepository, ClockValueRepository>();
             services.AddScoped<IClockValueService, ClockValueService>();

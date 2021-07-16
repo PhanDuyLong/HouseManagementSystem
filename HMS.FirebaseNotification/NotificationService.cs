@@ -21,8 +21,8 @@ namespace HMS.FirebaseNotification
             {
                 Credential = GoogleCredential.FromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "key.json")),
             });
-
         }
+
         public async Task<bool> PushNotificationAsync(MobileNotification firebaseNotification)
         {
             var message = new Message()

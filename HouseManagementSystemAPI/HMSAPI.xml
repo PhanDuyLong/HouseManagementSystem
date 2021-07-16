@@ -24,7 +24,7 @@
         </member>
         <member name="M:HMSAPI.Controllers.AccountsController.LoginByGoogle(HMS.Data.Requests.AuthenticateGoogleRequest)">
             <summary>
-            Authenticate with firebase
+            Authenticate with google
             </summary>
             <param name="model"></param>
             <returns></returns>
@@ -151,7 +151,7 @@
             <summary>
             Delete Contract
             </summary>
-            <param name="id"></param>
+            <param name="contractId"></param>
             <returns></returns>
         </member>
         <member name="T:HMSAPI.Controllers.PaymentsController">
@@ -250,6 +250,7 @@
             </summary>
             <param name="id"></param>
             <returns></returns>
+            
         </member>
         <member name="M:HMSAPI.Controllers.ServiceContractsController.Update(HMS.Data.ViewModels.ServiceContract.UpdateServiceContractViewModel)">
             <summary>
@@ -283,7 +284,7 @@
             <param name="houseId"></param>
             <returns></returns>
         </member>
-        <member name="M:HMSAPI.Controllers.ServicesController.GetHouse(System.Int32)">
+        <member name="M:HMSAPI.Controllers.ServicesController.GetService(System.Int32)">
             <summary>
             Get Service by Id 
             </summary>
@@ -306,7 +307,7 @@
         </member>
         <member name="M:HMSAPI.Controllers.ServicesController.Delete(System.Int32)">
             <summary>
-            Delete Contract
+            Delete Service
             </summary>
             <param name="id"></param>
             <returns></returns>

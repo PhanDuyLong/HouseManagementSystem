@@ -47,13 +47,14 @@ namespace HMS.Data.AutoMapperProfile
 
             CreateMap<Service, ServiceViewModel>()
                 .ForMember(dest => dest.ServiceType, opt => opt.MapFrom(src => src.ServiceType.Name));
-            CreateMap<CreateServiceViewModel, Service>();
 
+            CreateMap<CreateServiceViewModel, Service>();
 
             CreateMap<Contract, ContractBaseViewModel>();
 
             CreateMap<Clock, ClockDetailViewModel>()
                 .ForMember(dest => dest.ClockCategory, opt => opt.MapFrom(src => src.ClockCategory.Name));
+            CreateMap<CreateClockViewModel, Clock>();
 
             CreateMap<Contract, ContractDetailViewModel>();
 

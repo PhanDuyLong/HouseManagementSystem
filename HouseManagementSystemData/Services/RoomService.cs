@@ -31,8 +31,9 @@ namespace HMS.Data.Services
     {
         private readonly IMapper _mapper;
         private readonly IHouseService _houseService;
+        private readonly IClockService _clockService;
         public RoomService(DbContext dbContext, IRoomRepository repository, IMapper mapper
-            , IHouseService houseService) : base(dbContext, repository)
+            , IHouseService houseService, IClockService clockService) : base(dbContext, repository)
         {
             _dbContext = dbContext;
             _mapper = mapper;
@@ -87,9 +88,19 @@ namespace HMS.Data.Services
             return FilterByParameter(userId, roomParameters).Count;
         }
 
-        public Task<ResultResponse> CreateRoomAsync(CreateRoomViewModel model)
+        public async Task<ResultResponse> CreateRoomAsync(CreateRoomViewModel model)
         {
-            return null;
+            var room = _mapper.Map<Room>(model);
+            room.Status = RoomConstants.ROOM_IS_NOT_RENTED;
+            room.IsDeleted = RoomConstants.ROOM_IS_NOT_DELETED;
+            await CreateAsyn(room);
+            await _clockService.CreateAllClocksAsync(room.Id);
+
+            return new ResultResponse
+            {
+                Message = new MessageResult("OK01", new string[] { "Room" }).Value,
+                IsSuccess = true,
+            };
         }
 
         public async Task<ResultResponse> UpdateRoomAsync(UpdateRoomViewModel model)

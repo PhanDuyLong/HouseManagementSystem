@@ -61,7 +61,8 @@ namespace HMS.Authen.Services
                 Token = token[0],
                 Message = "Login succesfully",
                 IsSuccess = true,
-                ExpireDate = DateTime.Parse(token[1])
+                ExpireDate = DateTime.Parse(token[1]),
+                UserId = user.UserName
             };
         }
 
@@ -132,6 +133,15 @@ namespace HMS.Authen.Services
 
                 if (user is null)
                 {
+                    if(model.Role.Length == 0)
+                    {
+                        return new AccountManagerResponse
+                        {
+                            Message = "New account need to role to create!",
+                            IsSuccess = false
+                        };
+                    }
+
                     user = new ApplicationAccount()
                     {
                         Email = payload["email"].ToString(),
@@ -154,19 +164,16 @@ namespace HMS.Authen.Services
                         var token = await _jwtHandler.GenerateToken(user);
                         return new AccountManagerResponse
                         {
-                            Message = token[0],
+                            Token = token[0],
+                            UserId = user.UserName,
+                            Name = payload["name"].ToString(),
+                            Email = user.Email,
+                            Message = "Login successfully",
                             IsSuccess = true,
-                            ExpireDate = DateTime.Parse(token[1])
+                            ExpireDate = DateTime.Parse(token[1]),
+                            IsNewAccount = true
                         };
                     }
-                }
-                else
-                {
-                    return new AccountManagerResponse
-                    {
-                        Message = "New account need to role to create!",
-                        IsSuccess = false
-                    };
                 }
             }
             else
@@ -175,9 +182,13 @@ namespace HMS.Authen.Services
                 var token = await _jwtHandler.GenerateToken(user);
                 return new AccountManagerResponse
                 {
-                    Message = token[0],
+                    UserId = user.UserName,
+                    Email = user.Email,
+                    Token = token[0],
+                    Message = "Login successfully",
                     IsSuccess = true,
-                    ExpireDate = DateTime.Parse(token[1])
+                    ExpireDate = DateTime.Parse(token[1]),
+                    IsNewAccount = false
                 };
             }
 

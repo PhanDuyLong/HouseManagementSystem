@@ -144,7 +144,7 @@ namespace HMS.Data.Services
 
 
             }
-
+            
             var result = await _houseInfoService.UpdateHouseInfoAsync(houseModel, model.HouseInfo);
 
             if (result.IsSuccess)
