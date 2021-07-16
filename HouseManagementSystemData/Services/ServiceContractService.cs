@@ -31,8 +31,6 @@ namespace HMS.Data.Services
             _mapper = mapper;
         }
 
-       
-
         public async Task<ResultResponse> DeleteServiceContractAsync(int serviceContractId)
         {
             var serviceContractModel = GetById(serviceContractId);
@@ -40,7 +38,7 @@ namespace HMS.Data.Services
             {
                 return new ResultResponse
                 {
-                    Message = new MessageResult("NF02", new string[] { "Service Contract" }).Value,
+                    Message = new MessageResult("NF02", new string[] { "ServiceContract" }).Value,
                     IsSuccess = false,
                 };
             }
@@ -49,7 +47,7 @@ namespace HMS.Data.Services
             Update(serviceContract);
             return new ResultResponse
             {
-                Message = new MessageResult("OK02", new string[] { "Service Contract" }).Value,
+                Message = new MessageResult("OK02", new string[] { "ServiceContract" }).Value,
                 IsSuccess = true
             };
         }
@@ -75,7 +73,7 @@ namespace HMS.Data.Services
             {
                 return new ResultResponse
                 {
-                    Message = new MessageResult("NF02", new string[] { "Service Contract" }).Value,
+                    Message = new MessageResult("NF02", new string[] { "ServiceContract" }).Value,
                     IsSuccess = false
                 };
             }
@@ -87,7 +85,7 @@ namespace HMS.Data.Services
             Update(serviceContract);
             return new ResultResponse
             {
-                Message = new MessageResult("OK03", new string[] { "Service Contract" }).Value,
+                Message = new MessageResult("OK03", new string[] { "ServiceContract" }).Value,
                 IsSuccess = true
             };
         }

@@ -71,11 +71,21 @@ namespace HMSAPI.Controllers
         /// <returns></returns>
         [Authorize(Roles = AccountConstants.ROLE_IS_OWNER + "," + AccountConstants.ROLE_IS_ADMIN)]
         [HttpPost]
-        [ProducesResponseType(typeof(ContractDetailViewModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> Create(CreateContractViewModel model)
-        {
-            return Ok(await _contractService.CreateContractAsync(model));
+        { 
+            if (ModelState.IsValid)
+            {
+                var userId = User.Identity.Name;
+                var result = await _contractService.CreateContractAsync(userId, model);
+                if (result.IsSuccess)
+                {
+                    return Ok(result.Message);
+                }
+                return BadRequest(result.Message);
+            }
+            return BadRequest(new MessageResult("BR01").Value);
         }
 
         /// <summary>

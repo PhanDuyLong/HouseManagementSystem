@@ -18,7 +18,7 @@ namespace HMS.Data.Services
     public partial interface IContractService : IBaseService<Contract>
     {
         ContractDetailViewModel GetById(int id);
-        Task<ResultResponse> CreateContractAsync(CreateContractViewModel model);
+        Task<ResultResponse> CreateContractAsync(string userId, CreateContractViewModel model);
         Task<ResultResponse> UpdateContractAsync(UpdateContractViewModel model);
         Task<ResultResponse> DeleteContractAsync(int contractId);
         List<ContractDetailViewModel> GetByUserId(string userId);
@@ -35,14 +35,15 @@ namespace HMS.Data.Services
             _accountService = accountService;
         }
 
-        public async Task<ResultResponse> CreateContractAsync(CreateContractViewModel model)
+        public async Task<ResultResponse> CreateContractAsync(string userId, CreateContractViewModel model)
         {
             var contract = _mapper.Map<Contract>(model);
+            contract.OwnerUserId = userId;
             contract.Status = ContractConstants.CONTRACT_IS_INACTIVE;
             await CreateAsyn(contract);
             return new ResultResponse
             {
-                Message = new MessageResult("OK01", new string[] { "Contract Service" }).Value,
+                Message = new MessageResult("OK01", new string[] { "Contract" }).Value,
                 IsSuccess = true,
             };
         }
@@ -54,7 +55,7 @@ namespace HMS.Data.Services
             {
                 return new ResultResponse
                 {
-                    Message = new MessageResult("NF02", new string[] { "Contract Service" }),
+                    Message = new MessageResult("NF02", new string[] { "Contract" }),
                     IsSuccess = false
                 };
 
@@ -64,7 +65,7 @@ namespace HMS.Data.Services
             Update(contractService);
             return new ResultResponse
             {
-                Message = new MessageResult("OK02", new string[] { "Contract Service" }).Value,
+                Message = new MessageResult("OK02", new string[] { "Contract" }).Value,
                 IsSuccess = true
             };
 
@@ -100,7 +101,7 @@ namespace HMS.Data.Services
             {
                 return new ResultResponse
                 {
-                    Message = new MessageResult("NF02", new string[] { "Update Contract" }).Value,
+                    Message = new MessageResult("NF02", new string[] { "Contract" }).Value,
                     IsSuccess = false,
                 };
 
@@ -121,7 +122,7 @@ namespace HMS.Data.Services
             Update(contract);
             return new ResultResponse
             {
-                Message = new MessageResult("OK03", new string[] { "Contract Service" }).Value,
+                Message = new MessageResult("OK03", new string[] { "Contract" }).Value,
                 IsSuccess = true
             };
 
