@@ -23,6 +23,7 @@ namespace HMS.Data.Services
         Task<ResultResponse> UpdateServiceAsync(UpdateServiceViewModel model);
         Task<ResultResponse> DeleteServiceAsync(int serviceId);
         Task<ResultResponse> CreateDefaultServicesAsync(string houseId);
+        ResultResponse CheckService(int serviceId);
     }
     public partial class ServiceService : BaseService<Service>, IServiceService
     {
@@ -70,7 +71,7 @@ namespace HMS.Data.Services
                 Message = new MessageResult("OK02", new string[] { "Service" }).Value,
                 IsSuccess = true
             };
-           
+
         }
 
         public List<ServiceViewModel> GetByHouseId(string houseId)
@@ -118,7 +119,7 @@ namespace HMS.Data.Services
             if (model.ServiceType != null)
             {
                 service.ServiceTypeId = serviceTypes.Where(serviceType => serviceType.Name.Equals(model.ServiceType)).FirstOrDefault().Id;
-          
+
             }
 
             Update(service);
@@ -136,7 +137,7 @@ namespace HMS.Data.Services
             var houseService = new CreateServiceViewModel
             {
                 HouseId = houseId,
-                Name = "Tiền Nhà",
+                Name = "Phòng",
                 CalculationUnit = "tháng",
                 ServiceTypeName = ServiceTypeConstants.SERVICE_TYPE_IS_DEFAULT_FIXED
             };
@@ -144,7 +145,7 @@ namespace HMS.Data.Services
             var eletricService = new CreateServiceViewModel
             {
                 HouseId = houseId,
-                Name = "Tiền Điện",
+                Name = "Điện",
                 CalculationUnit = "kWH",
                 ServiceTypeName = ServiceTypeConstants.SERVICE_TYPE_IS_DEFAULT_DIFFERENT
             };
@@ -152,8 +153,8 @@ namespace HMS.Data.Services
             var waterService = new CreateServiceViewModel
             {
                 HouseId = houseId,
-                Name = "Tiền Nước",
-                CalculationUnit = "m^3",
+                Name = "Nước",
+                CalculationUnit = "m3",
                 ServiceTypeName = ServiceTypeConstants.SERVICE_TYPE_IS_DEFAULT_DIFFERENT
             };
             defaultServices.Add(waterService);
@@ -165,6 +166,23 @@ namespace HMS.Data.Services
             {
                 Message = new MessageResult("OK01", new string[] { "Default Services" }).Value,
                 IsSuccess = true,
+            };
+        }
+
+        public ResultResponse CheckService(int serviceId)
+        {
+            var service = Get(serviceId);
+            if (service.Status == ServiceContractConstants.SERVICE_CONTRACT_IS_INACTIVE)
+            {
+                return new ResultResponse
+                {
+                    Message = new MessageResult("BR04", new string[] { "Service " + service.Name, "inactive" }).Value,
+                    IsSuccess = false
+                };
+            }
+            return new ResultResponse
+            {
+                IsSuccess = true
             };
         }
     }

@@ -67,7 +67,7 @@
             <summary>
             Delete account
             </summary>
-            <param name="username"></param>
+            <param name="userId"></param>
             <returns></returns>
         </member>
         <member name="T:HMSAPI.Controllers.BillsController">
@@ -258,6 +258,15 @@
             <param name="id"></param>
             <returns></returns>
             
+        </member>
+        <member name="M:HMSAPI.Controllers.ServiceContractsController.Create(System.Int32,System.Int32,HMS.Data.ViewModels.ServiceContract.CreateServiceContractViewModel)">
+            <summary>
+            Create ServiceContract
+            </summary>
+            <param name="roomId"></param>
+            <param name="contractId"></param>
+            <param name="model"></param>
+            <returns></returns>
         </member>
         <member name="M:HMSAPI.Controllers.ServiceContractsController.Update(HMS.Data.ViewModels.ServiceContract.UpdateServiceContractViewModel)">
             <summary>

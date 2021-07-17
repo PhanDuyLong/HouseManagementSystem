@@ -69,6 +69,33 @@ namespace HMSAPI.Controllers
             return Ok(contract);
         }
 
+
+        /// <summary>
+        /// Create ServiceContract
+        /// </summary>
+        /// <param name="roomId"></param>
+        /// <param name="contractId"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [Authorize(Roles = AccountConstants.ROLE_IS_OWNER + "," + AccountConstants.ROLE_IS_ADMIN)]
+        [HttpPost]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> Create(int roomId, int contractId, CreateServiceContractViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var result = await _serviceContractService.CreateServiceContractAsync(roomId, contractId, model);
+                if (result.IsSuccess)
+                {
+                    return Ok(result.Message);
+                }
+                return BadRequest(result.Message);
+            }
+            return BadRequest(new MessageResult("BR01").Value);
+        }
+
+
         /// <summary>
         /// Update ServiceContract
         /// </summary>

@@ -140,15 +140,15 @@ namespace HMS.Data.Services
         {
             List<ShowBillViewModel> bills;
             List<ContractDetailViewModel> contracts = _contractService.GetByUserId(userId);
-            var contractIds = contracts.Select(c => c.Id);
+            var contractIds = contracts.Select(c => c.Id).ToList();
 
             if (billParameters.IsIssueDateAscending)
             {
-                bills = Get().Where(b => contractIds.Contains(b.ContractId) && b.IsDeleted == BillConstants.BILL_IS_NOT_DELETED).OrderBy(b => b.IssueDate).ProjectTo<ShowBillViewModel>(_mapper.ConfigurationProvider).ToList();
+                bills = Get().Where(b => contractIds.Contains(b.ContractId.Value) && b.IsDeleted == BillConstants.BILL_IS_NOT_DELETED).OrderBy(b => b.IssueDate).ProjectTo<ShowBillViewModel>(_mapper.ConfigurationProvider).ToList();
             }
             else
             {
-                bills = Get().Where(b => contractIds.Contains(b.ContractId) && b.IsDeleted == BillConstants.BILL_IS_NOT_DELETED).OrderByDescending(b => b.IssueDate).ProjectTo<ShowBillViewModel>(_mapper.ConfigurationProvider).ToList();
+                bills = Get().Where(b => contractIds.Contains(b.ContractId.Value) && b.IsDeleted == BillConstants.BILL_IS_NOT_DELETED).OrderByDescending(b => b.IssueDate).ProjectTo<ShowBillViewModel>(_mapper.ConfigurationProvider).ToList();
             }
             return bills;
         }
@@ -213,7 +213,7 @@ namespace HMS.Data.Services
 
         private bool ServiceHasClock(ServiceContractDetailViewModel serviceContract)
         {
-            return serviceContract.ClockId != null;
+            return serviceContract.ClockId != 0;
         }
 
     }

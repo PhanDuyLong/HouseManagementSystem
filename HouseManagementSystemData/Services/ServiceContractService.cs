@@ -6,8 +6,10 @@ using HMS.Data.Repositories;
 using HMS.Data.Responses;
 using HMS.Data.Services.Base;
 using HMS.Data.Utilities;
+using HMS.Data.ViewModels;
 using HMS.Data.ViewModels.ServiceContract;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -21,14 +23,75 @@ namespace HMS.Data.Services
         ServiceContractDetailViewModel GetById(int id);
         Task<ResultResponse> UpdateServiceContractAsync(UpdateServiceContractViewModel model);
         Task<ResultResponse> DeleteServiceContractAsync(int serviceContractId);
+        Task<ResultResponse> CreateServiceContractAsync(int roomId, int contractId, CreateServiceContractViewModel model);
+        Task<ResultResponse> CreateServiceContractsAsync(int roomId, int contractId, List<CreateServiceContractViewModel> model);
     }
     public partial class ServiceContractService : BaseService<ServiceContract>, IServiceContractService
     {
         private readonly IMapper _mapper;
-        public ServiceContractService(DbContext dbContext, IServiceContractRepository repository, IMapper mapper) : base(dbContext, repository)
+        private readonly IServiceService _serviceService;
+        private readonly IClockService _clockService;
+        private readonly IClockValueService _clockValueService;
+        public ServiceContractService(DbContext dbContext, IServiceContractRepository repository, IMapper mapper
+            , IServiceService serviceService, IClockService clockService, IClockValueService clockValueService) : base(dbContext, repository)
         {
             _dbContext = dbContext;
             _mapper = mapper;
+            _serviceService = serviceService;
+            _clockService = clockService;
+            _clockValueService = clockValueService;
+        }
+
+        public async Task<ResultResponse> CreateServiceContractAsync(int roomId, int contractId, CreateServiceContractViewModel model)
+        {
+            var check = _serviceService.CheckService(model.ServiceId);
+            if (!check.IsSuccess)
+            {
+                return check;
+            }
+            var serviceContract = _mapper.Map<ServiceContract>(model);
+
+            var service = _serviceService.GetById(model.ServiceId);
+            if(service.ServiceType == ServiceTypeConstants.SERVICE_TYPE_IS_DEFAULT_DIFFERENT)
+            {
+                var clockId = _clockService.GetIdByServiceIdAndRoomId(service.Id, roomId);
+                var createClockValueViewModel = new CreateClockValueViewModel
+                {
+                    ClockId = clockId,
+                    IndexValue = model.StartClockValue,
+                    CreateDate = DateTime.Now,
+                    RecordDate = DateTime.Now
+                };
+                await _clockValueService.CreateClockValueAsync(createClockValueViewModel);
+                serviceContract.ClockId = clockId;
+            }
+
+            serviceContract.ContractId = contractId;
+            serviceContract.Status = ServiceContractConstants.SERVICE_CONTRACT_IS_ACTIVE;
+            serviceContract.UnitPrice = service.Price;
+            await CreateAsyn(serviceContract);
+
+            return new ResultResponse
+            {
+                Message = new MessageResult("OK01", new string[] { "ServiceContract "}).Value,
+                IsSuccess = true,
+            };
+        }
+
+        public async Task<ResultResponse> CreateServiceContractsAsync(int roomId, int contractId, List<CreateServiceContractViewModel> models)
+        {
+            foreach(var model in models)
+            {
+                var check = await CreateServiceContractAsync(roomId, contractId, model);
+                if (!check.IsSuccess)
+                    return check;
+            }
+
+            return new ResultResponse
+            {
+                Message = new MessageResult("OK01", new string[] { "ServiceContracts" }).Value,
+                IsSuccess = true,
+            };
         }
 
         public async Task<ResultResponse> DeleteServiceContractAsync(int serviceContractId)
@@ -78,7 +141,8 @@ namespace HMS.Data.Services
                 };
             }
             var serviceContract = await GetAsyn(model.Id);
-            if (model.UnitPrice!=null)
+
+            if (model.UnitPrice != null)
             {
                 serviceContract.UnitPrice = model.UnitPrice;
             }

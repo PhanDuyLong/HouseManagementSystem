@@ -17,6 +17,7 @@ namespace HMS.Authen.Services
         Task<AccountManagerResponse> LoginAccountByExternalAsync(AuthenticateExternalRequest model);
         Task<AccountManagerResponse> RegisterAccountAsync(RegisterAccountRequest model);
         Task<AccountManagerResponse> ChangePasswordAsync(ChangePasswordRequest model);
+        Task<AccountManagerResponse> DeleteAccountAsync(string userId);
     }
     public partial class AccountAuthenService : IAccountAuthenService
     {
@@ -33,25 +34,14 @@ namespace HMS.Authen.Services
 
         public async Task<AccountManagerResponse> LoginAccountAsync(AuthenticateInternalRequest model)
         {
-            var user = await _accountManager.FindByEmailAsync(model.Email);
+            var user = await _accountManager.FindByNameAsync(model.UserId);
 
             if (user is null)
             {
                 return new AccountManagerResponse
                 {
-                    Message = "There is no user with that email address!",
+                    Message = "There is no user with that userId!",
                     IsSuccess = false,
-                };
-            }
-
-            var result = await _accountManager.CheckPasswordAsync(user, model.Password);
-
-            if (!result)
-            {
-                return new AccountManagerResponse
-                {
-                    Message = "Invalid password!",
-                    IsSuccess = false
                 };
             }
 
@@ -229,6 +219,39 @@ namespace HMS.Authen.Services
                 return new AccountManagerResponse
                 {
                     Message = "Change password successfully!",
+                    IsSuccess = true
+                };
+            }
+        }
+
+        public async Task<AccountManagerResponse> DeleteAccountAsync(string userId)
+        {
+            var user = await _accountManager.FindByNameAsync(userId);
+
+            if (user is null)
+            {
+                return new AccountManagerResponse
+                {
+                    Message = "There is no user with that userId!",
+                    IsSuccess = false,
+                };
+            }
+
+            var result = await _accountManager.DeleteAsync(user);
+
+            if (!result.Succeeded)
+            {
+                return new AccountManagerResponse
+                {
+                    Message = "Deleted account failed!",
+                    IsSuccess = false
+                };
+            }
+            else
+            {
+                return new AccountManagerResponse
+                {
+                    Message = "Delete account successfully!",
                     IsSuccess = true
                 };
             }

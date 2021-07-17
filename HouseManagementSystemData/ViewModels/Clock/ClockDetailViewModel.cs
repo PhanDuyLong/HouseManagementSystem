@@ -6,7 +6,7 @@ namespace HMS.Data.ViewModels.Clock
 {
     public class ClockDetailViewModel
     {
-        public string Id { get; set; }
+        public int Id { get; set; }
         public int? RoomId { get; set; }
         public string ClockCategoryId { get; set; }
         public bool? Status { get; set; }

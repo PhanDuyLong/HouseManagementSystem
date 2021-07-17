@@ -20,8 +20,7 @@ namespace HMS.Data.DependencyInjection
             services.AddScoped<IHouseInfoService, HouseInfoService>();
             services.AddScoped<IHouseInfoRepository, HouseInfoRepository>();
 
-            services.AddScoped<IHouseRepository, HouseRepository>();
-            services.AddScoped<IHouseService, HouseService>();
+            
 
             services.AddScoped<IServiceService, ServiceService>();
             services.AddScoped<IServiceRepository, ServiceRepository>();
@@ -29,14 +28,11 @@ namespace HMS.Data.DependencyInjection
             services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IPaymentRepository, PaymentRepository>();
 
-            services.AddScoped<IRoomRepository, RoomRepository>();
-            services.AddScoped<IRoomService, RoomService>();
+            
          
-            services.AddScoped<IBillRepository, BillRepository>();
-            services.AddScoped<IBillService, BillService>();
+            
 
-            services.AddScoped<IBillItemRepository, BillItemRepository>();
-            services.AddScoped<IBillItemService, BillItemService>();
+            
 
             services.AddScoped<IClockCategoryRepository, ClockCategoryRepository>();
             services.AddScoped<IClockCategoryService, ClockCategoryService>();
@@ -47,17 +43,28 @@ namespace HMS.Data.DependencyInjection
             services.AddScoped<IClockValueRepository, ClockValueRepository>();
             services.AddScoped<IClockValueService, ClockValueService>();
 
+            
+
+            services.AddScoped<IServiceContractRepository, ServiceContractRepository>();
+            services.AddScoped<IServiceContractService, ServiceContractService>();
+
             services.AddScoped<IContractRepository, ContractRepository>();
             services.AddScoped<IContractService, ContractService>();
 
-            services.AddScoped<IServiceContractRepository, ServiceContractRepository>();
-            services.AddScoped<IServiceContractService, ServiceContractService>();
+            services.AddScoped<IBillItemRepository, BillItemRepository>();
+            services.AddScoped<IBillItemService, BillItemService>();
 
-            services.AddScoped<IServiceContractRepository, ServiceContractRepository>();
-            services.AddScoped<IServiceContractService, ServiceContractService>();
+            services.AddScoped<IBillRepository, BillRepository>();
+            services.AddScoped<IBillService, BillService>();
 
             services.AddScoped<IServiceTypeRepository, ServiceTypeRepository>();
             services.AddScoped<IServiceTypeService, ServiceTypeService>();
+
+            services.AddScoped<IRoomRepository, RoomRepository>();
+            services.AddScoped<IRoomService, RoomService>();
+
+            services.AddScoped<IHouseRepository, HouseRepository>();
+            services.AddScoped<IHouseService, HouseService>();
         }
     }
 }

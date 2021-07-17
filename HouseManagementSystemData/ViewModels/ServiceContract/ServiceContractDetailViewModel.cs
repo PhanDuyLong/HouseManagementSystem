@@ -1,4 +1,5 @@
 ﻿using HMS.Data.ViewModels.Clock;
+using HMS.Data.ViewModels.Room;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -12,7 +13,7 @@ namespace HMS.Data.ViewModels.ServiceContract
         public int? ServiceId { get; set; }
         public double UnitPrice { get; set; }
         public bool? Status { get; set; }
-        public string ClockId { get; set; }
+        public int ClockId { get; set; }
 
         public virtual ServiceViewModel Service { get; set; }
     }

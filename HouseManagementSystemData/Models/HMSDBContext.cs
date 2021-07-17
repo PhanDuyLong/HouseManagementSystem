@@ -103,10 +103,6 @@ namespace HMS.Data.Models
             {
                 entity.ToTable("Clock");
 
-                entity.Property(e => e.Id)
-                    .HasMaxLength(30)
-                    .IsUnicode(false);
-
                 entity.Property(e => e.ClockCategoryId)
                     .HasMaxLength(30)
                     .IsUnicode(false);
@@ -136,10 +132,6 @@ namespace HMS.Data.Models
             modelBuilder.Entity<ClockValue>(entity =>
             {
                 entity.ToTable("ClockValue");
-
-                entity.Property(e => e.ClockId)
-                    .HasMaxLength(30)
-                    .IsUnicode(false);
 
                 entity.Property(e => e.CreateDate).HasColumnType("date");
 
@@ -276,10 +268,6 @@ namespace HMS.Data.Models
             modelBuilder.Entity<ServiceContract>(entity =>
             {
                 entity.ToTable("ServiceContract");
-
-                entity.Property(e => e.ClockId)
-                    .HasMaxLength(30)
-                    .IsUnicode(false);
 
                 entity.HasOne(d => d.Clock)
                     .WithMany(p => p.ServiceContracts)

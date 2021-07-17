@@ -1,5 +1,4 @@
 ﻿using HMS.Data.Constants;
-using HMS.Data.Models;
 using HMS.Data.Parameters;
 using HMS.Data.Responses;
 using HMS.Data.Services;

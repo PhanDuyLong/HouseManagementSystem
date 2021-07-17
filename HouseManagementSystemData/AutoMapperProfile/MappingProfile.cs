@@ -6,8 +6,10 @@ using HMS.Data.ViewModels;
 using HMS.Data.ViewModels.Account;
 using HMS.Data.ViewModels.Bill;
 using HMS.Data.ViewModels.Clock;
+using HMS.Data.ViewModels.Contract;
 using HMS.Data.ViewModels.Contract.Base;
 using HMS.Data.ViewModels.HouseViewModels;
+using HMS.Data.ViewModels.Room;
 using HMS.Data.ViewModels.RoomViewModels;
 using HMS.Data.ViewModels.ServiceContract;
 using System.Collections;
@@ -43,7 +45,9 @@ namespace HMS.Data.AutoMapperProfile
                 .ForMember(dest => dest.Contract, opt => opt.MapFrom(src => src.Contracts.OfType<Contract>().FirstOrDefault()));
 
             CreateMap<Room, RoomDetailViewModel>()
-                .ForMember(dest => dest.Contract, opt => opt.MapFrom(src => src.Contracts.OfType<Contract>().FirstOrDefault()));
+                .ForMember(dest => dest.Contract, opt => opt.MapFrom(src => src.Contracts.OfType<Contract>().Where(c => c.Status == ContractConstants.CONTRACT_IS_ACTIVE).FirstOrDefault()));
+
+            CreateMap<CreateRoomViewModel, Room>();
 
             CreateMap<Service, ServiceViewModel>()
                 .ForMember(dest => dest.ServiceType, opt => opt.MapFrom(src => src.ServiceType.Name));
@@ -57,10 +61,13 @@ namespace HMS.Data.AutoMapperProfile
             CreateMap<CreateClockViewModel, Clock>();
 
             CreateMap<Contract, ContractDetailViewModel>();
+            CreateMap<CreateContractViewModel, Contract>();
 
             CreateMap<ServiceContract, ServiceContractDetailViewModel>();
+            CreateMap<CreateServiceContractViewModel, ServiceContract>();
 
             CreateMap<ClockValue, ClockValueDetailViewModel>();
+            CreateMap<CreateClockValueViewModel, ClockValue>();
 
             CreateMap<Bill, BillDetailViewModel>();
             CreateMap<Bill, ShowBillViewModel>();

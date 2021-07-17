@@ -191,19 +191,24 @@ namespace HMSAPI.Controllers
         /// <summary>
         /// Delete account
         /// </summary>
-        /// <param name="username"></param>
+        /// <param name="userId"></param>
         /// <returns></returns>
         [Authorize(Roles = AccountConstants.ROLE_IS_ADMIN)]
         [HttpDelete]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> Delete(string username)
+        public async Task<IActionResult> Delete(string userId)
         {
-            var account = await _accountService.GetAsyn(username);
-            if (account == null)
-                return NotFound("Account is not found");
-            return Ok(_accountService.DeleteAccount(account));
+            if (ModelState.IsValid)
+            {
+                var result = await _accountService.DeleteAccountAsync(userId);
+                if (result.IsSuccess)
+                {
+                    return Ok(result.Message);
+                }
+                return BadRequest(result.Message);
+            }
+            return BadRequest(new MessageResult("BR01").Value);
         }
     }
 }

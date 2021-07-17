@@ -10,8 +10,10 @@ namespace HMS.Data.ViewModels.ServiceContract
     {
         [Required]
         public int Id { get; set; }
-
-       
+        public int? ContractId { get; set; }
+        public int? ServiceId { get; set; }
         public double? UnitPrice { get; set; }
+        public int ClockId { get; set; }
+
     }
 }

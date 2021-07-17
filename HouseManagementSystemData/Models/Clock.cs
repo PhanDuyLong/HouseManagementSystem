@@ -13,7 +13,7 @@ namespace HMS.Data.Models
             ServiceContracts = new HashSet<ServiceContract>();
         }
 
-        public string Id { get; set; }
+        public int Id { get; set; }
         public int? RoomId { get; set; }
         public string ClockCategoryId { get; set; }
         public bool? Status { get; set; }

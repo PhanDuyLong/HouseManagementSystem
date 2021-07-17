@@ -25,6 +25,7 @@ namespace HMS.Data.Services
         Task<ResultResponse> DeleteHouseAsync(string id);
         Task<ResultResponse> UpdateHouseAsync(UpdateHouseViewModel model);
         int CountHouses(string userId, HouseParameters houseParameters);
+        public Task<ResultResponse> UpdateHouseStatusAsync(string id, bool status);
     }
     public partial class HouseService : BaseService<House>, IHouseService
     {
@@ -54,8 +55,10 @@ namespace HMS.Data.Services
         public HouseDetailViewModel GetById(string id)
         {
             var house = Get().Where(h => h.Id == id && h.IsDeleted == HouseConstants.HOUSE_IS_NOT_DELETED).ProjectTo<HouseDetailViewModel>(_mapper.ConfigurationProvider).FirstOrDefault();
-            house.Rooms = house.Rooms.Where(r => r.IsDeleted == RoomConstants.ROOM_IS_NOT_DELETED).ToList();
-            //house.Services = house.Services.Where(h => h.isDel)
+            if(house != null)
+            {
+                house.Rooms = house.Rooms.Where(r => r.IsDeleted == RoomConstants.ROOM_IS_NOT_DELETED).ToList();
+            }
             return house;
         }
 
@@ -141,8 +144,6 @@ namespace HMS.Data.Services
                     Message = new MessageResult("NF02", new string[] { "House" }).Value,
                     IsSuccess = false
                 };
-
-
             }
             
             var result = await _houseInfoService.UpdateHouseInfoAsync(houseModel, model.HouseInfo);
@@ -163,6 +164,36 @@ namespace HMS.Data.Services
                     IsSuccess = false
                 };
             }
+        }
+        public async Task<ResultResponse> UpdateHouseStatusAsync(string id, bool status)
+        {
+            var house = await GetAsyn(id);
+            if (house == null)
+            {
+                return new ResultResponse
+                {
+                    Message = new MessageResult("NF02", new string[] { "House" }).Value,
+                    IsSuccess = false
+                };
+            }
+
+            if (house.Status != status)
+            {
+                house.Status = status;
+                Update(house);
+
+                return new ResultResponse
+                {
+                    Message = new MessageResult("OK03", new string[] { "HouseStatus" }).Value,
+                    IsSuccess = true
+                };
+            }
+
+            return new ResultResponse
+            {
+                Message = "Nothing change!",
+                IsSuccess = true,
+            };
         }
     }
 }

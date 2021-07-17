@@ -17,7 +17,7 @@ namespace HMS.Data.Models
         public int? ServiceId { get; set; }
         public double? UnitPrice { get; set; }
         public bool? Status { get; set; }
-        public string ClockId { get; set; }
+        public int? ClockId { get; set; }
 
         public virtual Clock Clock { get; set; }
         public virtual Contract Contract { get; set; }

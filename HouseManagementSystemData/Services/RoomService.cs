@@ -8,6 +8,7 @@ using HMS.Data.Responses;
 using HMS.Data.Services.Base;
 using HMS.Data.Utilities;
 using HMS.Data.ViewModels;
+using HMS.Data.ViewModels.Clock;
 using HMS.Data.ViewModels.HouseViewModels;
 using HMS.Data.ViewModels.Room;
 using HMS.Data.ViewModels.RoomViewModels;
@@ -26,6 +27,8 @@ namespace HMS.Data.Services
         Task<ResultResponse> UpdateRoomAsync(UpdateRoomViewModel model);
         Task<ResultResponse> DeleteRoomAsync(int id);
         int CountRooms(string userId, RoomParameters roomParameters);
+        Task<ResultResponse> UpdateRoomStatusAsync(int id, bool status);
+        Task<ResultResponse> CheckInActiveRoomAsync(int id);
     }
     public partial class RoomService : BaseService<Room>, IRoomService
     {
@@ -73,14 +76,20 @@ namespace HMS.Data.Services
 
         public List<RoomShowViewModel> GetByHouseId(RoomParameters roomParameters)
         {
-            List<RoomShowViewModel> rooms;
-            rooms = Get().Where(r => r.HouseId == roomParameters.HouseId && r.IsDeleted == RoomConstants.ROOM_IS_NOT_DELETED).ProjectTo<RoomShowViewModel>(_mapper.ConfigurationProvider).ToList();
+            var rooms = Get().Where(r => r.HouseId == roomParameters.HouseId && r.IsDeleted == RoomConstants.ROOM_IS_NOT_DELETED).ProjectTo<RoomShowViewModel>(_mapper.ConfigurationProvider).ToList();
             return rooms;
         }
 
         public RoomDetailViewModel GetById(int id)
         {
             var room = Get().Where(r => r.Id == id && r.IsDeleted == RoomConstants.ROOM_IS_NOT_DELETED).ProjectTo<RoomDetailViewModel>(_mapper.ConfigurationProvider).FirstOrDefault();
+            if (room != null)
+            {
+                foreach (ClockDetailViewModel clock in room.Clocks)
+                {
+                    clock.ClockValues = clock.ClockValues.Where(value => value.Status == ClockValueConstants.CLOCK_VALUE_IS_MILESTONE).ToList();
+                }
+            }
             return room;
         }
 
@@ -133,6 +142,71 @@ namespace HMS.Data.Services
 
         public async Task<ResultResponse> DeleteRoomAsync(int id)
         {
+            var check = await CheckInActiveRoomAsync(id);
+            if (!check.IsSuccess)
+            {
+                return check;
+            }
+
+            var room = await GetAsyn(id);
+            room.IsDeleted = RoomConstants.ROOM_IS_DELETED;
+            Update(room);
+
+            return new ResultResponse
+            {
+                Message = new MessageResult("OK02", new string[] { "Room" }).Value,
+                IsSuccess = true
+            };
+        }
+
+        public async Task<ResultResponse> UpdateRoomStatusAsync(int id, bool status)
+        {
+            var room = await GetAsyn(id);
+            if (room == null)
+            {
+                return new ResultResponse
+                {
+                    Message = new MessageResult("NF02", new string[] { "Room" }).Value,
+                    IsSuccess = false
+                };
+            }
+
+            if (room.Status != status)
+            {
+                room.Status = status;
+                Update(room);
+
+                var house = _houseService.GetById(room.HouseId);
+
+                if (status == RoomConstants.ROOM_IS_RENTED)
+                {
+                    await _houseService.UpdateHouseStatusAsync(house.Id, HouseConstants.HOUSE_IS_RENTED);
+                }
+                else
+                {
+                    house.Rooms = house.Rooms.Where(r => r.Status != status).ToList();
+                    if (house.Rooms.Count == 0)
+                    {
+                        await _houseService.UpdateHouseStatusAsync(house.Id, HouseConstants.HOUSE_IS_NOT_RENTED);
+                    }
+                }
+
+                return new ResultResponse
+                {
+                    Message = new MessageResult("OK03", new string[] { "RoomStatus" }).Value,
+                    IsSuccess = true
+                };
+            }
+
+            return new ResultResponse
+            {
+                Message = "Nothing change!",
+                IsSuccess = true,
+            };
+        }
+
+        public async Task<ResultResponse> CheckInActiveRoomAsync(int id)
+        {
             var room = await GetAsyn(id);
             if (room == null)
             {
@@ -152,13 +226,9 @@ namespace HMS.Data.Services
                 };
             }
 
-            room.IsDeleted = RoomConstants.ROOM_IS_DELETED;
-            Update(room);
-
             return new ResultResponse
             {
-                Message = new MessageResult("OK02", new string[] { "Room" }).Value,
-                IsSuccess = true
+                IsSuccess = false
             };
         }
     }

@@ -45,8 +45,9 @@ namespace HMS.Data.Services
         AccountDetailViewModel GetByEmail(string email);
         List<AccountTenantViewModel> GetTenantNames();
         Task<ResultResponse> UpdateAccountAsync(string userId, UpdateAccountViewModel model);
-        string DeleteAccount(Account account);
+        Task<ResultResponse> DeleteAccountAsync(string userId);
         Task<ResultResponse> ChangePasswordAsync(string userId, ChangePassRequest model);
+        Task<ResultResponse> CheckValidUserAsync(string userId);
     }
     public partial class AccountService : BaseService<Account>, IAccountService
     {
@@ -60,13 +61,6 @@ namespace HMS.Data.Services
             _mapper = mapper;
             _accountAuthenService = accountAuthenService;
             _firebaseAuthenService = firebaseAuthenService;
-        }
-
-        public string DeleteAccount(Account account)
-        {
-            account.Status = AccountConstants.ACCOUNT_IS_INACTIVE;
-            Update(account);
-            return "Deleted succesfully";
         }
 
         public AccountDetailViewModel GetByUserId(string userId)
@@ -95,14 +89,7 @@ namespace HMS.Data.Services
 
         public async Task<AuthenticateResponse> LoginAccountAsync(AuthenticateRequest model)
         {
-            var firebaseAuthenRequest = new FirebaseAuthenticateRequest
-            {
-                UserId = model.UserId,
-                Email = model.Email,
-                Password = model.Password
-            };
-
-            var firebaseResponse = await _firebaseAuthenService.LoginByExternalAsysnc(firebaseAuthenRequest);
+            var firebaseResponse = await _firebaseAuthenService.LoginByIdTokenAsync(model.IdToken);
 
             if (!firebaseResponse.IsSuccess)
             {
@@ -115,8 +102,7 @@ namespace HMS.Data.Services
 
             var internalRequest = new AuthenticateInternalRequest
             {
-                Email = model.Email,
-                Password = model.Password,
+                UserId = firebaseResponse.UserId
             };
 
             var result = await _accountAuthenService.LoginAccountAsync(internalRequest);
@@ -130,14 +116,25 @@ namespace HMS.Data.Services
                 };
             }
 
-            var accountViewModel = GetByEmail(model.Email);
+            var account = await GetAsyn(result.UserId);
+
+            if (account.Status == AccountConstants.ACCOUNT_IS_INACTIVE)
+            {
+                return new AuthenticateResponse
+                {
+                    Message = new MessageResult("BR04", new string[] { "Account", "inactive" }).Value,
+                    IsSuccess = false
+                };
+            }
+
+            var accountViewModel = _mapper.Map<AccountDetailViewModel>(account);
             var message = new MessageResult("OK04", new string[] { "Login" });
             return new AuthenticateResponse(accountViewModel, result.Token, message, true, result.ExpireDate);
         }
 
         public async Task<ResultResponse> RegisterAccountAsync(RegisterRequest model)
         {
-            var check = await CheckValidUserIdAndEmailAsync(model.UserId, model.Email);
+            var check = await CheckUserExistUserIdAndEmailAsync(model.UserId, model.Email);
             if (!check.IsSuccess)
                 return check;
 
@@ -186,7 +183,7 @@ namespace HMS.Data.Services
 
         public async Task<ResultResponse> RegisterAdminAccountAsync(RegisterRequest model)
         {
-            var check = await CheckValidUserIdAndEmailAsync(model.UserId, model.Email);
+            var check = await CheckUserExistUserIdAndEmailAsync(model.UserId, model.Email);
 
             if (!check.IsSuccess)
                 return check;
@@ -234,16 +231,12 @@ namespace HMS.Data.Services
 
         public async Task<ResultResponse> UpdateAccountAsync(string userId, UpdateAccountViewModel model)
         {
+            var check = await CheckValidUserAsync(userId);
+            if (!check.IsSuccess)
+                return check;
+
             var account = await GetAsyn(userId);
-            if (account == null || account.Status == AccountConstants.ACCOUNT_IS_INACTIVE)
-            {
-                return new AuthenticateResponse
-                {
-                    Message = new MessageResult("BR06", new string[] { "userId" }).Value,
-                    IsSuccess = false,
-                };
-            }
-            
+
             if (model.Name != null)
             {
                 account.Name = model.Name;
@@ -271,18 +264,6 @@ namespace HMS.Data.Services
         public async Task<AuthenticateResponse> LoginAccountByGoogleAsync(AuthenticateGoogleRequest model)
         {
             
-            /*var firebaseResponse = await _firebaseAuthenService.LoginByIdTokenAsync(model.IdToken);
-
-            if (!firebaseResponse.IsSuccess)
-            {
-                return new AuthenticateResponse
-                {
-                    Message = firebaseResponse.Message,
-                    IsSuccess = false,
-                };
-            }*/
-
-
             var externalRequest = new AuthenticateExternalRequest
             {
                 IdToken = model.IdToken,
@@ -313,6 +294,10 @@ namespace HMS.Data.Services
 
             if (result.IsNewAccount)
             {
+                if(result.Image == null || result.Image.Length == 0)
+                {
+                    result.Image = AccountConstants.DEFAULT_IMAGE;
+                }
                 var account = new Account
                 {
                     Name = result.Name,
@@ -324,12 +309,24 @@ namespace HMS.Data.Services
                 };
                 await CreateAsyn(account);
             }
-            var accountViewModel = GetByUserId(result.UserId);
+
+            var acc = await GetAsyn(result.UserId);
+
+            if (acc.Status == AccountConstants.ACCOUNT_IS_INACTIVE)
+            {
+                return new AuthenticateResponse
+                {
+                    Message = new MessageResult("BR04", new string[] { "Account", "inactive" }).Value,
+                    IsSuccess = false
+                };
+            }
+
+            var accountViewModel = _mapper.Map<AccountDetailViewModel>(acc);
             var message = new MessageResult("OK04" , new string[] { "Login" });
             return new AuthenticateResponse(accountViewModel, result.Token, message, true, result.ExpireDate);
         }
 
-        public async Task<ResultResponse> CheckValidUserIdAndEmailAsync(string userId, string email)
+        public async Task<ResultResponse> CheckUserExistUserIdAndEmailAsync(string userId, string email)
         {
             var accountExistsWithId = await GetAsyn(userId);
             var accountExistsWithEmail = GetByEmail(email);
@@ -340,14 +337,7 @@ namespace HMS.Data.Services
                     Message = new MessageResult("BR03", new string[] { "Account" }).Value,
                     IsSuccess = false,
                 };
-            if (accountExistsWithId.Status.Equals(AccountConstants.ACCOUNT_IS_INACTIVE))
-            {
-                return new ResultResponse
-                {
-                    Message = new MessageResult("BR04", new string[] { "Account", "inactive"}).Value,
-                    IsSuccess = false,
-                };
-            }
+
             return new ResultResponse
             {
                 IsSuccess = true
@@ -372,6 +362,25 @@ namespace HMS.Data.Services
 
         public async Task<ResultResponse> ChangePasswordAsync(string userId, ChangePassRequest model)
         {
+            var account = await GetAsyn(userId);
+            if (account == null)
+            {
+                return new ResultResponse
+                {
+                    Message = new MessageResult("NF02", new string[] { "Account" }).Value,
+                    IsSuccess = false
+                };
+            }
+
+            if (account.Status == AccountConstants.ACCOUNT_IS_INACTIVE)
+            {
+                return new ResultResponse
+                {
+                    Message = new MessageResult("BR04", new string[] { "Account", "inactive" }).Value,
+                    IsSuccess = false
+                };
+            }
+
             var requestModel = new ChangePasswordRequest()
             {
                 UserId = userId,
@@ -392,6 +401,50 @@ namespace HMS.Data.Services
             return new ResultResponse
             {
                 Message = new MessageResult("OK04", new string[] { "Change password" }).Value,
+                IsSuccess = true
+            };
+        }
+
+        public async Task<ResultResponse> DeleteAccountAsync(string userId)
+        {
+            var check = await CheckValidUserAsync(userId);
+            if (!check.IsSuccess)
+                return check;
+            var account = await GetAsyn(userId);
+
+            account.Status = AccountConstants.ACCOUNT_IS_INACTIVE;
+            Update(account);
+
+            return new ResultResponse
+            {
+                Message = new MessageResult("OK02", new string[] { "Account" }).Value,
+                IsSuccess = true
+            };
+        }
+
+        public async Task<ResultResponse> CheckValidUserAsync(string userId)
+        {
+            var account = await GetAsyn(userId);
+            if (account == null)
+            {
+                return new ResultResponse
+                {
+                    Message = new MessageResult("NF02", new string[] { "Account" }).Value,
+                    IsSuccess = false
+                };
+            }
+
+            if (account.Status == AccountConstants.ACCOUNT_IS_INACTIVE)
+            {
+                return new ResultResponse
+                {
+                    Message = new MessageResult("BR04", new string[] { "Account", "inactive" }).Value,
+                    IsSuccess = false
+                };
+            }
+
+            return new ResultResponse
+            {
                 IsSuccess = true
             };
         }

@@ -9,6 +9,7 @@ using HMS.Data.Utilities;
 using HMS.Data.ViewModels.Clock;
 using Microsoft.EntityFrameworkCore;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -16,19 +17,23 @@ namespace HMS.Data.Services
 {
     public partial interface IClockService : IBaseService<Clock>
     {
-        ClockDetailViewModel GetById(string id);
+        ClockDetailViewModel GetById(int id);
+        //List<ClockDetailViewModel> GetByRoomId(in )
         Task<ResultResponse> CreateAllClocksAsync(int roomId);
+        int GetIdByServiceIdAndRoomId(int serviceId, int roomId);
     }
     public partial class ClockService : BaseService<Clock>, IClockService
     {
         private readonly IMapper _mapper;
         private readonly IClockCategoryService _clockCategoryService;
+        private readonly IServiceService _serviceService;
         public ClockService(DbContext dbContext, IClockRepository repository, IMapper mapper
-            , IClockCategoryService clockCategoryService) : base(dbContext, repository)
+            , IClockCategoryService clockCategoryService, IServiceService serviceService) : base(dbContext, repository)
         {
             _dbContext = dbContext;
             _mapper = mapper;
             _clockCategoryService = clockCategoryService;
+            _serviceService = serviceService;
         }
 
         public async Task<ResultResponse> CreateClockAsync(CreateClockViewModel model)
@@ -70,12 +75,31 @@ namespace HMS.Data.Services
             };
         }
 
-        public ClockDetailViewModel GetById(string id)
+        public ClockDetailViewModel GetById(int id)
         {
             var clock = Get().Where(c => c.Id == id && c.Status == ClockConstants.CLOCK_IS_ACTIVE).ProjectTo<ClockDetailViewModel>(_mapper.ConfigurationProvider).FirstOrDefault();
             return clock;
         }
 
-        
+        public List<ClockDetailViewModel> GetByRoomId(int roomId)
+        {
+            var clocks = Get().Where(c => c.RoomId == roomId && c.Status == ClockConstants.CLOCK_IS_ACTIVE).ProjectTo<ClockDetailViewModel>(_mapper.ConfigurationProvider).ToList();
+            return clocks;
+        }
+
+
+        public int GetIdByServiceIdAndRoomId(int serviceId, int roomId)
+        {
+            var service = _serviceService.GetById(serviceId);
+            var clocks = GetByRoomId(roomId);
+            foreach (var clock in clocks)
+            {
+                if (clock.ClockCategory.ToUpper().Contains(service.Name.ToUpper()))
+                {
+                    return clock.Id;
+                }
+            }
+            return -1;
+        }
     }
 }

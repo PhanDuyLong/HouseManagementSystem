@@ -1,4 +1,5 @@
 ﻿using FirebaseAdmin.Auth;
+using HMS.FirebaseServices.Authen.Models;
 using HMS.FirebaseServices.Authen.Requests;
 using HMS.FirebaseServices.Authen.Responses;
 using Newtonsoft.Json;
@@ -6,6 +7,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -15,20 +17,27 @@ namespace HMS.FirebaseServices.Authen.Services
 {
     public partial interface IFirebaseAuthenService
     {
-        Task<FirebaseAuthenticateResponse> LoginByExternalAsysnc(FirebaseAuthenticateRequest model);
+        Task<FirebaseAuthenticateResponse> LoginByEmailAndPasswordAsysnc(string email, string password);
         Task<FirebaseAuthenticateResponse> LoginByIdTokenAsync(string idToken);
     }
     public partial class FirebaseAuthenService : IFirebaseAuthenService
     {
-        public async Task<FirebaseAuthenticateResponse> LoginByExternalAsysnc(FirebaseAuthenticateRequest model)
+        private readonly HttpClient _httpClient;
+
+        public FirebaseAuthenService()
+        {
+            _httpClient = new HttpClient();
+            _httpClient.BaseAddress = new Uri("https://identitytoolkit.googleapis.com");
+        }
+        public async Task<FirebaseAuthenticateResponse> LoginByEmailAndPasswordAsysnc(string email, string password)
         {
             var client = new HttpClient();
             client.BaseAddress = new Uri("https://identitytoolkit.googleapis.com");
             string uri = "/v1/accounts:signInWithPassword?key=" + "AIzaSyBOUnY4MomlWzp-8pMw2QNStK-k6Q27FB4";
             var payload = new
             {
-                email = model.Email,
-                password = model.Password,
+                email = email,
+                password = password,
             };
             string postbody = JsonConvert.SerializeObject(payload).ToString();
             StringContent content = new StringContent(postbody);
@@ -42,18 +51,6 @@ namespace HMS.FirebaseServices.Authen.Services
                     IsSuccess = false
                 };
             }
-            else
-            {
-                if (!model.UserId.Equals(response.SelectToken("localId").ToString()))
-                {
-                    return new FirebaseAuthenticateResponse
-                    {
-                        Message = "Invalid UserId!",
-                        IsSuccess = false
-                    };
-                }
-                
-            }
             return new FirebaseAuthenticateResponse
             {
                 UserId = response.SelectToken("localId").ToString(),
@@ -64,16 +61,12 @@ namespace HMS.FirebaseServices.Authen.Services
 
         public async Task<FirebaseAuthenticateResponse> LoginByIdTokenAsync(string idToken)
         {
-            var client = new HttpClient();
-            client.BaseAddress = new Uri("https://identitytoolkit.googleapis.com");
             string uri = "/v1/accounts:lookup?key=" + "AIzaSyBOUnY4MomlWzp-8pMw2QNStK-k6Q27FB4";
             var payload = new
             {
                 idToken = idToken,
             };
-            string postbody = JsonConvert.SerializeObject(payload).ToString();
-            StringContent content = new StringContent(postbody);
-            var firebaseAuthRequest = await client.PostAsync(uri, content);
+            var firebaseAuthRequest = await _httpClient.PostAsync(uri, new StringContent(JsonConvert.SerializeObject(payload).ToString()));
             var response = JObject.Parse(await firebaseAuthRequest.Content.ReadAsStringAsync());
             if (!firebaseAuthRequest.IsSuccessStatusCode)
             {
@@ -83,15 +76,15 @@ namespace HMS.FirebaseServices.Authen.Services
                     IsSuccess = false
                 };
             }
-            else
+
+            var firebaseResponse = JsonConvert.DeserializeObject<FirebaseResponse>(response.ToString()); ;
+            var userId = firebaseResponse.Users.FirstOrDefault().LocalId;
+
+            return new FirebaseAuthenticateResponse
             {
-                return new FirebaseAuthenticateResponse
-                {
-                    UserId = response.SelectToken("localId").ToString(),
-                    Message = "Login succesfully",
-                    IsSuccess = true
-                };
-            }
+                UserId = userId,
+                IsSuccess = true
+            };
         }
     }
 }
