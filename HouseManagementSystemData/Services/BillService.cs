@@ -163,47 +163,52 @@ namespace HMS.Data.Services
             {
                 bills = GetByUserId(userId, billParameters);   
             }
-
-            var status = billParameters.Status;
-            if(status != null)
+            if (bills != null && bills.Count != 0)
             {
-                bills = bills.Where(b => b.Status == status).ToList();
-            }
-            var isPaidInFull = billParameters.IsPaidInFull;
-            if (isPaidInFull != null)
-            {
-                bills = bills.Where(b => b.IsPaidInFull == isPaidInFull).ToList();
+                var status = billParameters.Status;
+                if (status != null)
+                {
+                    bills = bills.Where(b => b.Status == status).ToList();
+                }
+                var isPaidInFull = billParameters.IsPaidInFull;
+                if (isPaidInFull != null)
+                {
+                    bills = bills.Where(b => b.IsPaidInFull == isPaidInFull).ToList();
+                }
             }
             return bills;
         }
 
         public List<ShowBillViewModel> GetByUserId(string userId, BillParameters billParameters)
         {
-            List<ShowBillViewModel> bills;
             List<ContractDetailViewModel> contracts = _contractService.GetByUserId(userId);
             var contractIds = contracts.Select(c => c.Id).ToList();
-
-            if (billParameters.IsIssueDateAscending)
+            if(contractIds != null && contractIds.Count != 0)
             {
-                bills = Get().Where(b => contractIds.Contains(b.ContractId.Value) && b.IsDeleted == BillConstants.BILL_IS_NOT_DELETED).OrderBy(b => b.IssueDate).ProjectTo<ShowBillViewModel>(_mapper.ConfigurationProvider).ToList();
+                List<ShowBillViewModel> bills = Get().Where(b => contractIds.Contains(b.ContractId.Value) && b.IsDeleted == BillConstants.BILL_IS_NOT_DELETED).ProjectTo<ShowBillViewModel>(_mapper.ConfigurationProvider).ToList();
+                if (billParameters.IsIssueDateAscending)
+                {
+                    bills = bills.OrderBy(b => b.IssueDate).ToList();
+                }
+                else
+                {
+                    bills = bills.OrderByDescending(b => b.IssueDate).ToList();
+                }
+                return bills;
             }
-            else
-            {
-                bills = Get().Where(b => contractIds.Contains(b.ContractId.Value) && b.IsDeleted == BillConstants.BILL_IS_NOT_DELETED).OrderByDescending(b => b.IssueDate).ProjectTo<ShowBillViewModel>(_mapper.ConfigurationProvider).ToList();
-            }
-            return bills;
+            return null;
         }
 
         public List<ShowBillViewModel> GetByContractId(BillParameters billParameters)
         {
-            List<ShowBillViewModel> bills;
+            List<ShowBillViewModel> bills = Get().Where(b => b.ContractId == billParameters.ContractId && b.IsDeleted == BillConstants.BILL_IS_NOT_DELETED).ProjectTo<ShowBillViewModel>(_mapper.ConfigurationProvider).ToList();
             if (billParameters.IsIssueDateAscending)
             {
-                bills = Get().Where(b => b.ContractId == billParameters.ContractId && b.IsDeleted == BillConstants.BILL_IS_NOT_DELETED).OrderBy(b => b.IssueDate).ProjectTo<ShowBillViewModel>(_mapper.ConfigurationProvider).ToList();
+                bills = bills.OrderBy(b => b.IssueDate).ToList();
             }
             else
             {
-                bills = Get().Where(b => b.ContractId == billParameters.ContractId && b.IsDeleted == BillConstants.BILL_IS_NOT_DELETED).OrderByDescending(b => b.IssueDate).ProjectTo<ShowBillViewModel>(_mapper.ConfigurationProvider).ToList();
+                bills = bills.OrderByDescending(b => b.IssueDate).ToList();
             }
             return bills;
         }

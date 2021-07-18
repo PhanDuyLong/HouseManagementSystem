@@ -109,18 +109,115 @@
             <param name="model"></param>
             <returns></returns>
         </member>
+        <member name="M:HMSAPI.Controllers.BillsController.Confirm(System.Int32)">
+            <summary>
+            Confirm bill
+            </summary>
+            <param name="id"></param>
+            <returns></returns>
+        </member>
         <member name="M:HMSAPI.Controllers.BillsController.Delete(System.Int32)">
             <summary>
-            Delete Bill
+            Delete bill
             </summary>
             <param name="id"></param>
             <returns></returns>
         </member>
         <member name="M:HMSAPI.Controllers.BillsController.Count(HMS.Data.Parameters.BillParameters)">
             <summary>
-            Count Bills
+            Count bills
             </summary>
             <param name="billParameters"></param>
+            <returns></returns>
+        </member>
+        <member name="T:HMSAPI.Controllers.ClocksController">
+            <summary>
+            ClocksController
+            </summary>
+        </member>
+        <member name="M:HMSAPI.Controllers.ClocksController.#ctor(HMS.Data.Services.IClockService)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="clockService"></param>
+        </member>
+        <member name="M:HMSAPI.Controllers.ClocksController.GetClocks(System.Int32)">
+            <summary>
+            Get clocks by roomId
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:HMSAPI.Controllers.ClocksController.GetClock(System.Int32)">
+            <summary>
+            Get clock by Id 
+            </summary>
+            <param name="id"></param>
+            <returns></returns>
+        </member>
+        <member name="M:HMSAPI.Controllers.ClocksController.Create(HMS.Data.ViewModels.Clock.CreateClockViewModel)">
+            <summary>
+            Create clock
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
+        <member name="M:HMSAPI.Controllers.ClocksController.Update(HMS.Data.ViewModels.Clock.UpdateClockViewModel)">
+            <summary>
+            Update clock
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
+        <member name="M:HMSAPI.Controllers.ClocksController.Delete(System.Int32)">
+            <summary>
+            Delete clock
+            </summary>
+            <param name="clockId"></param>
+            <returns></returns>
+        </member>
+        <member name="T:HMSAPI.Controllers.ClockValuesController">
+            <summary>
+            ClocksController
+            </summary>
+        </member>
+        <member name="M:HMSAPI.Controllers.ClockValuesController.#ctor(HMS.Data.Services.IClockValueService)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="clockValueService"></param>
+        </member>
+        <member name="M:HMSAPI.Controllers.ClockValuesController.GetClockValues(HMS.Data.Parameters.ClockValueParameter)">
+            <summary>
+            Get clockValues by roomId
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:HMSAPI.Controllers.ClockValuesController.GetClockValue(System.Int32)">
+            <summary>
+            Get clockValue by Id 
+            </summary>
+            <param name="id"></param>
+            <returns></returns>
+        </member>
+        <member name="M:HMSAPI.Controllers.ClockValuesController.Create(HMS.Data.ViewModels.CreateClockValueViewModel)">
+            <summary>
+            Create clockValue
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
+        <member name="M:HMSAPI.Controllers.ClockValuesController.Update(HMS.Data.ViewModels.UpdateClockValueViewModel)">
+            <summary>
+            Update clockValue
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
+        <member name="M:HMSAPI.Controllers.ClockValuesController.Delete(System.Int32)">
+            <summary>
+            Delete clockValue
+            </summary>
+            <param name="clockValueId"></param>
             <returns></returns>
         </member>
         <member name="T:HMSAPI.Controllers.ContractsController">

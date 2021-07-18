@@ -18,9 +18,12 @@ namespace HMS.Data.Services
     public partial interface IClockService : IBaseService<Clock>
     {
         ClockDetailViewModel GetById(int id);
-        //List<ClockDetailViewModel> GetByRoomId(in )
+        List<ClockDetailViewModel> GetByRoomId(int roomId);
+        Task<ResultResponse> CreateClockAsync(CreateClockViewModel model);
+        Task<ResultResponse> DeleteClockAsync(int clockId);
         Task<ResultResponse> CreateAllClocksAsync(int roomId);
         int GetIdByServiceIdAndRoomId(int serviceId, int roomId);
+        Task<ResultResponse> UpdateClockAsync(UpdateClockViewModel model);
     }
     public partial class ClockService : BaseService<Clock>, IClockService
     {
@@ -100,6 +103,69 @@ namespace HMS.Data.Services
                 }
             }
             return -1;
+        }
+
+        public async Task<ResultResponse> DeleteClockAsync(int clockId)
+        {
+            var check = CheckClock(clockId);
+            if (!check.IsSuccess)
+            {
+                return check;
+            };
+
+            var clock = await GetAsyn(clockId);
+            clock.Status = ClockConstants.CLOCK_IS_INACTIVE;
+            Update(clock);
+            return new ResultResponse
+            {
+                Message = new MessageResult("OK02", new string[] { "Clock" }).Value,
+                IsSuccess = true
+            };
+        }
+
+        public ResultResponse CheckClock(int clockId)
+        {
+            var clock = GetById(clockId);
+            if (clock == null)
+            {
+                return new ResultResponse
+                {
+                    Message = new MessageResult("NF02", new string[] { "Clock" }).Value,
+                    IsSuccess = false
+                };
+            }
+            return new ResultResponse
+            {
+                IsSuccess = true
+            };
+        }
+
+        public async Task<ResultResponse> UpdateClockAsync(UpdateClockViewModel model)
+        {
+            var check = CheckClock(model.Id);
+            if (!check.IsSuccess)
+            {
+                return check;
+            };
+
+            var clock = await GetAsyn(model.Id);
+            if (clock.Status != null)
+            {
+                clock.Status = model.Status;
+            }
+            if(clock.ClockCategory != null)
+            {
+                var clockCategories = await _clockCategoryService.GetClockCategoriesAsync();
+                clock.ClockCategoryId = clockCategories.Where(category => category.Name.Equals(model.ClockCategory)).FirstOrDefault().Id;
+            }
+
+            Update(clock);
+
+            return new ResultResponse
+            {
+                Message = new MessageResult("OK03", new string[] { "Clock" }).Value,
+                IsSuccess = true
+            };
         }
     }
 }

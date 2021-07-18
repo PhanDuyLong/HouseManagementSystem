@@ -119,6 +119,7 @@ namespace HMSAPI.Controllers
         /// <returns></returns>
         [Authorize(Roles = AccountConstants.ROLE_IS_OWNER + "," + AccountConstants.ROLE_IS_ADMIN)]
         [HttpPost]
+        [Route("confirm")]
         [ProducesResponseType(typeof(ResultResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ResultResponse), (int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> Confirm(int id)

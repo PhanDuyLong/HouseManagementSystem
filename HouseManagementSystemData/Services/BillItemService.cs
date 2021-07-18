@@ -9,6 +9,7 @@ namespace HMS.Data.Services
 {
     public partial interface IBillItemService : IBaseService<BillItem>
     {
+
     }
     public partial class BillItemService : BaseService<BillItem>, IBillItemService
     {
