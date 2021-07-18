@@ -35,7 +35,6 @@ namespace HMSAPI.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public async Task<ActionResult> Payment(BillPaymentViewModel model)
         {
             var bill = await _billService.GetAsyn(model.BillId);

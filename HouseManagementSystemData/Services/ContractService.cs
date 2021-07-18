@@ -165,7 +165,7 @@ namespace HMS.Data.Services
 
         public async Task<ResultResponse> UpdateContractAsync(UpdateContractViewModel model)
         {
-            int contractId = (int)model.Id;
+            int contractId = model.Id;
             var contractModel = GetById(contractId);
             if (contractModel == null)
             {
@@ -174,8 +174,8 @@ namespace HMS.Data.Services
                     Message = new MessageResult("NF02", new string[] { "Contract" }).Value,
                     IsSuccess = false,
                 };
-
             }
+
             var contract = await GetAsyn(model.Id);
             if (model.TenantUserId != null)
             {
@@ -188,9 +188,13 @@ namespace HMS.Data.Services
             if (model.EndDate != null)
             {
                 contract.EndDate = model.EndDate;
-
             }
             Update(contract);
+
+            var check = await _serviceContractService.UpdateServiceContractsAsync(contractModel.RoomId, contractId, model.UpdateServiceContracts.ToList());
+            if (!check.IsSuccess)
+                return check;
+
             return new ResultResponse
             {
                 Message = new MessageResult("OK03", new string[] { "Contract" }).Value,

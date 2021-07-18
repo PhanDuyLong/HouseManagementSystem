@@ -21,7 +21,7 @@ namespace HouseManagementSystemAPI.Controllers
     [ApiController]
     public class HousesController : ControllerBase
     {
-        private IHouseService _houseService;
+        private readonly IHouseService _houseService;
 
         /// <summary>
         /// Constructor 

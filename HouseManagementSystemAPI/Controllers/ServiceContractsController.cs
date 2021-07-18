@@ -69,7 +69,6 @@ namespace HMSAPI.Controllers
             return Ok(contract);
         }
 
-
         /// <summary>
         /// Create ServiceContract
         /// </summary>

@@ -25,6 +25,7 @@ namespace HMS.Data.Services
         Task<ResultResponse> DeleteServiceContractAsync(int serviceContractId);
         Task<ResultResponse> CreateServiceContractAsync(int roomId, int contractId, CreateServiceContractViewModel model);
         Task<ResultResponse> CreateServiceContractsAsync(int roomId, int contractId, List<CreateServiceContractViewModel> model);
+        Task<ResultResponse> UpdateServiceContractsAsync(int roomId, int contractId, List<UpdateServiceContractViewModel> updateServiceContracts);
     }
     public partial class ServiceContractService : BaseService<ServiceContract>, IServiceContractService
     {
@@ -52,7 +53,7 @@ namespace HMS.Data.Services
             var serviceContract = _mapper.Map<ServiceContract>(model);
 
             var service = _serviceService.GetById(model.ServiceId);
-            if(service.ServiceType == ServiceTypeConstants.SERVICE_TYPE_IS_DEFAULT_DIFFERENT)
+            if (service.ServiceType == ServiceTypeConstants.SERVICE_TYPE_IS_DEFAULT_DIFFERENT)
             {
                 var clockId = _clockService.GetIdByServiceIdAndRoomId(service.Id, roomId);
                 var createClockValueViewModel = new CreateClockValueViewModel
@@ -68,19 +69,18 @@ namespace HMS.Data.Services
 
             serviceContract.ContractId = contractId;
             serviceContract.Status = ServiceContractConstants.SERVICE_CONTRACT_IS_ACTIVE;
-            serviceContract.UnitPrice = service.Price;
             await CreateAsyn(serviceContract);
 
             return new ResultResponse
             {
-                Message = new MessageResult("OK01", new string[] { "ServiceContract "}).Value,
+                Message = new MessageResult("OK01", new string[] { "ServiceContract " }).Value,
                 IsSuccess = true,
             };
         }
 
         public async Task<ResultResponse> CreateServiceContractsAsync(int roomId, int contractId, List<CreateServiceContractViewModel> models)
         {
-            foreach(var model in models)
+            foreach (var model in models)
             {
                 var check = await CreateServiceContractAsync(roomId, contractId, model);
                 if (!check.IsSuccess)
@@ -131,7 +131,7 @@ namespace HMS.Data.Services
         public async Task<ResultResponse> UpdateServiceContractAsync(UpdateServiceContractViewModel model)
         {
             var serviceContractId = model.Id;
-            var serviceContractModel = GetById(serviceContractId);
+            var serviceContractModel = GetById(serviceContractId.Value);
             if (serviceContractModel == null)
             {
                 return new ResultResponse
@@ -141,20 +141,58 @@ namespace HMS.Data.Services
                 };
             }
             var serviceContract = await GetAsyn(model.Id);
-
             if (model.UnitPrice != null)
             {
                 serviceContract.UnitPrice = model.UnitPrice;
             }
             Update(serviceContract);
+
             return new ResultResponse
             {
                 Message = new MessageResult("OK03", new string[] { "ServiceContract" }).Value,
                 IsSuccess = true
             };
         }
+
+        public async Task<ResultResponse> UpdateServiceContractsAsync(int roomId, int contractId, List<UpdateServiceContractViewModel> updateServiceContracts)
+        {
+            foreach (var serviceContract in updateServiceContracts)
+            {
+                ResultResponse check;
+                if(serviceContract.Id != null)
+                {
+                    if (serviceContract.IsDeleted)
+                    {
+                        check = await DeleteServiceContractAsync(serviceContract.Id.Value);
+                    }
+                    else
+                    {
+                        check = await UpdateServiceContractAsync(serviceContract);
+                    }
+                }
+                else
+                {
+                    var createModel = new CreateServiceContractViewModel
+                    {
+                        ServiceId = serviceContract.ServiceId,
+                        StartClockValue = serviceContract.StartClockValue,
+                        UnitPrice = serviceContract.UnitPrice.Value
+                    };
+                    check = await CreateServiceContractAsync(roomId, contractId, createModel);
+
+                }
+                if (!check.IsSuccess)
+                    return check;
+            }
+
+            return new ResultResponse
+            {
+                Message = new MessageResult("OK03", new string[] { "ServiceContracts" }).Value,
+                IsSuccess = true,
+            };
+        }
     }
 
-    
+
 }
 

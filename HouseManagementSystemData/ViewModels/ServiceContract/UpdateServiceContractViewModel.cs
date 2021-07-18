@@ -8,12 +8,11 @@ namespace HMS.Data.ViewModels.ServiceContract
 {
     public class UpdateServiceContractViewModel
     {
-        [Required]
-        public int Id { get; set; }
-        public int? ContractId { get; set; }
-        public int? ServiceId { get; set; }
+        public int? Id { get; set; }
+        public int ServiceId { get; set; }
         public double? UnitPrice { get; set; }
-        public int ClockId { get; set; }
+        public int StartClockValue { get; set; }
+        public bool IsDeleted { get; set; }
 
     }
 }
