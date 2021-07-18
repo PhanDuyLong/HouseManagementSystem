@@ -116,6 +116,13 @@
             <param name="id"></param>
             <returns></returns>
         </member>
+        <member name="M:HMSAPI.Controllers.BillsController.Count(HMS.Data.Parameters.BillParameters)">
+            <summary>
+            Count Bills
+            </summary>
+            <param name="billParameters"></param>
+            <returns></returns>
+        </member>
         <member name="T:HMSAPI.Controllers.ContractsController">
             <summary>
             ContractsController
@@ -166,14 +173,13 @@
             PaymentsController
             </summary>
         </member>
-        <member name="M:HMSAPI.Controllers.PaymentsController.#ctor(HMS.Data.Services.IPaymentService,HMS.Data.Services.IBillService)">
+        <member name="M:HMSAPI.Controllers.PaymentsController.#ctor(HMS.Data.Services.IPaymentService)">
             <summary>
             Constructor
             </summary>
             <param name="paymentService"></param>
-            <param name="billService"></param>
         </member>
-        <member name="M:HMSAPI.Controllers.PaymentsController.Payment(HMS.Data.ViewModels.BillPaymentViewModel)">
+        <member name="M:HMSAPI.Controllers.PaymentsController.Payment(HMS.Data.ViewModels.PayBillViewModel)">
             <summary>
             Pay bill
             </summary>

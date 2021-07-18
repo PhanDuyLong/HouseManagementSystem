@@ -1,5 +1,6 @@
 ﻿using HMS.Data.Constants;
 using HMS.Data.Parameters;
+using HMS.Data.Responses;
 using HMS.Data.Services;
 using HMS.Data.Utilities;
 using HMS.Data.ViewModels.Bill;
@@ -37,18 +38,16 @@ namespace HMSAPI.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(List<ShowBillViewModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public IActionResult GetBills([FromQuery] BillParameters billParameters)
         {
-            var username = User.Identity.Name;
-            var bills = _billService.FilterByParameter(username, billParameters);
+            var userId = User.Identity.Name;
+            var bills = _billService.FilterByParameter(userId, billParameters);
 
-            if (bills == null || bills.Count == 0) 
-                return NotFound("Bill(s) is/are not found");
+            if (bills == null || bills.Count == 0)
+                return NotFound(new MessageResult("NF01", new string[] { "Bill" }).Value); ;
 
             return Ok(bills);
         }
-
 
         /// <summary>
         /// Get Bill by id
@@ -58,7 +57,6 @@ namespace HMSAPI.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(BillDetailViewModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public IActionResult GetBill(int id)
         {
             var bill = _billService.GetById(id);
@@ -77,10 +75,18 @@ namespace HMSAPI.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(BillDetailViewModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string),(int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(string),(int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> Create(CreateBillViewModel model)
         {
-            return Ok(await _billService.CreateBill(model));
+            if (ModelState.IsValid)
+            {
+                var result = await _billService.CreateBillAsync(model);
+                if (result.IsSuccess)
+                {
+                    return Ok(result.Message);
+                }
+                return BadRequest(result.Message);
+            }
+            return BadRequest(new MessageResult("BR01").Value);
         }
 
         /// <summary>
@@ -92,36 +98,80 @@ namespace HMSAPI.Controllers
         [HttpPut]
         [ProducesResponseType(typeof(BillDetailViewModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> Update(UpdateBillViewModel model)
         {
-            var bill = await _billService.GetAsyn(model.Id);
-            if (bill == null)
+            if (ModelState.IsValid)
             {
-                return NotFound("Bill is not found");
+                var result = await _billService.UpdateBillAsync(model);
+                if (result.IsSuccess)
+                {
+                    return Ok(result.Message);
+                }
+                return BadRequest(result.Message);
             }
-            return Ok(_billService.UpdateBill(bill, model));
+            return BadRequest(new MessageResult("BR01").Value);
         }
 
         /// <summary>
-        /// Delete Bill
+        /// Confirm bill
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [Authorize(Roles = AccountConstants.ROLE_IS_OWNER + "," + AccountConstants.ROLE_IS_ADMIN)]
+        [HttpPost]
+        [ProducesResponseType(typeof(ResultResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ResultResponse), (int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> Confirm(int id)
+        {
+            if (ModelState.IsValid)
+            {
+                var result = await _billService.ConfirmBillAsync(id);
+                if (result.IsSuccess)
+                {
+                    return Ok(result.Message);
+                }
+                return BadRequest(result.Message);
+            }
+            return BadRequest(new MessageResult("BR01").Value);
+        }
+
+
+        /// <summary>
+        /// Delete bill
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
         [Authorize(Roles = AccountConstants.ROLE_IS_OWNER + "," + AccountConstants.ROLE_IS_ADMIN)]
         [HttpDelete]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ResultResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ResultResponse), (int)HttpStatusCode.NotFound)]
         public async Task<ActionResult> Delete(int id)
         {
-            var bill = await _billService.GetAsyn(id);
-            if (bill == null)
+            if (ModelState.IsValid)
             {
-                return NotFound("Bill is not found");
+                var result = await _billService.DeleteBillAsync(id);
+                if (result.IsSuccess)
+                {
+                    return Ok(result.Message);
+                }
+                return BadRequest(result.Message);
             }
+            return BadRequest(new MessageResult("BR01").Value);
+        }
 
-            return Ok(_billService.DeleteBill(bill));
+        /// <summary>
+        /// Count bills
+        /// </summary>
+        /// <param name="billParameters"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("count")]
+        [ProducesResponseType(typeof(int), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(int), (int)HttpStatusCode.BadRequest)]
+        public ActionResult Count([FromQuery] BillParameters billParameters)
+        {
+            var userId = User.Identity.Name;
+            return Ok(_billService.CountBills(userId, billParameters));
         }
     }
 }

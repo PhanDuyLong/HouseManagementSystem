@@ -160,7 +160,7 @@ namespace HMS.Data.Services
             {
                 return new ResultResponse
                 {
-                    Message = new MessageResult("BR05", new string[] { "House" }).Value,
+                    Message = new MessageResult("BR05", new string[] { "House" }).Value + "\n" + result.Message,
                     IsSuccess = false
                 };
             }

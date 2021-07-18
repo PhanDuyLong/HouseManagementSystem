@@ -12,5 +12,7 @@ namespace HMS.Data.Constants
         public const bool BILL_IS_NOT_SENT = false;
         public const bool BILL_IS_PAID = true;
         public const bool BILL_IS_NOT_PAID = false;
+        public const bool BILL_IS_PAID_IN_FULL = true;
+        public const bool BILL_IS_NOT_PAID_IN_FULL = false;
     }
 }

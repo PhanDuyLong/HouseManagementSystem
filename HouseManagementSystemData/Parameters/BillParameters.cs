@@ -12,8 +12,8 @@ namespace HMS.Data.Parameters
         public DateTime? EndDate { get; set; }*/
         public bool? Status { get; set; }
 /*        public bool? IsDeleted { get; set; }
-        public bool? IsSent { get; set; }
-        public bool? IsPaidInFull { get; set; }*/
+        public bool? IsSent { get; set; }*/
+        public bool? IsPaidInFull { get; set; }
         public bool IsIssueDateAscending { get; set; }
     }
 }

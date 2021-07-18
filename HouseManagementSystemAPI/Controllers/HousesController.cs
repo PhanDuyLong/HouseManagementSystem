@@ -103,7 +103,6 @@ namespace HouseManagementSystemAPI.Controllers
         {
             if (ModelState.IsValid)
             {
-                var userId = User.Identity.Name;
                 var result = await _houseService.UpdateHouseAsync(model);
                 if (result.IsSuccess)
                 {
@@ -145,11 +144,11 @@ namespace HouseManagementSystemAPI.Controllers
         [HttpGet]
         [Route("count")]
         [ProducesResponseType(typeof(int), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(int), (int)HttpStatusCode.BadRequest)]
         public ActionResult Count([FromQuery] HouseParameters houseParameters)
         {
-            var username = User.Identity.Name;
-            return Ok(_houseService.CountHouses(username, houseParameters));
+            var userId = User.Identity.Name;
+            return Ok(_houseService.CountHouses(userId, houseParameters));
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using HMS.Data.Services;
+﻿using HMS.Data.Responses;
+using HMS.Data.Services;
+using HMS.Data.Utilities;
 using HMS.Data.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -14,17 +16,14 @@ namespace HMSAPI.Controllers
     public class PaymentsController : ControllerBase
     {
         private IPaymentService _paymentService;
-        private IBillService _billService;
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="paymentService"></param>
-        /// <param name="billService"></param>
-        public PaymentsController(IPaymentService paymentService, IBillService billService)
+        public PaymentsController(IPaymentService paymentService)
         {
             _paymentService = paymentService;
-            _billService = billService;
         }
 
         /// <summary>
@@ -33,26 +32,20 @@ namespace HMSAPI.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        public async Task<ActionResult> Payment(BillPaymentViewModel model)
+        [ProducesResponseType(typeof(ResultResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ResultResponse), (int)HttpStatusCode.NotFound)]
+        public async Task<ActionResult> Payment(PayBillViewModel model)
         {
-            var bill = await _billService.GetAsyn(model.BillId);
-            if (bill == null)
-                return NotFound("Bill is not found");
-            return Ok(await _paymentService.Payment(model));
+            if (ModelState.IsValid)
+            {
+                var result = await _paymentService.Payment(model);
+                if (result.IsSuccess)
+                {
+                    return Ok(result.Message);
+                }
+                return BadRequest(result.Message);
+            }
+            return BadRequest(new MessageResult("BR01").Value);
         }
-
-        /*[HttpPut]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
-        public async Task<ActionResult> (BillPaymentViewModel model)
-        {
-            var bill = await _paymentService.GetAsyn(model.BillId);
-            if (bill == null)
-                return NotFound("Bill is not found");
-            return Ok(await _paymentService.Payment(model));
-        }*/
     }
 }

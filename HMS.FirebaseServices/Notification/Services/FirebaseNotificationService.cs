@@ -15,13 +15,7 @@ namespace HMS.FirebaseNotification
     }
     public partial class FirebaseNotificationService : IFirebaseNotificationService
     {
-        public FirebaseNotificationService()
-        {
-            var defaultApp = FirebaseApp.Create(new AppOptions()
-            {
-                Credential = GoogleCredential.FromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "key.json")),
-            });
-        }
+        public FirebaseNotificationService() { }
 
         public async Task<bool> PushNotificationAsync(MobileNotification firebaseNotification)
         {
@@ -32,7 +26,8 @@ namespace HMS.FirebaseNotification
                     Title = firebaseNotification.Title,
                     Body = firebaseNotification.Body
                 },
-                Topic = firebaseNotification.Topic
+                Data = firebaseNotification.Data,
+                Condition = "'all' in topics"
             };
             var messaging = FirebaseMessaging.DefaultInstance;
             var result = await messaging.SendAsync(message);

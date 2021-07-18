@@ -24,6 +24,7 @@ namespace HMS.Data.Utilities
         public const string BR05 = "{0} update failed! Please check details and try again!";
         public const string BR06 = "There is no user with that {0}!";
         public const string BR07 = "Invalid {0}!";
+        public const string BR08 = "{0} was {1}!";
 
         //500 Internal Server Error
         public const string ISE01 = "Something wrong with server!";
