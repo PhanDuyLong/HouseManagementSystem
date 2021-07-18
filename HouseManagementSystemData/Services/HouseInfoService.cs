@@ -60,6 +60,18 @@ namespace HMS.Data.Services
             {
                 houseInfo.Image = model.Image;
             }
+            if(model.BillDate != null)
+            {
+                houseInfo.BillDate = model.BillDate;
+            }
+            if(model.BeforeNotiDate != null)
+            {
+                houseInfo.BeforeNotiDate = model.BeforeNotiDate;
+            }
+            if(model.PaidDeadline != null)
+            {
+                houseInfo.PaidDeadline = model.PaidDeadline;
+            }
             if(houseInfo.Id == 0)
             {
                 await CreateAsyn(houseInfo);

@@ -10,6 +10,7 @@
     <None Remove="AutoMapperProfile\MappingProfile.cs~RF4d3021.TMP" />
     <None Remove="AutoMapperProfile\MappingProfile.cs~RFb55eaa.TMP" />
     <None Remove="DependencyInjection\DependencyInjectionResolverGen.cs~RFedc7b44.TMP" />
+    <None Remove="Services\HouseService.cs~RF1919a4e7.TMP" />
   </ItemGroup>
 
   <ItemGroup>

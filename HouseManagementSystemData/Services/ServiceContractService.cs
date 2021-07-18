@@ -21,7 +21,7 @@ namespace HMS.Data.Services
     {
         List<ServiceContractDetailViewModel> GetByContractId(int contractId);
         ServiceContractDetailViewModel GetById(int id);
-        Task<ResultResponse> UpdateServiceContractAsync(UpdateServiceContractViewModel model);
+        Task<ResultResponse> UpdateServiceContractAsync(int roomId, int contractId, UpdateServiceContractViewModel model);
         Task<ResultResponse> DeleteServiceContractAsync(int serviceContractId);
         Task<ResultResponse> CreateServiceContractAsync(int roomId, int contractId, CreateServiceContractViewModel model);
         Task<ResultResponse> CreateServiceContractsAsync(int roomId, int contractId, List<CreateServiceContractViewModel> model);
@@ -128,7 +128,7 @@ namespace HMS.Data.Services
             return serviceContract;
         }
 
-        public async Task<ResultResponse> UpdateServiceContractAsync(UpdateServiceContractViewModel model)
+        public async Task<ResultResponse> UpdateServiceContractAsync(int roomId, int contractId, UpdateServiceContractViewModel model)
         {
             var serviceContractId = model.Id;
             var serviceContractModel = GetById(serviceContractId.Value);
@@ -141,6 +141,20 @@ namespace HMS.Data.Services
                 };
             }
             var serviceContract = await GetAsyn(model.Id);
+            var service = serviceContract.Service;
+            if (service.ServiceType.Name == ServiceTypeConstants.SERVICE_TYPE_IS_DEFAULT_DIFFERENT)
+            {
+                var clockId = _clockService.GetIdByServiceIdAndRoomId(service.Id, roomId);
+                var createClockValueViewModel = new CreateClockValueViewModel
+                {
+                    ClockId = clockId,
+                    IndexValue = model.StartClockValue,
+                    CreateDate = DateTime.Now,
+                    RecordDate = DateTime.Now
+                };
+                await _clockValueService.CreateClockValueAsync(createClockValueViewModel);
+            }
+
             if (model.UnitPrice != null)
             {
                 serviceContract.UnitPrice = model.UnitPrice;
@@ -156,19 +170,44 @@ namespace HMS.Data.Services
 
         public async Task<ResultResponse> UpdateServiceContractsAsync(int roomId, int contractId, List<UpdateServiceContractViewModel> updateServiceContracts)
         {
+            ResultResponse check;
+            var oldServiceContracts = GetByContractId(contractId);
+            foreach(var oldServiceContract in oldServiceContracts)
+            {
+                bool find = false;
+                foreach(var serviceContract in updateServiceContracts)
+                {
+                    if (oldServiceContract.ServiceId.Equals(serviceContract.ServiceId))
+                    {
+                        find = true;
+                        break;
+                    }
+                }
+                if (!find)
+                {
+                    oldServiceContracts.Remove(oldServiceContract);
+                    check = await DeleteServiceContractAsync(oldServiceContract.Id);
+                    if (!check.IsSuccess)
+                    {
+                        return check;
+                    }
+                }
+            }
             foreach (var serviceContract in updateServiceContracts)
             {
-                ResultResponse check;
-                if(serviceContract.Id != null)
+                bool find = false;
+                foreach(var oldServiceContract in oldServiceContracts)
                 {
-                    if (serviceContract.IsDeleted)
+                    if (oldServiceContract.ServiceId.Equals(serviceContract.ServiceId))
                     {
-                        check = await DeleteServiceContractAsync(serviceContract.Id.Value);
+                        find = true;
+                        serviceContract.Id = oldServiceContract.Id;
+                        break;
                     }
-                    else
-                    {
-                        check = await UpdateServiceContractAsync(serviceContract);
-                    }
+                }
+                if (find)
+                {
+                   check = await UpdateServiceContractAsync(roomId, contractId, serviceContract);
                 }
                 else
                 {

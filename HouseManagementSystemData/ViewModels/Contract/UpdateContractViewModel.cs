@@ -13,6 +13,8 @@ namespace HMS.Data.ViewModels.Contract.Base
         public string TenantUserId { get; set; }
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
+        public double? RoomPrice { get; set; }
+        public string Note { get; set; }
 
         public virtual ICollection<UpdateServiceContractViewModel> UpdateServiceContracts { get; set; }
     }

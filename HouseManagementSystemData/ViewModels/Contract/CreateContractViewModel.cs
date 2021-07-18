@@ -14,6 +14,8 @@ namespace HMS.Data.ViewModels.Contract
         public int RoomId { get; set; }
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
+        public double? RoomPrice { get; set; }
+        public string Note { get; set; }
 
         public virtual ICollection<CreateServiceContractViewModel> CreateServiceContracts { get; set; }
     }

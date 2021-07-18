@@ -6,6 +6,7 @@ using HMS.Data.Repositories;
 using HMS.Data.Responses;
 using HMS.Data.Services.Base;
 using HMS.Data.Utilities;
+using HMS.Data.ViewModels.Clock;
 using HMS.Data.ViewModels.Contract;
 using HMS.Data.ViewModels.Contract.Base;
 using Microsoft.EntityFrameworkCore;
@@ -137,13 +138,17 @@ namespace HMS.Data.Services
         public ContractDetailViewModel GetById(int id)
         {
             var contract = Get().Where(c => c.Id == id && c.Status == ContractConstants.CONTRACT_IS_ACTIVE).ProjectTo<ContractDetailViewModel>(_mapper.ConfigurationProvider).FirstOrDefault();
-            if(contract != null)
+            if (contract != null)
             {
                 var room = _roomService.GetById(contract.RoomId);
                 var house = _houseService.GetById(room.HouseId);
                 contract.RoomName = room.Name;
                 contract.HouseName = house.HouseInfo.Name;
                 contract.OwnerName = house.OwnerUser.Name;
+                foreach(var serviceContract in contract.ServiceContracts)
+                {
+                    serviceContract.Clock.ClockValues = serviceContract.Clock.ClockValues.Where(value => value.Status == ClockValueConstants.CLOCK_VALUE_IS_MILESTONE).ToList();
+                }
             }
             return contract;
         }
@@ -188,6 +193,14 @@ namespace HMS.Data.Services
             if (model.EndDate != null)
             {
                 contract.EndDate = model.EndDate;
+            }
+            if(model.RoomPrice != null)
+            {
+                contract.RoomPrice = model.RoomPrice;
+            }
+            if(model.Note != null)
+            {
+                contract.Note = model.Note;
             }
             Update(contract);
 

@@ -98,17 +98,19 @@ namespace HMSAPI.Controllers
         /// <summary>
         /// Update ServiceContract
         /// </summary>
+        /// <param name="roomId"></param>
+        /// <param name="contractId"></param>
         /// <param name="model"></param>
         /// <returns></returns>
         [Authorize(Roles = AccountConstants.ROLE_IS_OWNER + "," + AccountConstants.ROLE_IS_ADMIN)]
         [HttpPut]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)] 
-        public async Task<IActionResult> Update(UpdateServiceContractViewModel model)
+        public async Task<IActionResult> Update(int roomId, int contractId, UpdateServiceContractViewModel model)
         {
             if (ModelState.IsValid)
             {
-                var result = await _serviceContractService.UpdateServiceContractAsync(model);
+                var result = await _serviceContractService.UpdateServiceContractAsync(roomId, contractId, model);
                 if (result.IsSuccess)
                 {
                     return Ok(result.Message);

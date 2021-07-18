@@ -17,6 +17,8 @@ namespace HMS.Data.Models
         public string OwnerUserId { get; set; }
         public string TenantUserId { get; set; }
         public int? RoomId { get; set; }
+        public double? RoomPrice { get; set; }
+        public string Note { get; set; }
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public bool? Status { get; set; }

@@ -8,7 +8,6 @@ namespace HMS.Data.ViewModels.RoomViewModels
     public class RoomDetailViewModel : RoomBaseViewModel
     {
         public virtual ContractDetailViewModel Contract { get; set; }
-        public virtual ICollection<ClockDetailViewModel> Clocks { get; set; }
 
     }
 }

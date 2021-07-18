@@ -11,6 +11,8 @@ namespace HMS.Data.ViewModels
         public int Id { get; set; }
         public string Name { get; set; }
         public string HouseId { get; set; }
+        public double? RoomSquare { get; set; }
+        public double? DefaultPrice { get; set; }
         public bool? Status { get; set; }
         public bool? IsDeleted { get; set; }
 

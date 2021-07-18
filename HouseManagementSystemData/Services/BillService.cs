@@ -75,7 +75,7 @@ namespace HMS.Data.Services
                 var createBillItem = createModel.CreateBillItems.ToList().Find(item => item.ServiceContractId.Equals(serviceContract.Id));
                 if (createBillItem != null)
                 {
-                    if (ServiceHasClock(serviceContract))
+                    if (serviceContract.Service.ServiceType.Equals(ServiceTypeConstants.SERVICE_TYPE_IS_DEFAULT_DIFFERENT))
                     {
                         ClockDetailViewModel clock = _clockService.GetById(serviceContract.ClockId);
                         var startClockValue = clock.ClockValues.ToList().Find(cV => cV.Status == true).IndexValue;
@@ -375,11 +375,6 @@ namespace HMS.Data.Services
             };
         }
 
-        private bool ServiceHasClock(ServiceContractDetailViewModel serviceContract)
-        {
-            return serviceContract.ClockId != 0;
-        }
-
         public int CountBills(string userId, BillParameters billParameters)
         {
             return FilterByParameter(userId, billParameters).Count;
@@ -395,6 +390,7 @@ namespace HMS.Data.Services
 
             var bill = await GetAsyn(billId);
 
+
             if (bill.IsSent == BillConstants.BILL_IS_SENT)
             {
                 return new ResultResponse
@@ -403,6 +399,31 @@ namespace HMS.Data.Services
                     IsSuccess = false
                 };
             }
+
+            var serviceContractWithClock = bill.Contract.ServiceContracts.Where(sC => sC.Service.ServiceType.Equals(ServiceTypeConstants.SERVICE_TYPE_IS_DEFAULT_DIFFERENT)).ToList();
+            if(serviceContractWithClock != null && serviceContractWithClock.Count != 0)
+            {
+                var updateServiceContracts = new List<UpdateServiceContractViewModel>();
+                foreach (var serviceContract in serviceContractWithClock)
+                {
+                    foreach(BillItem billItem in bill.BillItems)
+                    {
+                        if (billItem.ServiceContractId.Equals(serviceContract.Id))
+                        {
+                            var clockId = _clockService.GetIdByServiceIdAndRoomId(serviceContract.ServiceId.Value, bill.Contract.RoomId.Value);
+                            var createClockValueModel = new CreateClockValueViewModel
+                            {
+                                ClockId = clockId,
+                                CreateDate = DateTime.Now,
+                                RecordDate = DateTime.Now,
+                                IndexValue = (int?)billItem.EndValue.Value
+                            };
+                            await _clockValueService.CreateClockValueAsync(createClockValueModel);
+                        }
+                    }
+                }
+            }
+
 
             var result = await SendBillAsync(billId);
             if (!result.IsSuccess)

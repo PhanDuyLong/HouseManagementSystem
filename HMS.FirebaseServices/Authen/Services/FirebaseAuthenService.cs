@@ -26,22 +26,20 @@ namespace HMS.FirebaseServices.Authen.Services
 
         public FirebaseAuthenService()
         {
-            _httpClient = new HttpClient();
-            _httpClient.BaseAddress = new Uri("https://identitytoolkit.googleapis.com");
+            _httpClient = new HttpClient
+            {
+                BaseAddress = new Uri("https://identitytoolkit.googleapis.com")
+            };
         }
         public async Task<FirebaseAuthenticateResponse> LoginByEmailAndPasswordAsysnc(string email, string password)
         {
-            var client = new HttpClient();
-            client.BaseAddress = new Uri("https://identitytoolkit.googleapis.com");
             string uri = "/v1/accounts:signInWithPassword?key=" + "AIzaSyBOUnY4MomlWzp-8pMw2QNStK-k6Q27FB4";
             var payload = new
             {
-                email = email,
-                password = password,
+                email,
+                password,
             };
-            string postbody = JsonConvert.SerializeObject(payload).ToString();
-            StringContent content = new StringContent(postbody);
-            var firebaseAuthRequest = await client.PostAsync(uri, content);
+            var firebaseAuthRequest = await _httpClient.PostAsync(uri, new StringContent(JsonConvert.SerializeObject(payload).ToString()));
             var response = JObject.Parse(await firebaseAuthRequest.Content.ReadAsStringAsync()); ;
             if (!firebaseAuthRequest.IsSuccessStatusCode)
             {
@@ -64,7 +62,7 @@ namespace HMS.FirebaseServices.Authen.Services
             string uri = "/v1/accounts:lookup?key=" + "AIzaSyBOUnY4MomlWzp-8pMw2QNStK-k6Q27FB4";
             var payload = new
             {
-                idToken = idToken,
+                idToken,
             };
             var firebaseAuthRequest = await _httpClient.PostAsync(uri, new StringContent(JsonConvert.SerializeObject(payload).ToString()));
             var response = JObject.Parse(await firebaseAuthRequest.Content.ReadAsStringAsync());

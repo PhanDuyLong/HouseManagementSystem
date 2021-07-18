@@ -130,6 +130,23 @@
             <param name="billParameters"></param>
             <returns></returns>
         </member>
+        <member name="T:HMSAPI.Controllers.ClockCategoriesController">
+            <summary>
+            ClockCategoriesController
+            </summary>
+        </member>
+        <member name="M:HMSAPI.Controllers.ClockCategoriesController.#ctor(HMS.Data.Services.IClockCategoryService)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="clockCategoryService"></param>
+        </member>
+        <member name="M:HMSAPI.Controllers.ClockCategoriesController.GetClockCategoriesAsync">
+            <summary>
+            Get All Categories
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:HMSAPI.Controllers.ClocksController">
             <summary>
             ClocksController
@@ -371,10 +388,12 @@
             <param name="model"></param>
             <returns></returns>
         </member>
-        <member name="M:HMSAPI.Controllers.ServiceContractsController.Update(HMS.Data.ViewModels.ServiceContract.UpdateServiceContractViewModel)">
+        <member name="M:HMSAPI.Controllers.ServiceContractsController.Update(System.Int32,System.Int32,HMS.Data.ViewModels.ServiceContract.UpdateServiceContractViewModel)">
             <summary>
             Update ServiceContract
             </summary>
+            <param name="roomId"></param>
+            <param name="contractId"></param>
             <param name="model"></param>
             <returns></returns>
         </member>

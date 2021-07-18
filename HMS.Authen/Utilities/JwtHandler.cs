@@ -73,9 +73,11 @@ namespace HMS.Authen.Utilities
             var tokenOptions = GenerateTokenOptions(signingCredentials, claims);
             var token = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
 
-            List<String> result = new List<string>();
-            result.Add(token);
-            result.Add(tokenOptions.ValidTo.ToString());
+            List<String> result = new List<string>
+            {
+                token,
+                tokenOptions.ValidTo.ToString()
+            };
 
             return result;
         }

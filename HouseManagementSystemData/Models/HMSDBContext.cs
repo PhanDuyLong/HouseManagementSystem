@@ -149,6 +149,8 @@ namespace HMS.Data.Models
 
                 entity.Property(e => e.EndDate).HasColumnType("date");
 
+                entity.Property(e => e.Note).IsUnicode(false);
+
                 entity.Property(e => e.OwnerUserId)
                     .HasMaxLength(30)
                     .IsUnicode(false);

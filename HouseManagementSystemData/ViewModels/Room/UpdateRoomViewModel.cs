@@ -9,7 +9,8 @@ namespace HMS.Data.ViewModels.Room
     {
         [Required]
         public int Id { get; set; }
-
+        public double? RoomSquare { get; set; }
+        public double? DefaultPrice { get; set; }
         public string Name { get; set; }
     }
 }

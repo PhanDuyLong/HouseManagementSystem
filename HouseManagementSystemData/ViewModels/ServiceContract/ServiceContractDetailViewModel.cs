@@ -15,6 +15,7 @@ namespace HMS.Data.ViewModels.ServiceContract
         public bool? Status { get; set; }
         public int ClockId { get; set; }
 
+        public virtual ClockDetailViewModel Clock { get; set; }
         public virtual ServiceViewModel Service { get; set; }
     }
 }
