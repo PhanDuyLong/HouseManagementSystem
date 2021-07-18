@@ -27,7 +27,7 @@ namespace HMS.Data.Services
     {
         List<ShowBillViewModel> FilterByParameter(string userId, BillParameters billParameters);
         BillDetailViewModel GetById(int id);
-        Task<ResultResponse> CreateBillAsync(CreateBillViewModel model);
+        Task<BillDetailViewModel> CreateBillAsync(CreateBillViewModel model);
         Task<ResultResponse> UpdateBillAsync(UpdateBillViewModel model);
         Task<ResultResponse> DeleteBillAsync(int billId);
         Task<ResultResponse> SetBillIsPaidFullAsync(int billId);
@@ -56,7 +56,7 @@ namespace HMS.Data.Services
             _firebaseNotificationService = firebaseNotificationService;
         }
 
-        public async Task<ResultResponse> CreateBillAsync(CreateBillViewModel createModel)
+        public async Task<BillDetailViewModel> CreateBillAsync(CreateBillViewModel createModel)
         {
             var bill = _mapper.Map<Bill>(createModel);
             bill.Status = BillConstants.BILL_IS_NOT_PAID;
@@ -115,11 +115,7 @@ namespace HMS.Data.Services
             }
 
 
-            return new ResultResponse
-            {
-                Message = new MessageResult("OK01", new string[] { "Bill" }).Value,
-                IsSuccess = true,
-            };
+            return GetById(bill.Id);
         }
 
         public async Task<ResultResponse> DeleteBillAsync(int billId)
@@ -423,7 +419,6 @@ namespace HMS.Data.Services
                     }
                 }
             }
-
 
             var result = await SendBillAsync(billId);
             if (!result.IsSuccess)

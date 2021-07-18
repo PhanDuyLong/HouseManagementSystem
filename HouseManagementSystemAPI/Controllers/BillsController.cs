@@ -80,11 +80,11 @@ namespace HMSAPI.Controllers
             if (ModelState.IsValid)
             {
                 var result = await _billService.CreateBillAsync(model);
-                if (result.IsSuccess)
+                if (result != null)
                 {
-                    return Ok(result.Message);
+                    return Ok(result);
                 }
-                return BadRequest(result.Message);
+                return BadRequest(new MessageResult("BRO2", new string[] { "Bill" }).Value);
             }
             return BadRequest(new MessageResult("BR01").Value);
         }

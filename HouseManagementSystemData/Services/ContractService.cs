@@ -147,7 +147,10 @@ namespace HMS.Data.Services
                 contract.OwnerName = house.OwnerUser.Name;
                 foreach(var serviceContract in contract.ServiceContracts)
                 {
-                    serviceContract.Clock.ClockValues = serviceContract.Clock.ClockValues.Where(value => value.Status == ClockValueConstants.CLOCK_VALUE_IS_MILESTONE).ToList();
+                    if(serviceContract.Clock != null && serviceContract.Clock.ClockValues != null && serviceContract.Clock.ClockValues.Count != 0)
+                    {
+                        serviceContract.Clock.ClockValues = serviceContract.Clock.ClockValues.Where(value => value.Status == ClockValueConstants.CLOCK_VALUE_IS_MILESTONE).ToList();
+                    }
                 }
             }
             return contract;
@@ -157,13 +160,16 @@ namespace HMS.Data.Services
         {
             var user = _accountService.GetByUserId(userId);
             var contract = new List<ContractDetailViewModel>();
-            if (user.Role.Equals(AccountConstants.ROLE_IS_OWNER))
+            if (user != null)
             {
-                contract = Get().Where(c => c.OwnerUserId == userId && c.Status == ContractConstants.CONTRACT_IS_ACTIVE).ProjectTo<ContractDetailViewModel>(_mapper.ConfigurationProvider).ToList();
-            }
-            else
-            {
-                contract = Get().Where(c => c.TenantUserId == userId && c.Status == ContractConstants.CONTRACT_IS_ACTIVE).ProjectTo<ContractDetailViewModel>(_mapper.ConfigurationProvider).ToList();
+                if (user.Role.Equals(AccountConstants.ROLE_IS_OWNER))
+                {
+                    contract = Get().Where(c => c.OwnerUserId == userId && c.Status == ContractConstants.CONTRACT_IS_ACTIVE).ProjectTo<ContractDetailViewModel>(_mapper.ConfigurationProvider).ToList();
+                }
+                else
+                {
+                    contract = Get().Where(c => c.TenantUserId == userId && c.Status == ContractConstants.CONTRACT_IS_ACTIVE).ProjectTo<ContractDetailViewModel>(_mapper.ConfigurationProvider).ToList();
+                }
             }
             return contract;
         }
