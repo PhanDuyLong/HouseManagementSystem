@@ -134,14 +134,6 @@ namespace HMS.Data.Services
         public async Task<ResultResponse> CreateDefaultServicesAsync(string houseId)
         {
             var defaultServices = new ArrayList();
-            var houseService = new CreateServiceViewModel
-            {
-                HouseId = houseId,
-                Name = "Phòng",
-                CalculationUnit = "tháng",
-                ServiceTypeName = ServiceTypeConstants.SERVICE_TYPE_IS_DEFAULT_FIXED
-            };
-            defaultServices.Add(houseService);
             var eletricService = new CreateServiceViewModel
             {
                 HouseId = houseId,

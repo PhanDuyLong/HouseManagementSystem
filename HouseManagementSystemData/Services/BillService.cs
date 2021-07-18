@@ -44,8 +44,10 @@ namespace HMS.Data.Services
         private readonly IBillItemService _billItemService;
         private readonly IClockService _clockService;
         private readonly IFirebaseNotificationService _firebaseNotificationService;
+        private readonly IServiceContractService _serviceContractService;
+        private readonly IServiceService _serviceService;
         public BillService(DbContext dbContext, IBillRepository repository, IMapper mapper,
-            IContractService contractService, IClockValueService clockValueService, IBillItemService billItemService, IClockService clockService, IAccountService accountService, IFirebaseNotificationService firebaseNotificationService) : base(dbContext, repository)
+            IContractService contractService, IClockValueService clockValueService, IBillItemService billItemService, IClockService clockService,  IFirebaseNotificationService firebaseNotificationService, IServiceService serviceService, IServiceContractService serviceContractService) : base(dbContext, repository)
         {
             _dbContext = dbContext;
             _mapper = mapper;
@@ -54,6 +56,8 @@ namespace HMS.Data.Services
             _billItemService = billItemService;
             _clockService = clockService;
             _firebaseNotificationService = firebaseNotificationService;
+            _serviceService = serviceService;
+            _serviceContractService = serviceContractService;
         }
 
         public async Task<BillDetailViewModel> CreateBillAsync(CreateBillViewModel createModel)
@@ -106,8 +110,37 @@ namespace HMS.Data.Services
                 billItems.Add(item);
             }
 
+
+            var roomPriceService = new Service()
+            {
+                Name = "Phòng",
+                CalculationUnit = "tháng",
+                Price = contract.RoomPrice,
+                ServiceTypeId = 2,
+                Status = ServiceConstants.SERVICE_IS_ACTIVE
+            };
+            await _serviceService.CreateAsyn(roomPriceService);
+            var roomPriceServiceContract = new ServiceContract()
+            {
+                ServiceId = roomPriceService.Id,
+                UnitPrice = contract.RoomPrice,
+                Status = ServiceContractConstants.SERVICE_CONTRACT_IS_ACTIVE,
+            };
+            await _serviceContractService.CreateAsyn(roomPriceServiceContract);
+            var roomPriceBillItem = new BillItem
+            {
+                TotalPrice = contract.RoomPrice,
+                Status = BillItemConstants.BILL_ITEM_IS_NOT_DELETED,
+                ServiceContractId = roomPriceServiceContract.Id
+            };
+
+
+            billItems.Add(roomPriceBillItem);
+            total += roomPriceBillItem.TotalPrice.Value;
             bill.TotalPrice = total;
+
             await CreateAsyn(bill);
+
             foreach (BillItem billItem in billItems)
             {
                 billItem.BillId = bill.Id;
@@ -212,6 +245,16 @@ namespace HMS.Data.Services
         public BillDetailViewModel GetById(int id)
         {
             var bill = Get().Where(b => b.Id == id && b.IsDeleted == BillConstants.BILL_IS_NOT_DELETED).ProjectTo<BillDetailViewModel>(_mapper.ConfigurationProvider).FirstOrDefault();
+            if(bill != null)
+            {
+                foreach(var billItem in bill.BillItems)
+                {
+                    if(billItem.ServiceContract.ClockId != 0 && billItem.ServiceContract.Clock.ClockValues != null)
+                    {
+                        billItem.ServiceContract.Clock.ClockValues = billItem.ServiceContract.Clock.ClockValues.Where(value => value.Status == ClockValueConstants.CLOCK_VALUE_IS_MILESTONE).ToList();
+                    }
+                }
+            }
             return bill;
         }
 
@@ -384,10 +427,10 @@ namespace HMS.Data.Services
                 return check;
             }
 
-            var bill = await GetAsyn(billId);
+            var billModel = GetById(billId);
 
 
-            if (bill.IsSent == BillConstants.BILL_IS_SENT)
+            if (billModel.IsSent == BillConstants.BILL_IS_SENT)
             {
                 return new ResultResponse
                 {
@@ -396,17 +439,16 @@ namespace HMS.Data.Services
                 };
             }
 
-            var serviceContractWithClock = bill.Contract.ServiceContracts.Where(sC => sC.Service.ServiceType.Equals(ServiceTypeConstants.SERVICE_TYPE_IS_DEFAULT_DIFFERENT)).ToList();
+            var serviceContractWithClock = billModel.BillItems.Where(item => item.ServiceContract.ClockId != 0).ToList();
             if(serviceContractWithClock != null && serviceContractWithClock.Count != 0)
             {
-                var updateServiceContracts = new List<UpdateServiceContractViewModel>();
                 foreach (var serviceContract in serviceContractWithClock)
                 {
-                    foreach(BillItem billItem in bill.BillItems)
+                    foreach(var billItem in billModel.BillItems)
                     {
-                        if (billItem.ServiceContractId.Equals(serviceContract.Id))
+                        if (billItem.ServiceContractId.Equals(serviceContract.ServiceContractId))
                         {
-                            var clockId = _clockService.GetIdByServiceIdAndRoomId(serviceContract.ServiceId.Value, bill.Contract.RoomId.Value);
+                            var clockId = _clockService.GetIdByServiceIdAndRoomId(billItem.ServiceContract.ServiceId.Value, billModel.Contract.RoomId);
                             var createClockValueModel = new CreateClockValueViewModel
                             {
                                 ClockId = clockId,
@@ -427,6 +469,9 @@ namespace HMS.Data.Services
             }
             else
             {
+                var bill = await GetAsyn(billId);
+                bill.IsSent = BillConstants.BILL_IS_SENT;
+                Update(bill);
                 return new ResultResponse
                 {
                     Message = new MessageResult("OK04", new string[] { "Confirm bill" }).Value,

@@ -97,7 +97,7 @@ namespace HMS.Data.Services
             var clocks = GetByRoomId(roomId);
             foreach (var clock in clocks)
             {
-                if (clock.ClockCategory.ToUpper().Contains(service.Name.ToUpper()))
+                if (clock.ClockCategory.ToUpper().Contains(service.Name.ToUpper().Trim()))
                 {
                     return clock.Id;
                 }
