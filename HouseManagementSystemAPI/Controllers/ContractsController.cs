@@ -37,7 +37,7 @@ namespace HMSAPI.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(List<ContractDetailViewModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        public IActionResult GetContracts(ContractParameters contractParameter)
+        public IActionResult GetContracts([FromQuery] ContractParameters contractParameter)
         {
             var userId = User.Identity.Name;
             var contracts = _contractService.FilterByParamter(userId, contractParameter);

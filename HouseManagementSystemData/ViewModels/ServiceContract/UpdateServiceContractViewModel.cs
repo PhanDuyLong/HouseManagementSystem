@@ -11,7 +11,7 @@ namespace HMS.Data.ViewModels.ServiceContract
         public int? Id { get; set; }
         public int ServiceId { get; set; }
         public double? UnitPrice { get; set; }
-        public int StartClockValue { get; set; }
+        public int? StartClockValue { get; set; }
 
     }
 }

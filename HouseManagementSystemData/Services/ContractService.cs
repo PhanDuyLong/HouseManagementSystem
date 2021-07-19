@@ -173,6 +173,17 @@ namespace HMS.Data.Services
                 {
                     contracts = Get().Where(c => c.TenantUserId == userId && c.Status == ContractConstants.CONTRACT_IS_ACTIVE).ProjectTo<ContractDetailViewModel>(_mapper.ConfigurationProvider).ToList();
                 }
+                if(contracts != null && contracts.Count != 0)
+                {
+                    foreach (var contract in contracts)
+                    {
+                        var room = _roomService.GetById(contract.RoomId);
+                        var house = _houseService.GetById(room.HouseId);
+                        contract.RoomName = room.Name;
+                        contract.HouseName = house.HouseInfo.Name;
+                        contract.OwnerName = house.OwnerUser.Name;
+                    }
+                }
             }
             return contracts;
         }

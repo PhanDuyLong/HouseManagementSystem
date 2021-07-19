@@ -118,7 +118,7 @@ namespace HMS.Data.Services
         public List<ServiceContractDetailViewModel> GetByContractId(int contractId)
         {
             List<ServiceContractDetailViewModel> contract;
-            contract = Get().Where(sc => sc.Id == contractId && sc.Status == ServiceContractConstants.SERVICE_CONTRACT_IS_ACTIVE).ProjectTo<ServiceContractDetailViewModel>(_mapper.ConfigurationProvider).ToList();
+            contract = Get().Where(sc => sc.ContractId == contractId && sc.Status == ServiceContractConstants.SERVICE_CONTRACT_IS_ACTIVE).ProjectTo<ServiceContractDetailViewModel>(_mapper.ConfigurationProvider).ToList();
             return contract;
         }
 
@@ -140,9 +140,9 @@ namespace HMS.Data.Services
                     IsSuccess = false
                 };
             }
-            var serviceContract = await GetAsyn(model.Id);
+            var serviceContract = GetById(model.Id.Value);
             var service = serviceContract.Service;
-            if (service.ServiceType.Name == ServiceTypeConstants.SERVICE_TYPE_IS_DEFAULT_DIFFERENT)
+            if (service.ServiceType == ServiceTypeConstants.SERVICE_TYPE_IS_DEFAULT_DIFFERENT)
             {
                 var clockId = _clockService.GetIdByServiceIdAndRoomId(service.Id, roomId);
                 var createClockValueViewModel = new CreateClockValueViewModel
@@ -154,13 +154,14 @@ namespace HMS.Data.Services
                 };
                 await _clockValueService.CreateClockValueAsync(createClockValueViewModel);
             }
-
+            var sContract = await GetAsyn(model.Id.Value);
             if (model.UnitPrice != null)
             {
-                serviceContract.UnitPrice = model.UnitPrice;
+                sContract.UnitPrice = model.UnitPrice.Value;
             }
-            serviceContract.Status = ServiceContractConstants.SERVICE_CONTRACT_IS_ACTIVE;
-            Update(serviceContract);
+
+            sContract.Status = ServiceContractConstants.SERVICE_CONTRACT_IS_ACTIVE;
+            Update(sContract);
 
             return new ResultResponse
             {
@@ -186,7 +187,6 @@ namespace HMS.Data.Services
                 }
                 if (!find)
                 {
-                    oldServiceContracts.Remove(oldServiceContract);
                     check = await DeleteServiceContractAsync(oldServiceContract.Id);
                     if (!check.IsSuccess)
                     {
@@ -215,7 +215,7 @@ namespace HMS.Data.Services
                     var createModel = new CreateServiceContractViewModel
                     {
                         ServiceId = serviceContract.ServiceId,
-                        StartClockValue = serviceContract.StartClockValue,
+                        StartClockValue = serviceContract.StartClockValue.Value,
                         UnitPrice = serviceContract.UnitPrice.Value
                     };
                     check = await CreateServiceContractAsync(roomId, contractId, createModel);
