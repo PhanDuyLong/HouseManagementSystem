@@ -30,7 +30,7 @@ namespace HMSAPI.Controllers
         }
 
         /// <summary>
-        /// Get ServiceContracts by contractId
+        /// Get serviceContracts by contractId
         /// </summary>
         /// <param name="contractId"></param>
         /// <returns></returns>
@@ -51,12 +51,10 @@ namespace HMSAPI.Controllers
 
 
         /// <summary>
-        /// Get ServiceContract by Id 
+        /// Get serviceContract by Id 
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        /// 
-        
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(ServiceContractDetailViewModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
@@ -95,7 +93,7 @@ namespace HMSAPI.Controllers
 
 
         /// <summary>
-        /// Update ServiceContract
+        /// Update serviceContract
         /// </summary>
         /// <param name="roomId"></param>
         /// <param name="contractId"></param>
@@ -121,7 +119,7 @@ namespace HMSAPI.Controllers
         }
 
         /// <summary>
-        /// Delete ServiceContract
+        /// Delete serviceContract
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>

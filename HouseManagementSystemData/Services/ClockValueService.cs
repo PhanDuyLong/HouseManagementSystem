@@ -20,7 +20,7 @@ namespace HMS.Data.Services
     {
         Task<ResultResponse> CreateClockValueAsync(CreateClockValueViewModel model);
         Task<ResultResponse> DeleteClockValueAsync(int clockValueId);
-        List<ClockValueDetailViewModel> FilterByParameter(ClockValueParameter parameter);
+        List<ClockValueDetailViewModel> FilterByParameter(ClockValueParameters parameter);
         Task<ResultResponse> UpdateClockValueAsync(UpdateClockValueViewModel model);
         ClockValueDetailViewModel GetById(int id);
         ResultResponse CheckClockValue(int clockValueId);
@@ -65,7 +65,7 @@ namespace HMS.Data.Services
             };
         }
 
-        public List<ClockValueDetailViewModel> FilterByParameter(ClockValueParameter parameter)
+        public List<ClockValueDetailViewModel> FilterByParameter(ClockValueParameters parameter)
         {
             var clockValues = Get().Where(value => value.ClockId == parameter.ClockId).ProjectTo<ClockValueDetailViewModel>(_mapper.ConfigurationProvider).ToList();
             if(clockValues != null)

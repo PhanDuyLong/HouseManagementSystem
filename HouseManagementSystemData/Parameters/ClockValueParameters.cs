@@ -5,7 +5,7 @@ using System.Text;
 
 namespace HMS.Data.Parameters
 {
-    public class ClockValueParameter
+    public class ClockValueParameters
     {
         [Required]
         public int ClockId { get; set; }

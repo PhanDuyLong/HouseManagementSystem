@@ -31,7 +31,7 @@ namespace HMSAPI.Controllers
         }
 
         /// <summary>
-        /// Filter Bills
+        /// Filter bills
         /// </summary>
         /// <param name="billParameters"></param>
         /// <returns></returns>
@@ -50,7 +50,7 @@ namespace HMSAPI.Controllers
         }
 
         /// <summary>
-        /// Get Bill by id
+        /// Get bill by id
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -67,7 +67,7 @@ namespace HMSAPI.Controllers
         }
 
         /// <summary>
-        /// Create Bill
+        /// Create bill
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
@@ -90,7 +90,7 @@ namespace HMSAPI.Controllers
         }
 
         /// <summary>
-        /// Update Bill
+        /// Update bill
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>

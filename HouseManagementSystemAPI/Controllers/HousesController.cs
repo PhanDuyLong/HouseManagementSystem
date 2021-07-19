@@ -33,7 +33,7 @@ namespace HouseManagementSystemAPI.Controllers
         }
 
         /// <summary>
-        /// Filter Houses
+        /// Filter houses
         /// </summary>
         /// <returns></returns>
         [HttpGet]
@@ -49,7 +49,7 @@ namespace HouseManagementSystemAPI.Controllers
         }
 
         /// <summary>
-        /// Get House by Id 
+        /// Get house by Id 
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -67,7 +67,7 @@ namespace HouseManagementSystemAPI.Controllers
         }
 
         /// <summary>
-        /// Create House
+        /// Create house
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
@@ -91,7 +91,7 @@ namespace HouseManagementSystemAPI.Controllers
         }
 
         /// <summary>
-        /// Update House
+        /// Update house
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
@@ -114,7 +114,7 @@ namespace HouseManagementSystemAPI.Controllers
         }
 
         /// <summary>
-        /// Delete House
+        /// Delete house
         /// </summary>
         /// <param name="houseId"></param>
         /// <returns></returns>
@@ -137,7 +137,7 @@ namespace HouseManagementSystemAPI.Controllers
         }
 
         /// <summary>
-        /// Count Houses
+        /// Count houses
         /// </summary>
         /// <param name="houseParameters"></param>
         /// <returns></returns>

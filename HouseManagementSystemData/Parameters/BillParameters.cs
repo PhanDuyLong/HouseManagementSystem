@@ -6,6 +6,7 @@ namespace HMS.Data.Parameters
 {
     public class BillParameters
     {
+        public int? RoomId { get; set; }
         public int? ContractId { get; set; }
 /*        public DateTime? IssueDate { get; set; }*/
 /*        public DateTime? StartDate { get; set; }

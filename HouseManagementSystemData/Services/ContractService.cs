@@ -2,6 +2,7 @@
 using AutoMapper.QueryableExtensions;
 using HMS.Data.Constants;
 using HMS.Data.Models;
+using HMS.Data.Parameters;
 using HMS.Data.Repositories;
 using HMS.Data.Responses;
 using HMS.Data.Services.Base;
@@ -19,10 +20,12 @@ namespace HMS.Data.Services
     public partial interface IContractService : IBaseService<Contract>
     {
         ContractDetailViewModel GetById(int id);
+        List<ContractDetailViewModel> GetByUserId(string userId);
         Task<ResultResponse> CreateContractAsync(string userId, CreateContractViewModel model);
         Task<ResultResponse> UpdateContractAsync(UpdateContractViewModel model);
         Task<ResultResponse> DeleteContractAsync(int contractId);
-        List<ContractDetailViewModel> GetByUserId(string userId);
+        List<ContractDetailViewModel> FilterByParamter(string userId, ContractParameters contractParameters);
+        List<ContractDetailViewModel> GetByRoomId(int roomId);
     }
     public partial class ContractService : BaseService<Contract>, IContractService
     {
@@ -159,19 +162,19 @@ namespace HMS.Data.Services
         public List<ContractDetailViewModel> GetByUserId(string userId)
         {
             var user = _accountService.GetByUserId(userId);
-            var contract = new List<ContractDetailViewModel>();
+            var contracts = new List<ContractDetailViewModel>();
             if (user != null)
             {
                 if (user.Role.Equals(AccountConstants.ROLE_IS_OWNER))
                 {
-                    contract = Get().Where(c => c.OwnerUserId == userId && c.Status == ContractConstants.CONTRACT_IS_ACTIVE).ProjectTo<ContractDetailViewModel>(_mapper.ConfigurationProvider).ToList();
+                    contracts = Get().Where(c => c.OwnerUserId == userId && c.Status == ContractConstants.CONTRACT_IS_ACTIVE).ProjectTo<ContractDetailViewModel>(_mapper.ConfigurationProvider).ToList();
                 }
                 else
                 {
-                    contract = Get().Where(c => c.TenantUserId == userId && c.Status == ContractConstants.CONTRACT_IS_ACTIVE).ProjectTo<ContractDetailViewModel>(_mapper.ConfigurationProvider).ToList();
+                    contracts = Get().Where(c => c.TenantUserId == userId && c.Status == ContractConstants.CONTRACT_IS_ACTIVE).ProjectTo<ContractDetailViewModel>(_mapper.ConfigurationProvider).ToList();
                 }
             }
-            return contract;
+            return contracts;
         }
 
         public async Task<ResultResponse> UpdateContractAsync(UpdateContractViewModel model)
@@ -221,6 +224,32 @@ namespace HMS.Data.Services
                 IsSuccess = true
             };
 
+        }
+
+        public List<ContractDetailViewModel> GetByRoomId(int roomId)
+        {
+            var contracts = Get().Where(c => c.RoomId == roomId).ProjectTo<ContractDetailViewModel>(_mapper.ConfigurationProvider).ToList();
+            return contracts;
+        }
+
+        public List<ContractDetailViewModel> FilterByParamter(string userId, ContractParameters contractParameters)
+        {
+            List<ContractDetailViewModel> contracts;
+            var roomId = contractParameters.RoomId;
+            if (roomId != null)
+            {
+                contracts = GetByRoomId(roomId.Value);
+            }
+            else
+            {
+                contracts = GetByUserId(userId);
+            }
+            var status = contractParameters.Status;
+            if (status != null)
+            {
+                contracts = contracts.Where(r => r.Status == contractParameters.Status).ToList();
+            }
+            return contracts;
         }
     }
 }

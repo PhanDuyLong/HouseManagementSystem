@@ -28,7 +28,7 @@ namespace HMSAPI.Controllers
         }
 
         /// <summary>
-        /// Get All Categories
+        /// Get all categories
         /// </summary>
         /// <returns></returns>
         [HttpGet]

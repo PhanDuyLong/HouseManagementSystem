@@ -72,6 +72,9 @@ namespace HMS.Data.Services
             var contract = _contractService.GetById(createModel.ContractId);
             var serviceContracts = contract.ServiceContracts.ToList();
             double total = 0;
+            var roomPriceBillItem = await CountRoomPriceAsync(contract);
+            billItems.Add(roomPriceBillItem);
+            total += roomPriceBillItem.TotalPrice.Value;
             foreach (ServiceContractDetailViewModel serviceContract in serviceContracts)
             {
                 var item = new BillItem();
@@ -109,8 +112,20 @@ namespace HMS.Data.Services
                 item.Status = BillItemConstants.BILL_ITEM_IS_NOT_DELETED;
                 billItems.Add(item);
             }
+            bill.TotalPrice = total;
 
+            await CreateAsyn(bill);
 
+            foreach (BillItem billItem in billItems)
+            {
+                billItem.BillId = bill.Id;
+                await _billItemService.CreateAsyn(billItem);
+            }
+            return GetById(bill.Id);
+        }
+
+        private async Task<BillItem> CountRoomPriceAsync(ContractDetailViewModel contract)
+        {
             var roomPriceService = new Service()
             {
                 Name = "Phòng",
@@ -134,21 +149,7 @@ namespace HMS.Data.Services
                 ServiceContractId = roomPriceServiceContract.Id
             };
 
-
-            billItems.Add(roomPriceBillItem);
-            total += roomPriceBillItem.TotalPrice.Value;
-            bill.TotalPrice = total;
-
-            await CreateAsyn(bill);
-
-            foreach (BillItem billItem in billItems)
-            {
-                billItem.BillId = bill.Id;
-                await _billItemService.CreateAsyn(billItem);
-            }
-
-
-            return GetById(bill.Id);
+            return roomPriceBillItem;
         }
 
         public async Task<ResultResponse> DeleteBillAsync(int billId)
@@ -184,6 +185,11 @@ namespace HMS.Data.Services
         {
             var bills = new List<ShowBillViewModel>();
             var contractId = billParameters.ContractId;
+            var roomId = billParameters.RoomId;
+            if(roomId != null)
+            {
+                bills = GetByRoomId(billParameters);
+            }
             if(contractId != null)
             {
                 bills = GetByContractId(billParameters);
@@ -206,6 +212,26 @@ namespace HMS.Data.Services
                 }
             }
             return bills;
+        }
+
+        private List<ShowBillViewModel> GetByRoomId(BillParameters billParameters)
+        {
+            List<ContractDetailViewModel> contracts = _contractService.GetByRoomId(billParameters.RoomId.Value);
+            var contractIds = contracts.Select(c => c.Id).ToList();
+            if (contractIds != null && contractIds.Count != 0)
+            {
+                List<ShowBillViewModel> bills = Get().Where(b => contractIds.Contains(b.ContractId.Value) && b.IsDeleted == BillConstants.BILL_IS_NOT_DELETED).ProjectTo<ShowBillViewModel>(_mapper.ConfigurationProvider).ToList();
+                if (billParameters.IsIssueDateAscending)
+                {
+                    bills = bills.OrderBy(b => b.IssueDate).ToList();
+                }
+                else
+                {
+                    bills = bills.OrderByDescending(b => b.IssueDate).ToList();
+                }
+                return bills;
+            }
+            return null;
         }
 
         public List<ShowBillViewModel> GetByUserId(string userId, BillParameters billParameters)

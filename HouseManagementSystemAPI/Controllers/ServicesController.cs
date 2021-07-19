@@ -29,7 +29,7 @@ namespace HMSAPI.Controllers
         }
 
         /// <summary>
-        /// Get Services by houseId
+        /// Get services by houseId
         /// </summary>
         /// <param name="houseId"></param>
         /// <returns></returns>
@@ -48,7 +48,7 @@ namespace HMSAPI.Controllers
         }
 
         /// <summary>
-        /// Get Service by Id 
+        /// Get service by Id 
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -64,7 +64,7 @@ namespace HMSAPI.Controllers
         }
 
         /// <summary>
-        /// Create Service
+        /// Create service
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
@@ -87,7 +87,7 @@ namespace HMSAPI.Controllers
         }
 
         /// <summary>
-        /// Update Service
+        /// Update service
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
@@ -110,7 +110,7 @@ namespace HMSAPI.Controllers
         }
 
         /// <summary>
-        /// Delete Service
+        /// Delete service
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>

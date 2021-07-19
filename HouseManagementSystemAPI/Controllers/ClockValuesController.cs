@@ -38,7 +38,7 @@ namespace HMSAPI.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(List<ClockDetailViewModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ResultResponse), (int)HttpStatusCode.NotFound)]
-        public IActionResult GetClockValues([FromQuery] ClockValueParameter parameter) 
+        public IActionResult GetClockValues([FromQuery] ClockValueParameters parameter) 
         {
             var clocks = _clockValueService.FilterByParameter(parameter);
             if (clocks == null || clocks.Count == 0)

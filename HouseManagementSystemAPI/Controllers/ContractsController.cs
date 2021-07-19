@@ -1,4 +1,5 @@
 ﻿using HMS.Data.Constants;
+using HMS.Data.Parameters;
 using HMS.Data.Services;
 using HMS.Data.Utilities;
 using HMS.Data.ViewModels.Contract;
@@ -30,16 +31,16 @@ namespace HMSAPI.Controllers
         }
 
         /// <summary>
-        /// Get Contracts by UserId
+        /// Filter contracts
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        [ProducesResponseType(typeof(List<ContractBaseViewModel>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(List<ContractDetailViewModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        public IActionResult GetContracts()
+        public IActionResult GetContracts(ContractParameters contractParameter)
         {
             var userId = User.Identity.Name;
-            var contracts = _contractService.GetByUserId(userId);
+            var contracts = _contractService.FilterByParamter(userId, contractParameter);
             if (contracts == null || contracts.Count == 0)
                 return NotFound(new MessageResult("NF01", new string[] { "Contract" }).Value);
 
@@ -47,7 +48,7 @@ namespace HMSAPI.Controllers
         }
 
         /// <summary>
-        /// Get Contract by Id 
+        /// Get contract by Id 
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -65,7 +66,7 @@ namespace HMSAPI.Controllers
         }
 
         /// <summary>
-        /// Create Contract
+        /// Create contract
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
@@ -89,7 +90,7 @@ namespace HMSAPI.Controllers
         }
 
         /// <summary>
-        /// Update Contract
+        /// Update contract
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
@@ -112,7 +113,7 @@ namespace HMSAPI.Controllers
         }
 
         /// <summary>
-        /// Delete Contract
+        /// Delete contract
         /// </summary>
         /// <param name="contractId"></param>
         /// <returns></returns>

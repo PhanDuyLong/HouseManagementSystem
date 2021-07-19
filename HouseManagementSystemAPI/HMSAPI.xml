@@ -128,28 +128,28 @@
         </member>
         <member name="M:HMSAPI.Controllers.BillsController.GetBills(HMS.Data.Parameters.BillParameters)">
             <summary>
-            Filter Bills
+            Filter bills
             </summary>
             <param name="billParameters"></param>
             <returns></returns>
         </member>
         <member name="M:HMSAPI.Controllers.BillsController.GetBill(System.Int32)">
             <summary>
-            Get Bill by id
+            Get bill by id
             </summary>
             <param name="id"></param>
             <returns></returns>
         </member>
         <member name="M:HMSAPI.Controllers.BillsController.Create(HMS.Data.ViewModels.Bill.CreateBillViewModel)">
             <summary>
-            Create Bill
+            Create bill
             </summary>
             <param name="model"></param>
             <returns></returns>
         </member>
         <member name="M:HMSAPI.Controllers.BillsController.Update(HMS.Data.ViewModels.Bill.UpdateBillViewModel)">
             <summary>
-            Update Bill
+            Update bill
             </summary>
             <param name="model"></param>
             <returns></returns>
@@ -188,7 +188,7 @@
         </member>
         <member name="M:HMSAPI.Controllers.ClockCategoriesController.GetClockCategoriesAsync">
             <summary>
-            Get All Categories
+            Get all categories
             </summary>
             <returns></returns>
         </member>
@@ -248,7 +248,7 @@
             </summary>
             <param name="clockValueService"></param>
         </member>
-        <member name="M:HMSAPI.Controllers.ClockValuesController.GetClockValues(HMS.Data.Parameters.ClockValueParameter)">
+        <member name="M:HMSAPI.Controllers.ClockValuesController.GetClockValues(HMS.Data.Parameters.ClockValueParameters)">
             <summary>
             Get clockValues by roomId
             </summary>
@@ -293,36 +293,36 @@
             </summary>
             <param name="contractService"></param>
         </member>
-        <member name="M:HMSAPI.Controllers.ContractsController.GetContracts">
+        <member name="M:HMSAPI.Controllers.ContractsController.GetContracts(HMS.Data.Parameters.ContractParameters)">
             <summary>
-            Get Contracts by UserId
+            Filter contracts
             </summary>
             <returns></returns>
         </member>
         <member name="M:HMSAPI.Controllers.ContractsController.GetContract(System.Int32)">
             <summary>
-            Get Contract by Id 
+            Get contract by Id 
             </summary>
             <param name="id"></param>
             <returns></returns>
         </member>
         <member name="M:HMSAPI.Controllers.ContractsController.Create(HMS.Data.ViewModels.Contract.CreateContractViewModel)">
             <summary>
-            Create Contract
+            Create contract
             </summary>
             <param name="model"></param>
             <returns></returns>
         </member>
         <member name="M:HMSAPI.Controllers.ContractsController.Update(HMS.Data.ViewModels.Contract.Base.UpdateContractViewModel)">
             <summary>
-            Update Contract
+            Update contract
             </summary>
             <param name="model"></param>
             <returns></returns>
         </member>
         <member name="M:HMSAPI.Controllers.ContractsController.Delete(System.Int32)">
             <summary>
-            Delete Contract
+            Delete contract
             </summary>
             <param name="contractId"></param>
             <returns></returns>
@@ -365,14 +365,14 @@
         </member>
         <member name="M:HMSAPI.Controllers.RoomsController.GetRoom(System.Int32)">
             <summary>
-            Get Room by Id 
+            Get room by Id 
             </summary>
             <param name="id"></param>
             <returns></returns>
         </member>
         <member name="M:HMSAPI.Controllers.RoomsController.Create(HMS.Data.ViewModels.Room.CreateRoomViewModel)">
             <summary>
-            Create Room
+            Create room
             </summary>
             <param name="model"></param>
             <returns></returns>
@@ -393,7 +393,7 @@
         </member>
         <member name="M:HMSAPI.Controllers.RoomsController.Count(HMS.Data.Parameters.RoomParameters)">
             <summary>
-            Count Rooms
+            Count rooms
             </summary>
             <param name="roomParameters"></param>
             <returns></returns>
@@ -411,18 +411,17 @@
         </member>
         <member name="M:HMSAPI.Controllers.ServiceContractsController.GetServiceContracts(System.Int32)">
             <summary>
-            Get ServiceContracts by contractId
+            Get serviceContracts by contractId
             </summary>
             <param name="contractId"></param>
             <returns></returns>
         </member>
         <member name="M:HMSAPI.Controllers.ServiceContractsController.GetServiceContract(System.Int32)">
             <summary>
-            Get ServiceContract by Id 
+            Get serviceContract by Id 
             </summary>
             <param name="id"></param>
             <returns></returns>
-            
         </member>
         <member name="M:HMSAPI.Controllers.ServiceContractsController.Create(System.Int32,System.Int32,HMS.Data.ViewModels.ServiceContract.CreateServiceContractViewModel)">
             <summary>
@@ -435,7 +434,7 @@
         </member>
         <member name="M:HMSAPI.Controllers.ServiceContractsController.Update(System.Int32,System.Int32,HMS.Data.ViewModels.ServiceContract.UpdateServiceContractViewModel)">
             <summary>
-            Update ServiceContract
+            Update serviceContract
             </summary>
             <param name="roomId"></param>
             <param name="contractId"></param>
@@ -444,7 +443,7 @@
         </member>
         <member name="M:HMSAPI.Controllers.ServiceContractsController.Delete(System.Int32)">
             <summary>
-            Delete ServiceContract
+            Delete serviceContract
             </summary>
             <param name="id"></param>
             <returns></returns>
@@ -462,35 +461,35 @@
         </member>
         <member name="M:HMSAPI.Controllers.ServicesController.GetServices(System.String)">
             <summary>
-            Get Services by houseId
+            Get services by houseId
             </summary>
             <param name="houseId"></param>
             <returns></returns>
         </member>
         <member name="M:HMSAPI.Controllers.ServicesController.GetService(System.Int32)">
             <summary>
-            Get Service by Id 
+            Get service by Id 
             </summary>
             <param name="id"></param>
             <returns></returns>
         </member>
         <member name="M:HMSAPI.Controllers.ServicesController.Create(HMS.Data.ViewModels.CreateServiceViewModel)">
             <summary>
-            Create Service
+            Create service
             </summary>
             <param name="model"></param>
             <returns></returns>
         </member>
         <member name="M:HMSAPI.Controllers.ServicesController.Update(HMS.Data.ViewModels.UpdateServiceViewModel)">
             <summary>
-            Update Service
+            Update service
             </summary>
             <param name="model"></param>
             <returns></returns>
         </member>
         <member name="M:HMSAPI.Controllers.ServicesController.Delete(System.Int32)">
             <summary>
-            Delete Service
+            Delete service
             </summary>
             <param name="id"></param>
             <returns></returns>
@@ -579,41 +578,41 @@
         </member>
         <member name="M:HouseManagementSystemAPI.Controllers.HousesController.GetHouses(HMS.Data.Parameters.HouseParameters)">
             <summary>
-            Filter Houses
+            Filter houses
             </summary>
             <returns></returns>
         </member>
         <member name="M:HouseManagementSystemAPI.Controllers.HousesController.GetHouse(System.String)">
             <summary>
-            Get House by Id 
+            Get house by Id 
             </summary>
             <param name="id"></param>
             <returns></returns>
         </member>
         <member name="M:HouseManagementSystemAPI.Controllers.HousesController.Create(HMS.Data.ViewModels.HouseViewModels.CreateHouseViewModel)">
             <summary>
-            Create House
+            Create house
             </summary>
             <param name="model"></param>
             <returns></returns>
         </member>
         <member name="M:HouseManagementSystemAPI.Controllers.HousesController.Update(HMS.Data.ViewModels.House.UpdateHouseViewModel)">
             <summary>
-            Update House
+            Update house
             </summary>
             <param name="model"></param>
             <returns></returns>
         </member>
         <member name="M:HouseManagementSystemAPI.Controllers.HousesController.Delete(System.String)">
             <summary>
-            Delete House
+            Delete house
             </summary>
             <param name="houseId"></param>
             <returns></returns>
         </member>
         <member name="M:HouseManagementSystemAPI.Controllers.HousesController.Count(HMS.Data.Parameters.HouseParameters)">
             <summary>
-            Count Houses
+            Count houses
             </summary>
             <param name="houseParameters"></param>
             <returns></returns>

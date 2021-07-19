@@ -52,7 +52,7 @@ namespace HMSAPI.Controllers
         }
 
         /// <summary>
-        /// Get Room by Id 
+        /// Get room by Id 
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -70,7 +70,7 @@ namespace HMSAPI.Controllers
         }
 
         /// <summary>
-        /// Create Room
+        /// Create room
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
@@ -139,7 +139,7 @@ namespace HMSAPI.Controllers
         }
 
         /// <summary>
-        /// Count Rooms
+        /// Count rooms
         /// </summary>
         /// <param name="roomParameters"></param>
         /// <returns></returns>
