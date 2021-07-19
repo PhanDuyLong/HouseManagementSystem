@@ -70,6 +70,51 @@
             <param name="userId"></param>
             <returns></returns>
         </member>
+        <member name="T:HMSAPI.Controllers.BillItemsController">
+            <summary>
+            BillItemsController
+            </summary>
+        </member>
+        <member name="M:HMSAPI.Controllers.BillItemsController.#ctor(HMS.Data.Services.IBillItemService)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="billItemService"></param>
+        </member>
+        <member name="M:HMSAPI.Controllers.BillItemsController.GetBillItems(System.Int32)">
+            <summary>
+            Get billItems by billId
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:HMSAPI.Controllers.BillItemsController.GetBillItem(System.Int32)">
+            <summary>
+            Get billItem by Id 
+            </summary>
+            <param name="id"></param>
+            <returns></returns>
+        </member>
+        <member name="M:HMSAPI.Controllers.BillItemsController.Create(HMS.Data.ViewModels.BillItem.CreateBillItemViewModel)">
+            <summary>
+            Create billItem
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
+        <member name="M:HMSAPI.Controllers.BillItemsController.Update(HMS.Data.ViewModels.BillItem.UpdateBillItemViewModel)">
+            <summary>
+            Update billItem
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
+        <member name="M:HMSAPI.Controllers.BillItemsController.Delete(System.Int32)">
+            <summary>
+            Delete billItem
+            </summary>
+            <param name="billId"></param>
+            <returns></returns>
+        </member>
         <member name="T:HMSAPI.Controllers.BillsController">
             <summary>
             BillsController
@@ -109,11 +154,11 @@
             <param name="model"></param>
             <returns></returns>
         </member>
-        <member name="M:HMSAPI.Controllers.BillsController.Confirm(System.Int32)">
+        <member name="M:HMSAPI.Controllers.BillsController.Confirm(HMS.Data.ViewModels.Bill.ConfirmBillViewModel)">
             <summary>
             Confirm bill
             </summary>
-            <param name="id"></param>
+            <param name="model"></param>
             <returns></returns>
         </member>
         <member name="M:HMSAPI.Controllers.BillsController.Delete(System.Int32)">

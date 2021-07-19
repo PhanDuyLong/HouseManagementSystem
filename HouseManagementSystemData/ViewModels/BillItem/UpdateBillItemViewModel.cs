@@ -6,9 +6,9 @@ namespace HMS.Data.ViewModels.BillItem
 {
     public class UpdateBillItemViewModel
     {
+        public int? Id { get; set; }
         public int? ServiceContractId { get; set; }
-        public int StartValue { get; set; }
-        public int EndValue { get; set; }
-        public bool isDeleted { get; set; }
+        public int? StartValue { get; set; }
+        public int? EndValue { get; set; }
     }
 }

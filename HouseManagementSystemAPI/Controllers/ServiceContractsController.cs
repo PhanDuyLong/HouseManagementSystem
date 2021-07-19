@@ -1,14 +1,13 @@
 ﻿
-using System.Collections.Generic;
-using System.Net;
-using System.Threading.Tasks;
 using HMS.Data.Constants;
 using HMS.Data.Services;
 using HMS.Data.Utilities;
 using HMS.Data.ViewModels.ServiceContract;
 using Microsoft.AspNetCore.Authorization;
-
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace HMSAPI.Controllers
 {

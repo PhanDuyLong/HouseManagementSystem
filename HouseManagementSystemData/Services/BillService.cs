@@ -33,7 +33,7 @@ namespace HMS.Data.Services
         Task<ResultResponse> SetBillIsPaidFullAsync(int billId);
         Task<ResultResponse> SetBillIsPaidAsync(int billId);
         int CountBills(string userId, BillParameters billParameters);
-        Task<ResultResponse> ConfirmBillAsync(int id);
+        Task<ResultResponse> ConfirmBillAsync(ConfirmBillViewModel model);
         ResultResponse CheckBill(int id);
     }
     public partial class BillService : BaseService<Bill>, IBillService
@@ -288,40 +288,17 @@ namespace HMS.Data.Services
             Update(bill);
 
             var updateBillItems = model.UpdateBillItems;
-            var newBillItems = new ArrayList();
             if (updateBillItems.Count != 0)
             {
-                var oldBillItems = bill.BillItems.ToList();
-                var items = new ArrayList();
-                foreach (UpdateBillItemViewModel billItem in model.UpdateBillItems)
-                {
-                    if (oldBillItems.Exists(item => item.ServiceContractId == billItem.ServiceContractId))
-                    {
-                        var oldBillItem = oldBillItems.Find(item => item.ServiceContractId == billItem.ServiceContractId);
-                        if (billItem.isDeleted)
-                        {
-                            oldBillItem.Status = BillItemConstants.BILL_ITEM_IS_DELETED;
-                        }
-                        else
-                        {
-                            oldBillItem.StartValue = billItem.StartValue;
-                            oldBillItem.EndValue = billItem.EndValue;
-                        }
-                        items.Add(oldBillItem);
-                    }
-                }
-
-                foreach (BillItem item in items)
-                {
-                    _billItemService.Update(item);
-                }
+                await _billItemService.UpdateBillItemsAsync(bill.Id, updateBillItems.ToList());
             }
+            return new ResultResponse
+            {
+                Message = new MessageResult("OK03", new string[] { "Bill" }).Value,
+                IsSuccess = true
+            };
 
-                return new ResultResponse
-                {
-                    Message = new MessageResult("OK03", new string[] { "Bill" }).Value,
-                    IsSuccess = true
-                };
+
         }
 
         public async Task<ResultResponse> SendBillAsync(int billId)
@@ -419,15 +396,15 @@ namespace HMS.Data.Services
             return FilterByParameter(userId, billParameters).Count;
         }
 
-        public async Task<ResultResponse> ConfirmBillAsync(int billId)
+        public async Task<ResultResponse> ConfirmBillAsync(ConfirmBillViewModel model)
         {
-            var check = CheckBill(billId);
+            var check = CheckBill(model.Id);
             if (!check.IsSuccess)
             {
                 return check;
             }
 
-            var billModel = GetById(billId);
+            var billModel = GetById(model.Id);
 
 
             if (billModel.IsSent == BillConstants.BILL_IS_SENT)
@@ -462,14 +439,15 @@ namespace HMS.Data.Services
                 }
             }
 
-            var result = await SendBillAsync(billId);
+            var result = await SendBillAsync(model.Id);
             if (!result.IsSuccess)
             {
                 return check;
             }
             else
             {
-                var bill = await GetAsyn(billId);
+                var bill = await GetAsyn(model.Id);
+                bill.Note = model.Note;
                 bill.IsSent = BillConstants.BILL_IS_SENT;
                 Update(bill);
                 return new ResultResponse

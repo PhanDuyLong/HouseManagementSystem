@@ -83,13 +83,6 @@ namespace HMS.Data.Services
         public RoomDetailViewModel GetById(int id)
         {
             var room = Get().Where(r => r.Id == id && r.IsDeleted == RoomConstants.ROOM_IS_NOT_DELETED).ProjectTo<RoomDetailViewModel>(_mapper.ConfigurationProvider).FirstOrDefault();
-            if (room != null)
-            {
-/*                foreach (ClockDetailViewModel clock in room.Clocks)
-                {
-                    clock.ClockValues = clock.ClockValues.Where(value => value.Status == ClockValueConstants.CLOCK_VALUE_IS_MILESTONE).ToList();
-                }*/
-            }
             return room;
         }
 
@@ -236,7 +229,7 @@ namespace HMS.Data.Services
 
             return new ResultResponse
             {
-                IsSuccess = false
+                IsSuccess = true
             };
         }
     }

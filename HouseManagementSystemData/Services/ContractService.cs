@@ -208,6 +208,7 @@ namespace HMS.Data.Services
             {
                 contract.Note = model.Note;
             }
+
             Update(contract);
 
             var check = await _serviceContractService.UpdateServiceContractsAsync(contractModel.RoomId, contractId, model.UpdateServiceContracts.ToList());

@@ -1,16 +1,9 @@
-﻿using HMS.Data.Constants;
-using HMS.Data.Parameters;
-using HMS.Data.Responses;
+﻿using HMS.Data.Responses;
 using HMS.Data.Services;
 using HMS.Data.Utilities;
-using HMS.Data.ViewModels;
 using HMS.Data.ViewModels.Clock;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 

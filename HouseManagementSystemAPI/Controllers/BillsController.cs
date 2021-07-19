@@ -115,18 +115,18 @@ namespace HMSAPI.Controllers
         /// <summary>
         /// Confirm bill
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="model"></param>
         /// <returns></returns>
         [Authorize(Roles = AccountConstants.ROLE_IS_OWNER + "," + AccountConstants.ROLE_IS_ADMIN)]
         [HttpPost]
         [Route("confirm")]
         [ProducesResponseType(typeof(ResultResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ResultResponse), (int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> Confirm(int id)
+        public async Task<IActionResult> Confirm(ConfirmBillViewModel model)
         {
             if (ModelState.IsValid)
             {
-                var result = await _billService.ConfirmBillAsync(id);
+                var result = await _billService.ConfirmBillAsync(model);
                 if (result.IsSuccess)
                 {
                     return Ok(result.Message);

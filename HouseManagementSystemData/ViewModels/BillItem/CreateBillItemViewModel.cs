@@ -6,6 +6,7 @@ namespace HMS.Data.ViewModels.BillItem
 {
     public class CreateBillItemViewModel
     {
+        public int? BillId { get; set; }
         public int? ServiceContractId { get; set; }
         public int StartValue { get; set; }
         public int EndValue { get; set; }

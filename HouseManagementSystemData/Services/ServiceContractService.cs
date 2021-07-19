@@ -159,6 +159,7 @@ namespace HMS.Data.Services
             {
                 serviceContract.UnitPrice = model.UnitPrice;
             }
+            serviceContract.Status = ServiceContractConstants.SERVICE_CONTRACT_IS_ACTIVE;
             Update(serviceContract);
 
             return new ResultResponse
