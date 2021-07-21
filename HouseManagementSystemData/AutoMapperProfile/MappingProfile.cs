@@ -9,6 +9,7 @@ using HMS.Data.ViewModels.Clock;
 using HMS.Data.ViewModels.Contract;
 using HMS.Data.ViewModels.Contract.Base;
 using HMS.Data.ViewModels.HouseViewModels;
+using HMS.Data.ViewModels.Payment;
 using HMS.Data.ViewModels.Room;
 using HMS.Data.ViewModels.RoomViewModels;
 using HMS.Data.ViewModels.ServiceContract;
@@ -75,6 +76,9 @@ namespace HMS.Data.AutoMapperProfile
             CreateMap<BillItem, ShowBillItemViewModel>();
 
             CreateMap<Payment, PaymentDetailViewModel>();
+            CreateMap<ConfirmPaymentViewModel, Payment>();
+            CreateMap<PayBillViewModel, Payment>();
+
 
             CreateMap<CreateBillViewModel, Bill>();
 

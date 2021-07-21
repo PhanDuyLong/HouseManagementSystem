@@ -232,7 +232,7 @@ namespace HMS.Data.Services
             }
             var contract = await GetAsyn(model.Id);
 
-            var nowContracts = GetByRoomId(contract.RoomId.Value).Where(c => c.Status == ContractConstants.CONTRACT_IS_ACTIVE).FirstOrDefault();
+            /*var nowContracts = GetByRoomId(contract.RoomId.Value).Where(c => c.Status == ContractConstants.CONTRACT_IS_ACTIVE).FirstOrDefault();
             if(nowContracts != null)
             {
                 return new ResultResponse
@@ -240,7 +240,7 @@ namespace HMS.Data.Services
                     Message = "Room has an active contract",
                     IsSuccess = false
                 };
-            }
+            }*/
 
 
             if (model.TenantUserId != null)

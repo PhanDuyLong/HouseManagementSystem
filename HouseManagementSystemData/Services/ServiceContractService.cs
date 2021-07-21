@@ -197,6 +197,8 @@ namespace HMS.Data.Services
             foreach (var serviceContract in updateServiceContracts)
             {
                 bool find = false;
+                int value = 50; 
+
                 foreach(var oldServiceContract in oldServiceContracts)
                 {
                     if (oldServiceContract.ServiceId.Equals(serviceContract.ServiceId))
@@ -208,6 +210,7 @@ namespace HMS.Data.Services
                 }
                 if (find)
                 {
+                    serviceContract.StartClockValue = value;
                    check = await UpdateServiceContractAsync(roomId, contractId, serviceContract);
                 }
                 else

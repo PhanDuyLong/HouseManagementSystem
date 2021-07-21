@@ -36,7 +36,6 @@ namespace HMSAPI.Controllers
         /// <returns></returns>
         [Authorize(Roles = AccountConstants.ROLE_IS_TENACT + "," + AccountConstants.ROLE_IS_ADMIN)]
         [HttpPost]
-        [Route("confirm")]
         [ProducesResponseType(typeof(ResultResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ResultResponse), (int)HttpStatusCode.NotFound)]
         public async Task<ActionResult> Payment(PayBillViewModel model)
@@ -58,8 +57,9 @@ namespace HMSAPI.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        [Authorize(Roles = AccountConstants.ROLE_IS_TENACT + "," + AccountConstants.ROLE_IS_ADMIN)]
+        [Authorize(Roles = AccountConstants.ROLE_IS_OWNER + "," + AccountConstants.ROLE_IS_ADMIN)]
         [HttpPost]
+        [Route("confirm")]
         [ProducesResponseType(typeof(ResultResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ResultResponse), (int)HttpStatusCode.NotFound)]
         public async Task<ActionResult> ConfirmPayment(ConfirmPaymentViewModel model)

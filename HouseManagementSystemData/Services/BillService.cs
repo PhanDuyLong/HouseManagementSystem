@@ -474,13 +474,13 @@ namespace HMS.Data.Services
             string title = tenant.Name;
             string message = NotificationConstants.HAVE_NEW_BILL;
 
-            var result = await SendBillNotificationAsync(userId, title, message, model.Id);
+            /*var result = await SendBillNotificationAsync(userId, title, message, model.Id);
             if (!result.IsSuccess)
             {
                 return check;
             }
             else
-            {
+            {*/
                 var bill = await GetAsyn(model.Id);
                 bill.Note = model.Note;
                 bill.Status = BillConstants.BILL_IS_NOT_PAID;
@@ -491,7 +491,7 @@ namespace HMS.Data.Services
                     Message = new MessageResult("OK04", new string[] { "Confirm bill" }).Value,
                     IsSuccess = true
                 };
-            }
+            /*}*/
         }
 
         public List<BillDetailViewModel> GetBillInactive()
