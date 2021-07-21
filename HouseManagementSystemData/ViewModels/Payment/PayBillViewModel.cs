@@ -10,7 +10,6 @@ namespace HMS.Data.ViewModels
         public DateTime? Date { get; set; }
         [Required]
         public int BillId { get; set; }
-        public double Amount { get; set; }
         public string Note { get; set; }
 
     }

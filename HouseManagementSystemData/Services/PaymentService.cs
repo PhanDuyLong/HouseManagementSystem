@@ -56,7 +56,7 @@ namespace HMS.Data.Services
             }
 
             var payment = _mapper.Map<Payment>(model);
-            payment.IsConfirmed = true;
+            payment.IsConfirmed = false;
             payment.Amount = billModel.TotalPrice;
             await CreateAsyn(payment);
 
@@ -78,7 +78,7 @@ namespace HMS.Data.Services
             }
 
 
-            var contract = _contractService.GetById(billModel.ContractId.Value);
+            /*var contract = _contractService.GetById(billModel.ContractId.Value);
             var tenant = _accountService.GetByUserId(contract.TenantUserId);
             var tenantId = "all";
             string roomDetail = "phòng " + contract.RoomName + "thuộc nhà " + contract.HouseName;
@@ -86,9 +86,9 @@ namespace HMS.Data.Services
             if(model.Status == PaymentConstants.PAYMENT_IS_INACTIVE)
             {
                 tenantMessage = string.Format(NotificationConstants.DENY_PAYMENT, roomDetail);
-            }
+            }*/
 
-            await SendPaymentNotificationAsync(tenant.Name, tenantId, tenantMessage, billModel.Id);
+           /* await SendPaymentNotificationAsync(tenant.Name, tenantId, tenantMessage, billModel.Id);*/
 
             return new ResultResponse
             {
@@ -136,16 +136,20 @@ namespace HMS.Data.Services
                 };
             }
 
+
+
             var payment = _mapper.Map<Payment>(model);
+            payment.Note = "Thanh toán";
+            payment.Amount = billModel.TotalPrice;
             payment.IsConfirmed = false;
             await CreateAsyn(payment);
 
             
-            var result = await _billService.SetBillIsWaitingAsync(model.BillId, BillConstants.BILL_IS_WAITING);
+           /* var result = await _billService.SetBillIsWaitingAsync(model.BillId, BillConstants.BILL_IS_WAITING);
             if (!result.IsSuccess)
             {
                 return result;
-            }
+            }*/
 
 
             /*            if (billModel.TotalPrice == payment.Amount)

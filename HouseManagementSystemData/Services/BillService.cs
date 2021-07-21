@@ -34,7 +34,6 @@ namespace HMS.Data.Services
         int CountBills(string userId, BillParameters billParameters);
         Task<ResultResponse> ConfirmBillAsync(ConfirmBillViewModel model);
         ResultResponse CheckBill(int id);
-        //Task ScanBill();
 
     }
     public partial class BillService : BaseService<Bill>, IBillService

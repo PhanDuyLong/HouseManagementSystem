@@ -16,10 +16,8 @@ namespace HMSAPI
     /// </summary>
     public class TrackServer : BackgroundService
     {
-        private static readonly int IDLE_MINUTES = 5;
         private static readonly int IDLE_DAYS = 1;
         private readonly ILogger<TrackServer> _logger;
-        private readonly List<ContractDetailViewModel> contractNotficationList;
 
         /// <summary>
         /// Constructor
@@ -50,7 +48,6 @@ namespace HMSAPI
                     var contractService = scope.ServiceProvider.GetRequiredService<IContractService>();
                     var billService = scope.ServiceProvider.GetRequiredService<IBillService>();
                     await contractService.ScanContracts();
-                    //await billService.ScanBill();
                 }
                 _logger.LogInformation("Track Server running at {time}", DateTimeOffset.Now);
                 //await Task.Delay(IDLE_MINUTES * 60 * 1000, stoppingToken);
