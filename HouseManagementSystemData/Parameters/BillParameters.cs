@@ -9,7 +9,7 @@ namespace HMS.Data.Parameters
         public int? RoomId { get; set; }
         public int? ContractId { get; set; }
         public bool? Status { get; set; }
-        public bool? IsPaidInFull { get; set; }
+        public bool? IsWaiting { get; set; }
         public bool IsIssueDateAscending { get; set; }
     }
 }

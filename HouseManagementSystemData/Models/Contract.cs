@@ -22,6 +22,8 @@ namespace HMS.Data.Models
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public bool? Status { get; set; }
+        public bool? IsDeleted { get; set; }
+        public bool? IsSent { get; set; }
 
         public virtual Room Room { get; set; }
         public virtual Account TenantUser { get; set; }

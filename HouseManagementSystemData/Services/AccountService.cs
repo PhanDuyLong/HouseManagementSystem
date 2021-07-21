@@ -40,12 +40,10 @@ namespace HMS.Data.Services
         Task<AuthenticateResponse> LoginAccountAsync(AuthenticateRequest request);
         Task<AuthenticateResponse> LoginAccountByGoogleAsync(AuthenticateGoogleRequest model);
         Task<ResultResponse> RegisterAccountAsync(RegisterRequest model);
-        Task<ResultResponse> RegisterAdminAccountAsync(RegisterRequest model);
         AccountDetailViewModel GetByUserId(string userId);
         AccountDetailViewModel GetByEmail(string email);
         List<AccountTenantViewModel> GetTenantNames();
         Task<ResultResponse> UpdateAccountAsync(string userId, UpdateAccountViewModel model);
-        Task<ResultResponse> DeleteAccountAsync(string userId);
         Task<ResultResponse> ChangePasswordAsync(string userId, ChangePassRequest model);
         Task<ResultResponse> CheckValidUserAsync(string userId);
     }
@@ -142,6 +140,16 @@ namespace HMS.Data.Services
             if (!check.IsSuccess)
                 return check;
 
+            if (model.Role.Equals(AccountConstants.ROLE_IS_ADMIN))
+            {
+                return new ResultResponse
+                {
+                    Message = new MessageResult("BR07", new string[] { "role" }).Value,
+                    IsSuccess = false,
+                };
+            }
+
+
             var registerAccountRequest = new RegisterAccountRequest
             {
                 UserId = model.UserId,
@@ -159,54 +167,6 @@ namespace HMS.Data.Services
                     return new ResultResponse
                     {
                         Message = new MessageResult("BRO3", new string[] { "Account" }).Value + "\n" + result.GetErrors(),
-                        IsSuccess = false,
-                    };
-                }
-
-                return new ResultResponse
-                {
-                    Message = result.Message,
-                    IsSuccess = false,
-                };
-            }
-
-            var acc = _mapper.Map<Account>(model);
-            acc.Password = null;
-            await CreateAsyn(acc);
-
-            return new ResultResponse
-            {
-                Message = new MessageResult("OK01", new string[] { "Account" }).Value,
-                IsSuccess = true,
-            };
-        }
-
-        public async Task<ResultResponse> RegisterAdminAccountAsync(RegisterRequest model)
-        {
-            var check = await CheckUserExistUserIdAndEmailAsync(model.UserId, model.Email);
-
-            if (!check.IsSuccess)
-                return check;
-
-            model.Role = AccountConstants.ROLE_IS_ADMIN;
-
-            var registerAccountRequest = new RegisterAccountRequest
-            {
-                UserId = model.UserId,
-                Email = model.Email,
-                Password = model.Password,
-                Role = model.Role,
-            };
-
-            var result = await _accountAuthenService.RegisterAccountAsync(registerAccountRequest);
-
-            if (!result.IsSuccess)
-            {
-                if (result.Errors != null)
-                {
-                    return new ResultResponse
-                    {
-                        Message = new MessageResult("BR02", new string[] { "Account" }).Value + "\n" + result.GetErrors(),
                         IsSuccess = false,
                     };
                 }
@@ -401,23 +361,6 @@ namespace HMS.Data.Services
             return new ResultResponse
             {
                 Message = new MessageResult("OK04", new string[] { "Change password" }).Value,
-                IsSuccess = true
-            };
-        }
-
-        public async Task<ResultResponse> DeleteAccountAsync(string userId)
-        {
-            var check = await CheckValidUserAsync(userId);
-            if (!check.IsSuccess)
-                return check;
-            var account = await GetAsyn(userId);
-
-            account.Status = AccountConstants.ACCOUNT_IS_INACTIVE;
-            Update(account);
-
-            return new ResultResponse
-            {
-                Message = new MessageResult("OK02", new string[] { "Account" }).Value,
                 IsSuccess = true
             };
         }

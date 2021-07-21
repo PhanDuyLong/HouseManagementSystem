@@ -7,10 +7,13 @@ using HMS.Data.Repositories;
 using HMS.Data.Responses;
 using HMS.Data.Services.Base;
 using HMS.Data.Utilities;
+using HMS.Data.ViewModels;
 using HMS.Data.ViewModels.Clock;
 using HMS.Data.ViewModels.Contract;
 using HMS.Data.ViewModels.Contract.Base;
+using HMS.FirebaseNotification;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -26,6 +29,9 @@ namespace HMS.Data.Services
         Task<ResultResponse> DeleteContractAsync(int contractId);
         List<ContractDetailViewModel> FilterByParamter(string userId, ContractParameters contractParameters);
         List<ContractDetailViewModel> GetByRoomId(int roomId);
+        Task ScanContracts();
+        string GetRoomDetail(int contractId);
+        HouseDetailViewModel GetHouseByContractId(int contractId);
     }
     public partial class ContractService : BaseService<Contract>, IContractService
     {
@@ -34,8 +40,9 @@ namespace HMS.Data.Services
         private readonly IServiceContractService _serviceContractService;
         private readonly IRoomService _roomService;
         private readonly IHouseService _houseService;
+        private readonly IFirebaseNotificationService _firebaseNotificationService;
         public ContractService(DbContext dbContext, IContractRepository repository, IMapper mapper
-            , IAccountService accountService, IServiceContractService serviceContractService, IRoomService roomService, IHouseService houseService) : base(dbContext, repository)
+            , IAccountService accountService, IServiceContractService serviceContractService, IRoomService roomService, IHouseService houseService, IFirebaseNotificationService firebaseNotificationService) : base(dbContext, repository)
         {
             _dbContext = dbContext;
             _repository = repository;
@@ -44,6 +51,7 @@ namespace HMS.Data.Services
             _serviceContractService = serviceContractService;
             _roomService = roomService;
             _houseService = houseService;
+            _firebaseNotificationService = firebaseNotificationService;
         }
 
         public async Task<ResultResponse> CreateContractAsync(string userId, CreateContractViewModel model)
@@ -123,13 +131,21 @@ namespace HMS.Data.Services
                     Message = new MessageResult("NF02", new string[] { "Contract" }).Value,
                     IsSuccess = false
                 };
-
             }
+
+
             var contract = await GetAsyn(contractId);
+            contract.IsDeleted = ContractConstants.CONTRACT_IS_DELETED;
             contract.Status = ContractConstants.CONTRACT_IS_INACTIVE;
             Update(contract);
 
             await _roomService.UpdateRoomStatusAsync(contractModel.RoomId, RoomConstants.ROOM_IS_NOT_RENTED);
+
+            string roomDetail = "phòng " + contractModel.RoomName + "thuộc nhà " + contractModel.HouseName;
+
+            var tenant = _accountService.GetByUserId(contract.TenantUserId);
+            string message = string.Format(NotificationConstants.TENANT_CONTRACT_IS_DELETED, roomDetail);
+            await SendContractNotificationAsync(tenant.Name, "all", message, contractId);
 
             return new ResultResponse
             {
@@ -140,7 +156,7 @@ namespace HMS.Data.Services
 
         public ContractDetailViewModel GetById(int id)
         {
-            var contract = Get().Where(c => c.Id == id && c.Status == ContractConstants.CONTRACT_IS_ACTIVE).ProjectTo<ContractDetailViewModel>(_mapper.ConfigurationProvider).FirstOrDefault();
+            var contract = Get().Where(c => c.Id == id).ProjectTo<ContractDetailViewModel>(_mapper.ConfigurationProvider).FirstOrDefault();
             if (contract != null)
             {
                 var room = _roomService.GetById(contract.RoomId);
@@ -167,21 +183,35 @@ namespace HMS.Data.Services
             {
                 if (user.Role.Equals(AccountConstants.ROLE_IS_OWNER))
                 {
-                    contracts = Get().Where(c => c.OwnerUserId == userId && c.Status == ContractConstants.CONTRACT_IS_ACTIVE).ProjectTo<ContractDetailViewModel>(_mapper.ConfigurationProvider).ToList();
+                    contracts = Get().Where(c => c.OwnerUserId == userId).ProjectTo<ContractDetailViewModel>(_mapper.ConfigurationProvider).ToList();
                 }
                 else
                 {
-                    contracts = Get().Where(c => c.TenantUserId == userId && c.Status == ContractConstants.CONTRACT_IS_ACTIVE).ProjectTo<ContractDetailViewModel>(_mapper.ConfigurationProvider).ToList();
+                    contracts = Get().Where(c => c.TenantUserId == userId).ProjectTo<ContractDetailViewModel>(_mapper.ConfigurationProvider).ToList();
                 }
                 if(contracts != null && contracts.Count != 0)
                 {
                     foreach (var contract in contracts)
                     {
                         var room = _roomService.GetById(contract.RoomId);
-                        var house = _houseService.GetById(room.HouseId);
-                        contract.RoomName = room.Name;
-                        contract.HouseName = house.HouseInfo.Name;
-                        contract.OwnerName = house.OwnerUser.Name;
+                        if(room == null)
+                        {
+                            contract.RoomName = null;
+                        }
+                        else
+                        {
+                            contract.RoomName = room.Name;
+                            var house = _houseService.GetById(room.HouseId);
+                            if(house != null)
+                            {
+                                contract.HouseName = house.HouseInfo.Name;
+                                contract.OwnerName = house.OwnerUser.Name;
+                            }
+                            else
+                            {
+                                contract.HouseName = null;
+                            }
+                        }
                     }
                 }
             }
@@ -200,8 +230,19 @@ namespace HMS.Data.Services
                     IsSuccess = false,
                 };
             }
-
             var contract = await GetAsyn(model.Id);
+
+            var nowContracts = GetByRoomId(contract.RoomId.Value).Where(c => c.Status == ContractConstants.CONTRACT_IS_ACTIVE).FirstOrDefault();
+            if(nowContracts != null)
+            {
+                return new ResultResponse
+                {
+                    Message = "Room has an active contract",
+                    IsSuccess = false
+                };
+            }
+
+
             if (model.TenantUserId != null)
             {
                 contract.TenantUserId = model.TenantUserId;
@@ -222,8 +263,16 @@ namespace HMS.Data.Services
             {
                 contract.Note = model.Note;
             }
-
+            contract.Status = ContractConstants.CONTRACT_IS_ACTIVE;
+            contract.IsDeleted = ContractConstants.CONTRACT_IS_NOT_DELETED;
+            contract.IsSent = ContractConstants.CONTRACT_IS_NOT_SENT;
             Update(contract);
+
+            var tenant = _accountService.GetByUserId(contract.TenantUserId);
+
+            string roomDetail = "phòng " + contractModel.RoomName + "thuộc nhà " + contractModel.HouseName;
+            string message = string.Format(NotificationConstants.TENANT_CONTRACT_IS_UPDATED, roomDetail);
+            await SendContractNotificationAsync(tenant.Name, "all", message, contractId);
 
             var check = await _serviceContractService.UpdateServiceContractsAsync(contractModel.RoomId, contractId, model.UpdateServiceContracts.ToList());
             if (!check.IsSuccess)
@@ -258,9 +307,131 @@ namespace HMS.Data.Services
             var status = contractParameters.Status;
             if (status != null)
             {
-                contracts = contracts.Where(r => r.Status == contractParameters.Status).ToList();
+                contracts = contracts.Where(c => c.Status == contractParameters.Status).ToList();
+            }
+            if (contractParameters.IsDeleted != null)
+            {
+                contracts = contracts.Where(c => c.IsDeleted == contractParameters.IsDeleted).ToList();
             }
             return contracts;
+        }
+
+        public List<ContractDetailViewModel> GetActiveContract()
+        {
+            var contracts = Get().Where(c => c.Status == ContractConstants.CONTRACT_IS_ACTIVE && c.IsDeleted == ContractConstants.CONTRACT_IS_NOT_DELETED).ProjectTo<ContractDetailViewModel>(_mapper.ConfigurationProvider).ToList();
+            return contracts;
+        }
+
+        public async Task<ResultResponse> SendContractNotificationAsync(string title, string userId, string message, int contractId)
+        {
+            MobileNotification firebaseNotification = new MobileNotification
+            {
+                UserId = userId,
+                Title = title,
+                Body = message,
+                Data = new Dictionary<string, string>
+                {
+                    { "contractId", contractId.ToString()},
+                }
+            };
+
+            await _firebaseNotificationService.PushNotificationAsync(firebaseNotification);
+            return new ResultResponse
+            {
+                Message = new MessageResult("OK04", new string[] { "ContractId" }).Value,
+                IsSuccess = true
+            };
+        }
+
+        public string GetRoomDetail(int contractId)
+        {
+            var contract = GetById(contractId);
+            return "phòng " + contract.RoomName + "thuộc nhà " + contract.HouseName;
+        }
+
+        public async Task<ResultResponse> SetContractIsSent(int contractId)
+        {
+            var contract = await GetAsyn(contractId);
+            contract.IsSent = true;
+            Update(contract);
+            return new ResultResponse
+            {
+                Message = new MessageResult("OK03", new string[] { "Contract" }).Value,
+                IsSuccess = true
+            };
+        }
+
+        public async Task<ResultResponse> SetContractInactive(int contractId)
+        {
+            var contractModel = GetById(contractId);
+            if (contractModel == null)
+            {
+                return new ResultResponse
+                {
+                    Message = new MessageResult("NF02", new string[] { "Contract" }).Value,
+                    IsSuccess = false,
+                };
+            }
+
+            var contract = await GetAsyn(contractId);
+            contract.Status = ContractConstants.CONTRACT_IS_INACTIVE;
+            Update(contract);
+
+            return new ResultResponse
+            {
+                Message = new MessageResult("OK03", new string[] { "Contract" }).Value,
+                IsSuccess = true
+            };
+        }
+
+
+        public async Task ScanContracts()
+        {
+            var contracts = GetActiveContract();
+            foreach (var contract in contracts)
+            {
+                if (contract.EndDate < DateTime.Now)
+                {
+                    await SetContractInactive(contract.Id);
+
+                    var owner = _accountService.GetByUserId(contract.OwnerUserId);
+                    var tenant = _accountService.GetByUserId(contract.TenantUserId);
+                    
+
+                    var ownerUserId = "all";
+                    string roomDetail = "phòng " + contract.RoomName + "thuộc nhà " + contract.HouseName;
+                    string ownerMessage = string.Format(NotificationConstants.ONWER_CONTRACT_HAS_EXPIRED, roomDetail);
+                    await SendContractNotificationAsync(owner.Name, ownerUserId, ownerMessage, contract.Id);
+                    var tenantUserId = "all";
+                    string tenantMessage = string.Format(NotificationConstants.TENANT_CONTRACT_HAS_EXPIRED, roomDetail);
+                    await SendContractNotificationAsync(tenant.Name ,tenantUserId, tenantMessage, contract.Id);
+                    await SetContractIsSent(contract.Id);
+                    break;
+                }
+
+                if ((contract.EndDate.Value - DateTime.Today).TotalDays < 7)
+                {
+                    var owner = _accountService.GetByUserId(contract.OwnerUserId);
+                    var tenant = _accountService.GetByUserId(contract.TenantUserId);
+
+                    var ownerUserId = "all";
+                    string roomDetail = GetRoomDetail(contract.Id);
+                    string ownerMessage = string.Format(NotificationConstants.ONWER_CONTRACT_WILL_EXPIRE_IN_1_WEEK, roomDetail);
+                    await SendContractNotificationAsync(owner.Name, ownerUserId, ownerMessage, contract.Id);
+                    var tenantUserId = "all";
+                    string tenantMessage = string.Format(NotificationConstants.TENANT_CONTRACT_WILL_EXPIRE_IN_1_WEEK, roomDetail);
+                    await SendContractNotificationAsync(tenant.Name, tenantUserId, tenantMessage, contract.Id);
+                    await SetContractIsSent(contract.Id);
+                    break;
+                }
+            }
+        }
+
+        public HouseDetailViewModel GetHouseByContractId(int contractId)
+        {
+            var room = _roomService.GetById(contractId);
+            var house = _houseService.GetById(room.HouseId);
+            return house;
         }
     }
 }

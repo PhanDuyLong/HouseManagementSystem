@@ -9,7 +9,6 @@ using HMS.Data.Services.Base;
 using HMS.Data.Utilities;
 using HMS.Data.ViewModels;
 using HMS.Data.ViewModels.Bill;
-using HMS.Data.ViewModels.BillItem;
 using HMS.Data.ViewModels.Clock;
 using HMS.Data.ViewModels.Contract.Base;
 using HMS.Data.ViewModels.ServiceContract;
@@ -30,11 +29,13 @@ namespace HMS.Data.Services
         Task<BillDetailViewModel> CreateBillAsync(CreateBillViewModel model);
         Task<ResultResponse> UpdateBillAsync(UpdateBillViewModel model);
         Task<ResultResponse> DeleteBillAsync(int billId);
-        Task<ResultResponse> SetBillIsPaidFullAsync(int billId);
-        Task<ResultResponse> SetBillIsPaidAsync(int billId);
+        Task<ResultResponse> SetBillIsWaitingAsync(int billId, bool status);
+        Task<ResultResponse> SetBillStatusAsync(int billId, bool status);
         int CountBills(string userId, BillParameters billParameters);
         Task<ResultResponse> ConfirmBillAsync(ConfirmBillViewModel model);
         ResultResponse CheckBill(int id);
+        //Task ScanBill();
+
     }
     public partial class BillService : BaseService<Bill>, IBillService
     {
@@ -46,8 +47,10 @@ namespace HMS.Data.Services
         private readonly IFirebaseNotificationService _firebaseNotificationService;
         private readonly IServiceContractService _serviceContractService;
         private readonly IServiceService _serviceService;
+        private readonly IHouseService _houseService;
+        private readonly IAccountService _accountService;
         public BillService(DbContext dbContext, IBillRepository repository, IMapper mapper,
-            IContractService contractService, IClockValueService clockValueService, IBillItemService billItemService, IClockService clockService,  IFirebaseNotificationService firebaseNotificationService, IServiceService serviceService, IServiceContractService serviceContractService) : base(dbContext, repository)
+            IContractService contractService, IClockValueService clockValueService, IBillItemService billItemService, IClockService clockService,  IFirebaseNotificationService firebaseNotificationService, IServiceService serviceService, IServiceContractService serviceContractService, IHouseService houseService, IAccountService accountService) : base(dbContext, repository)
         {
             _dbContext = dbContext;
             _mapper = mapper;
@@ -58,6 +61,8 @@ namespace HMS.Data.Services
             _firebaseNotificationService = firebaseNotificationService;
             _serviceService = serviceService;
             _serviceContractService = serviceContractService;
+            _houseService = houseService;
+            _accountService = accountService;
         }
 
         public async Task<BillDetailViewModel> CreateBillAsync(CreateBillViewModel createModel)
@@ -66,10 +71,13 @@ namespace HMS.Data.Services
             bill.Status = BillConstants.BILL_IS_NOT_PAID;
             bill.IsDeleted = BillConstants.BILL_IS_NOT_DELETED;
             bill.IsSent = BillConstants.BILL_IS_NOT_SENT;
-            bill.IsPaidInFull = BillConstants.BILL_IS_NOT_PAID_IN_FULL;
 
             var billItems = new ArrayList();
             var contract = _contractService.GetById(createModel.ContractId);
+            if (contract == null)
+            {
+                return null;
+            }
             var serviceContracts = contract.ServiceContracts.ToList();
             double total = 0;
             var roomPriceBillItem = await CountRoomPriceAsync(contract);
@@ -205,10 +213,10 @@ namespace HMS.Data.Services
                 {
                     bills = bills.Where(b => b.Status == status).ToList();
                 }
-                var isPaidInFull = billParameters.IsPaidInFull;
-                if (isPaidInFull != null)
+                var isWaiting = billParameters.IsWaiting;
+                if (isWaiting != null)
                 {
-                    bills = bills.Where(b => b.IsPaidInFull == isPaidInFull).ToList();
+                    bills = bills.Where(b => b.IsWaiting == isWaiting).ToList();
                 }
             }
             return bills;
@@ -331,6 +339,7 @@ namespace HMS.Data.Services
         {
             MobileNotification firebaseNotification = new MobileNotification
             {
+                UserId = "all",
                 Title = "Bill",
                 Body = "New Bill",
                 Data = new Dictionary<string, string>
@@ -347,7 +356,7 @@ namespace HMS.Data.Services
             };
         }
 
-        public async Task<ResultResponse> SetBillIsPaidFullAsync(int billId)
+        public async Task<ResultResponse> SetBillIsWaitingAsync(int billId, bool status)
         {
             var check = CheckBill(billId);
             if (!check.IsSuccess)
@@ -356,7 +365,7 @@ namespace HMS.Data.Services
             }
             var bill = await GetAsyn(billId);
 
-            if (bill.IsPaidInFull == BillConstants.BILL_IS_PAID_IN_FULL)
+            if (bill.IsWaiting == status)
             {
                 return new ResultResponse
                 {
@@ -364,7 +373,7 @@ namespace HMS.Data.Services
                 };
             }
 
-            bill.IsPaidInFull = BillConstants.BILL_IS_PAID_IN_FULL;
+            bill.IsWaiting = status;
             Update(bill);
             return new ResultResponse
             {
@@ -373,7 +382,7 @@ namespace HMS.Data.Services
             };
         }
 
-        public async Task<ResultResponse> SetBillIsPaidAsync(int billId)
+        public async Task<ResultResponse> SetBillStatusAsync(int billId, bool status)
         {
             var check = CheckBill(billId);
             if (!check.IsSuccess)
@@ -383,15 +392,7 @@ namespace HMS.Data.Services
 
             var bill = await GetAsyn(billId);
 
-            if (bill.Status == BillConstants.BILL_IS_PAID)
-            {
-                return new ResultResponse
-                {
-                    IsSuccess = true
-                };
-            }
-
-            bill.Status = BillConstants.BILL_IS_PAID;
+            bill.Status = status;
             Update(bill);
             return new ResultResponse
             {
@@ -433,14 +434,17 @@ namespace HMS.Data.Services
             var billModel = GetById(model.Id);
 
 
-            if (billModel.IsSent == BillConstants.BILL_IS_SENT)
+            /*if (billModel.IsSent == BillConstants.BILL_IS_SENT)
             {
                 return new ResultResponse
                 {
                     Message = new MessageResult("BR08", new string[] { "Bill", "confirmed" }).Value,
                     IsSuccess = false
                 };
-            }
+            }*/
+
+
+
 
             var serviceContractWithClock = billModel.BillItems.Where(item => item.ServiceContract.ClockId != 0).ToList();
             if(serviceContractWithClock != null && serviceContractWithClock.Count != 0)
@@ -457,15 +461,20 @@ namespace HMS.Data.Services
                                 ClockId = clockId,
                                 CreateDate = DateTime.Now,
                                 RecordDate = DateTime.Now,
-                                IndexValue = (int?)billItem.EndValue.Value
+                                IndexValue = (int)billItem.EndValue.Value
                             };
                             await _clockValueService.CreateClockValueAsync(createClockValueModel);
                         }
                     }
                 }
             }
+            var contract = _contractService.GetById(billModel.ContractId.Value);
+            var tenant = _accountService.GetByUserId(contract.TenantUserId);
+            string userId = "'all'";
+            string title = tenant.Name;
+            string message = NotificationConstants.HAVE_NEW_BILL;
 
-            var result = await SendBillAsync(model.Id);
+            var result = await SendBillNotificationAsync(userId, title, message, model.Id);
             if (!result.IsSuccess)
             {
                 return check;
@@ -474,13 +483,84 @@ namespace HMS.Data.Services
             {
                 var bill = await GetAsyn(model.Id);
                 bill.Note = model.Note;
-                bill.IsSent = BillConstants.BILL_IS_SENT;
+                bill.Status = BillConstants.BILL_IS_NOT_PAID;
+                bill.IsWaiting = BillConstants.BILL_IS_NOT_WAITING;
                 Update(bill);
                 return new ResultResponse
                 {
                     Message = new MessageResult("OK04", new string[] { "Confirm bill" }).Value,
                     IsSuccess = true
                 };
+            }
+        }
+
+        public List<BillDetailViewModel> GetBillInactive()
+        {
+            var bills = Get().Where(bill => bill.Status == BillConstants.BILL_IS_NOT_PAID &&  bill.IsDeleted == BillConstants.BILL_IS_NOT_DELETED).ProjectTo<BillDetailViewModel>(_mapper.ConfigurationProvider).ToList();
+            return bills;
+        }
+
+        public async Task<ResultResponse> SetBillIsSent(int billId)
+        {
+            var bill = await GetAsyn(billId);
+            bill.IsSent = BillConstants.BILL_IS_SENT;
+            Update(bill);
+            return new ResultResponse
+            {
+                Message = new MessageResult("OK03", new string[] { "Bill" }).Value,
+                IsSuccess = true
+            };
+        }
+
+        public async Task<ResultResponse> SendBillNotificationAsync(string title, string userId, string message, int billId)
+        {
+            MobileNotification firebaseNotification = new MobileNotification
+            {
+                UserId = userId,
+                Title = title,
+                Body = message,
+                Data = new Dictionary<string, string>
+                {
+                    { "billId", billId.ToString()},
+                }
+            };
+
+            await _firebaseNotificationService.PushNotificationAsync(firebaseNotification);
+            return new ResultResponse
+            {
+                Message = new MessageResult("OK04", new string[] { "Bill" }).Value,
+                IsSuccess = true
+            };
+        }
+
+        public async Task ScanBill()
+        {
+            var bills = GetBillInactive();
+            foreach(var bill in bills)
+            {
+                var house = _contractService.GetHouseByContractId(bill.ContractId.Value);
+                var billEndDate = bill.EndDate;
+                var today = DateTime.Now;
+                if((billEndDate.Value.Month == today.Month || today.Month - billEndDate.Value.Month == 1) && billEndDate.Value.Year == today.Year && today >= bill.EndDate)
+                {
+                    if(today.Day == house.HouseInfo.PaidDeadline)
+                    {
+                        var contract = _contractService.GetById(bill.ContractId.Value);
+                        var tenant = _accountService.GetByUserId(contract.TenantUserId);
+
+                        await SendBillNotificationAsync(tenant.Name, "all", NotificationConstants.TODAY_IS_ROOM_BILL_PAID_DEADLINE, bill.Id);
+                        await SetBillIsSent(bill.Id);
+                    }
+
+                    if(today.Day > house.HouseInfo.PaidDeadline)
+                    {
+                        var contract = _contractService.GetById(bill.ContractId.Value);
+                        var owner = _accountService.GetByUserId(contract.OwnerUserId);
+
+                        await SendBillNotificationAsync(owner.Name, "all", NotificationConstants.ROOM_BILL_PAID_DEADLINE_IS_PASSED, bill.Id);
+                        await SetBillIsSent(bill.Id);
+                    }
+                }
             }
         }
     }

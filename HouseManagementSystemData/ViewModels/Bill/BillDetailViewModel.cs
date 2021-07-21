@@ -17,7 +17,7 @@ namespace HMS.Data.ViewModels.Bill
         public bool? Status { get; set; }
         public bool? IsDeleted { get; set; }
         public bool? IsSent { get; set; }
-        public bool? IsPaidInFull { get; set; }
+        public bool? IsWaiting { get; set; }
 
         public virtual ContractBaseViewModel Contract { get; set; }
         public virtual ICollection<BillItemDetailViewModel> BillItems { get; set; }

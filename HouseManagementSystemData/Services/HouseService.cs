@@ -58,6 +58,7 @@ namespace HMS.Data.Services
             if(house != null)
             {
                 house.Rooms = house.Rooms.Where(r => r.IsDeleted == RoomConstants.ROOM_IS_NOT_DELETED).ToList();
+                house.Services = house.Services.Where(s => s.Status == ServiceConstants.SERVICE_IS_ACTIVE).ToList();
             }
             return house;
         }

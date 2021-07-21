@@ -199,6 +199,7 @@ namespace HMSAPI
                 .AllowAnyOrigin()
                 .AllowAnyMethod()
                 .AllowAnyHeader());
+
         }
     }
 }

@@ -4,9 +4,7 @@ using HMS.Authen.Utilities;
 using HMS.Data.Responses;
 using Microsoft.AspNetCore.Identity;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace HMS.Authen.Services
@@ -31,6 +29,43 @@ namespace HMS.Authen.Services
             _roleManager = roleManager;
             _jwtHandler = jwtHandler;
         }
+
+        public async Task<AccountManagerResponse> LoginAccountAsyncWithEmailAndPassword(AuthenticateInternalRequest model)
+        {
+            var user = await _accountManager.FindByEmailAsync(model.Email);
+
+            if (user is null)
+            {
+                return new AccountManagerResponse
+                {
+                    Message = "There is no user with that email address!",
+                    IsSuccess = false,
+                };
+            }
+
+            var result = await _accountManager.CheckPasswordAsync(user, model.Password);
+
+            if (!result)
+            {
+                return new AccountManagerResponse
+                {
+                    Message = "Invalid password!",
+                    IsSuccess = false
+                };
+            }
+
+            var token = await _jwtHandler.GenerateToken(user);
+
+            return new AccountManagerResponse
+            {
+                Token = token[0],
+                Message = "Login succesfully",
+                IsSuccess = true,
+                ExpireDate = DateTime.Parse(token[1]),
+                UserId = user.UserName
+            };
+        }
+
 
         public async Task<AccountManagerResponse> LoginAccountAsync(AuthenticateInternalRequest model)
         {

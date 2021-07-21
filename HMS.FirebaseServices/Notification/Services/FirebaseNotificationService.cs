@@ -27,7 +27,7 @@ namespace HMS.FirebaseNotification
                     Body = firebaseNotification.Body
                 },
                 Data = firebaseNotification.Data,
-                Condition = "'all' in topics"
+                Condition = "'" + firebaseNotification.UserId + "' in topics"
             };
             var messaging = FirebaseMessaging.DefaultInstance;
             var result = await messaging.SendAsync(message);

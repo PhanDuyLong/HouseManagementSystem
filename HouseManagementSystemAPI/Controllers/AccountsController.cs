@@ -20,6 +20,7 @@ namespace HMSAPI.Controllers
     [ApiController]
     public class AccountsController : ControllerBase
     {
+
         private IAccountService _accountService;
 
         /// <summary>
@@ -125,37 +126,12 @@ namespace HMSAPI.Controllers
         }
 
         /// <summary>
-        /// Register admin account
-        /// </summary>
-        /// <param name="model"></param>
-        /// <returns></returns>
-        [Authorize(Roles = AccountConstants.ROLE_IS_ADMIN)]
-        [HttpPost]
-        [Route("register-admin")]
-        [ProducesResponseType(typeof(ResultResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> RegisterAdmin([FromBody] RegisterRequest model)
-        {
-            if(ModelState.IsValid)
-            {
-                var result = await _accountService.RegisterAccountAsync(model);
-                if (result.IsSuccess)
-                {
-                    return Ok(result.Message);
-                }
-                return BadRequest(result.Message);
-            }
-            return BadRequest(new MessageResult("BR01"));
-        }
-
-        /// <summary>
         /// Get list of tenants'name
         /// </summary>
         /// <returns></returns>
         [HttpGet]
         [ProducesResponseType(typeof(List<AccountTenantViewModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public IActionResult GetTenantNames()
         {
             var tenants = _accountService.GetTenantNames();
@@ -172,7 +148,6 @@ namespace HMSAPI.Controllers
         [HttpPut]
         [ProducesResponseType(typeof(AccountDetailViewModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> Update(UpdateAccountViewModel model)
         {
             if (ModelState.IsValid)
@@ -186,29 +161,6 @@ namespace HMSAPI.Controllers
                 return BadRequest(result.Message);
             }
             return BadRequest(new MessageResult("BR01"));
-        }
-
-        /// <summary>
-        /// Delete account
-        /// </summary>
-        /// <param name="userId"></param>
-        /// <returns></returns>
-        [Authorize(Roles = AccountConstants.ROLE_IS_ADMIN)]
-        [HttpDelete]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> Delete(string userId)
-        {
-            if (ModelState.IsValid)
-            {
-                var result = await _accountService.DeleteAccountAsync(userId);
-                if (result.IsSuccess)
-                {
-                    return Ok(result.Message);
-                }
-                return BadRequest(result.Message);
-            }
-            return BadRequest(new MessageResult("BR01").Value);
         }
     }
 }

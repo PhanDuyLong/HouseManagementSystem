@@ -23,7 +23,7 @@ namespace HMS.Data.Models
         public bool? Status { get; set; }
         public bool? IsDeleted { get; set; }
         public bool? IsSent { get; set; }
-        public bool? IsPaidInFull { get; set; }
+        public bool? IsWaiting { get; set; }
 
         public virtual Contract Contract { get; set; }
         public virtual ICollection<BillItem> BillItems { get; set; }

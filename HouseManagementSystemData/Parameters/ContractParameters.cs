@@ -8,5 +8,6 @@ namespace HMS.Data.Parameters
     {
         public int? RoomId { get; set; }
         public bool? Status { get; set; }
+        public bool? IsDeleted { get; set; }
     }
 }

@@ -42,7 +42,7 @@ namespace HMS.Data.Services
             var serviceTypes = await _serviceTypeService.GetServiceTypes();
             var service = _mapper.Map<Service>(model);
             service.Status = ServiceConstants.SERVICE_IS_ACTIVE;
-            service.ServiceTypeId = serviceTypes.Where(serviceType => serviceType.Name.Equals(model.ServiceTypeName)).FirstOrDefault().Id;
+            service.ServiceTypeId = serviceTypes.Where(serviceType => serviceType.Name.ToUpper().Equals(model.ServiceTypeName.ToUpper())).FirstOrDefault().Id;
             await CreateAsyn(service);
             return new ResultResponse
             {
@@ -118,7 +118,7 @@ namespace HMS.Data.Services
 
             if (model.ServiceType != null)
             {
-                service.ServiceTypeId = serviceTypes.Where(serviceType => serviceType.Name.Equals(model.ServiceType)).FirstOrDefault().Id;
+                service.ServiceTypeId = serviceTypes.Where(serviceType => serviceType.Name.ToUpper().Equals(model.ServiceType.ToUpper())).FirstOrDefault().Id;
 
             }
 
@@ -139,6 +139,7 @@ namespace HMS.Data.Services
                 HouseId = houseId,
                 Name = "Điện",
                 CalculationUnit = "kWH",
+                Price = 12000,
                 ServiceTypeName = ServiceTypeConstants.SERVICE_TYPE_IS_DEFAULT_DIFFERENT
             };
             defaultServices.Add(eletricService);
@@ -147,6 +148,7 @@ namespace HMS.Data.Services
                 HouseId = houseId,
                 Name = "Nước",
                 CalculationUnit = "m3",
+                Price = 10000,
                 ServiceTypeName = ServiceTypeConstants.SERVICE_TYPE_IS_DEFAULT_DIFFERENT
             };
             defaultServices.Add(waterService);

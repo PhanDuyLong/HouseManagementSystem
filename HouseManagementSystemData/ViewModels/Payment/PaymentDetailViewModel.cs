@@ -12,6 +12,6 @@ namespace HMS.Data.ViewModels
         public double Amount { get; set; }
         public string Note { get; set; }
         public bool Status { get; set; }
-        public bool IsSend { get; set; }
+        public bool IsConfirmed { get; set; }
     }
 }

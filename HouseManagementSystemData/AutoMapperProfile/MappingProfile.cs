@@ -12,7 +12,6 @@ using HMS.Data.ViewModels.HouseViewModels;
 using HMS.Data.ViewModels.Room;
 using HMS.Data.ViewModels.RoomViewModels;
 using HMS.Data.ViewModels.ServiceContract;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
